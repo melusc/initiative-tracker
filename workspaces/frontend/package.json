@@ -13,7 +13,7 @@
 		"fmt": "eslint --fix"
 	},
 	"devDependencies": {
-		"@lusc/eslint-config": "^3.4.2",
+		"@lusc/eslint-config": "^4.0.0",
 		"@lusc/tsconfig": "^5.1.0",
 		"@sveltejs/adapter-static": "^3.0.8",
 		"@sveltejs/kit": "^2.15.1",
