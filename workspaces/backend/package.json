@@ -3,7 +3,7 @@
 	"private": true,
 	"type": "module",
 	"devDependencies": {
-		"@lusc/eslint-config": "^3.4.2",
+		"@lusc/eslint-config": "^4.0.0",
 		"@lusc/tsconfig": "^5.1.0",
 		"@types/better-sqlite3": "^7.6.12",
 		"@types/cookie-parser": "^1.4.8",
