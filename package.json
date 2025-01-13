@@ -3,7 +3,7 @@
 	"type": "module",
 	"devDependencies": {
 		"prettier": "^3.4.2",
-		"prettier-plugin-svelte": "^3.3.2"
+		"prettier-plugin-svelte": "^3.3.3"
 	},
 	"workspaces": [
 		"workspaces/*"
