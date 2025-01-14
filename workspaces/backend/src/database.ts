@@ -24,7 +24,7 @@ import {createInterface} from 'node:readline/promises';
 import {fileURLToPath} from 'node:url';
 import {parseArgs} from 'node:util';
 
-import {generatePassword} from '@lusc/initiative-tracker-util/pw.js';
+import {generatePassword} from '@lusc/util/generate-password';
 import Database, {type Database as DatabaseT} from 'better-sqlite3';
 
 import {scrypt} from './promisified.ts';
@@ -155,7 +155,7 @@ if (shouldCreateLogin) {
 	});
 
 	const username = await rl.question('Username: ');
-	const password = generatePassword(16);
+	const password = generatePassword({length: 16});
 	const isAdminAnswer = await rl.question('Admin? (y/n) ');
 	const isAdmin = ['y', 'yes'].includes(isAdminAnswer.trim().toLowerCase());
 

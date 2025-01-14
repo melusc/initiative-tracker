@@ -432,7 +432,7 @@ __metadata:
     "@lusc/initiative-tracker-frontend": "workspace:^"
     "@lusc/initiative-tracker-util": "workspace:^"
     "@lusc/tsconfig": "npm:^5.1.0"
-    "@lusc/util": "npm:^1.2.0"
+    "@lusc/util": "npm:^1.3.2"
     "@types/better-sqlite3": "npm:^7.6.12"
     "@types/cookie-parser": "npm:^1.4.8"
     "@types/cors": "npm:^2.8.17"
@@ -506,6 +506,13 @@ __metadata:
   version: 1.2.0
   resolution: "@lusc/util@npm:1.2.0"
   checksum: 10c0/dd010017dd0e5b3b731bdb89f11859c5d0e971d6d28064c9c5e988db996bec971719742bfbeb5e02469082a8a3f554614ac983a571ee7e8d834554cf38c71eb7
+  languageName: node
+  linkType: hard
+
+"@lusc/util@npm:^1.3.2":
+  version: 1.3.2
+  resolution: "@lusc/util@npm:1.3.2"
+  checksum: 10c0/656a01f50842ceed2def194031a6d1fdd9f8aa08f78f43a5e88eb2d223190643302d759f7341deb90f791f27fb7a14de6b826296f7396a6b7d04468087ddcd82
   languageName: node
   linkType: hard
 
