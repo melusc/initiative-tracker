@@ -35,12 +35,12 @@ import {makeValidator} from '../validate-body.ts';
 
 function enrichPerson(person: Person): EnrichedPerson {
 	const initiatives = database
-		.prepare<{personId: string}, Initiative>(
+		.prepare(
 			`SELECT initiatives.* FROM initiatives
 			INNER JOIN signatures on signatures.initiativeId = initiatives.id
 			WHERE signatures.personId = :personId`,
 		)
-		.all({personId: person.id});
+		.all({personId: person.id}) as Initiative[];
 
 	return {
 		...person,
@@ -100,11 +100,10 @@ export async function createPerson(
 	const {name} = result.data;
 
 	const sameName = database
-		.prepare<
-			{name: string; owner: string},
-			Person
-		>('SELECT id, name, owner FROM people WHERE name = :name AND owner = :owner')
-		.get({name, owner});
+		.prepare(
+			'SELECT id, name, owner FROM people WHERE name = :name AND owner = :owner',
+		)
+		.get({name, owner}) as Person | undefined;
 	if (sameName) {
 		return {
 			type: 'error',
@@ -116,7 +115,7 @@ export async function createPerson(
 	const id = makeSlug(name);
 	try {
 		database
-			.prepare<Person>(
+			.prepare(
 				'INSERT INTO people (id, name, owner) values (:id, :name, :owner)',
 			)
 			.run({
@@ -163,14 +162,13 @@ export const createPersonEndpoint: RequestHandler = async (
 
 export function getPerson(id: string, owner: string): EnrichedPerson | false {
 	const person = database
-		.prepare<
-			{id: string; owner: string},
-			Person
-		>('SELECT id, name, owner FROM people WHERE id = :id AND owner = :owner')
+		.prepare(
+			'SELECT id, name, owner FROM people WHERE id = :id AND owner = :owner',
+		)
 		.get({
 			id,
 			owner,
-		});
+		}) as Person | undefined;
 
 	if (!person) {
 		return false;
@@ -206,11 +204,10 @@ export const patchPerson: RequestHandler<{id: string}> = async (
 	const {id} = request.params;
 
 	const oldRow = database
-		.prepare<
-			{id: string; owner: string},
-			Person
-		>('SELECT id, name, owner FROM people WHERE id = :id AND owner = :owner')
-		.get({id, owner: response.locals.login.id});
+		.prepare(
+			'SELECT id, name, owner FROM people WHERE id = :id AND owner = :owner',
+		)
+		.get({id, owner: response.locals.login.id}) as Person | undefined;
 
 	if (!oldRow) {
 		response.status(404).json({
@@ -238,11 +235,13 @@ export const patchPerson: RequestHandler<{id: string}> = async (
 		validateResult.data.name !== oldRow.name
 	) {
 		const sameName = database
-			.prepare<
-				{name: string; owner: string},
-				Person
-			>('SELECT id, name, owner FROM people WHERE name = :name AND owner = :owner')
-			.get({name: validateResult.data.name, owner: response.locals.login.id});
+			.prepare(
+				'SELECT id, name, owner FROM people WHERE name = :name AND owner = :owner',
+			)
+			.get({
+				name: validateResult.data.name,
+				owner: response.locals.login.id,
+			}) as Person | undefined;
 		if (sameName) {
 			response.status(400).json({
 				type: 'error',
@@ -271,7 +270,7 @@ export const patchPerson: RequestHandler<{id: string}> = async (
 
 	try {
 		database
-			.prepare<Person>(
+			.prepare(
 				`UPDATE people SET ${query.join(', ')} WHERE id = :id AND owner = :owner`,
 			)
 			.run({
@@ -303,10 +302,7 @@ export const deletePerson: RequestHandler<{id: string}> = (
 	const {id} = request.params;
 
 	const result = database
-		.prepare<{
-			id: string;
-			owner: string;
-		}>('DELETE FROM people WHERE id = :id AND owner = :owner')
+		.prepare('DELETE FROM people WHERE id = :id AND owner = :owner')
 		.run({id, owner: response.locals.login.id});
 
 	if (result.changes === 0) {
@@ -325,15 +321,10 @@ export const deletePerson: RequestHandler<{id: string}> = (
 
 export function getAllPeople(owner: string) {
 	const rows = database
-		.prepare<
-			{
-				owner: string;
-			},
-			Person
-		>('SELECT id, name, owner FROM people WHERE owner = :owner')
+		.prepare('SELECT id, name, owner FROM people WHERE owner = :owner')
 		.all({
 			owner,
-		});
+		}) as Person[];
 
 	return sortPeople(rows).map(person => enrichPerson(person));
 }

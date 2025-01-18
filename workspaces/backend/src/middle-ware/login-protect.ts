@@ -15,14 +15,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import {DatabaseSync} from 'node:sqlite';
+
 import type {LoginInfo} from '@lusc/initiative-tracker-util/types.js';
-import type {Database} from 'better-sqlite3';
 import type {RequestHandler} from 'express';
 import {z} from 'zod';
 
 export function loginProtect(
 	allowedPaths: Set<string> | string[],
-	database: Database,
+	database: DatabaseSync,
 ): RequestHandler {
 	return (request, response, next) => {
 		allowedPaths = new Set(allowedPaths);
@@ -46,13 +47,16 @@ export function loginProtect(
 			const sessionCookie = cookies.data.session;
 
 			const session = database
-				.prepare<
-					{sessionId: string},
-					{userId: string; expires: number}
-				>('SELECT userId, expires FROM sessions WHERE sessionId = :sessionId')
+				.prepare(
+					`SELECT userId, expires, username, isAdmin
+					 FROM sessions INNER JOIN logins USING (userId)
+					 WHERE sessionId = :sessionId`,
+				)
 				.get({
 					sessionId: sessionCookie,
-				});
+				}) as
+				| {userId: string; expires: number; username: string; isAdmin: 0 | 1}
+				| undefined;
 
 			if (session && session.expires > Date.now()) {
 				const delta = session.expires - Date.now();
@@ -62,10 +66,7 @@ export function loginProtect(
 					expires.setDate(expires.getDate() + 2);
 
 					database
-						.prepare<{
-							sessionId: string;
-							expires: number;
-						}>(
+						.prepare(
 							'UPDATE sessions SET expires = :expires WHERE sessionId = :sessionId',
 						)
 						.run({
@@ -74,18 +75,11 @@ export function loginProtect(
 						});
 				}
 
-				const user = database
-					.prepare<
-						{userId: string},
-						{username: string; isAdmin: 0 | 1}
-					>('SELECT username, isAdmin FROM logins WHERE userId = :userId')
-					.get({userId: session.userId})!;
-
 				Object.defineProperty(response.locals, 'login', {
 					value: {
-						name: user.username,
+						name: session.username,
 						id: session.userId,
-						isAdmin: user.isAdmin === 1,
+						isAdmin: session.isAdmin === 1,
 					} satisfies LoginInfo,
 					writable: false,
 					configurable: false,
