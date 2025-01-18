@@ -33,10 +33,7 @@ export function changeUsername(username: string, userId: string) {
 	}
 
 	database
-		.prepare<{
-			username: string;
-			userId: string;
-		}>('UPDATE logins SET username = :username WHERE userId = :userId')
+		.prepare('UPDATE logins SET username = :username WHERE userId = :userId')
 		.run({username, userId});
 }
 
@@ -57,14 +54,15 @@ export async function changePassword(
 	}
 
 	const row = database
-		.prepare<
-			{userId: string},
-			{
+		.prepare(
+			'SELECT passwordHash, passwordSalt FROM logins WHERE userId = :userId',
+		)
+		.get({userId}) as
+		| {
 				passwordHash: Buffer;
 				passwordSalt: Buffer;
-			}
-		>('SELECT passwordHash, passwordSalt FROM logins WHERE userId = :userId')
-		.get({userId});
+		  }
+		| undefined;
 
 	if (!row) {
 		throw new Error('Could not find account.');
@@ -80,11 +78,7 @@ export async function changePassword(
 	const newHash = await scrypt(newPassword, newSalt, 64);
 
 	database
-		.prepare<{
-			userId: string;
-			passwordHash: Buffer;
-			passwordSalt: Buffer;
-		}>(
+		.prepare(
 			'UPDATE logins SET passwordHash = :passwordHash, passwordSalt = :passwordSalt WHERE userId = :userId',
 		)
 		.run({

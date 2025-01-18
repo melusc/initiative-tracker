@@ -15,27 +15,26 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import type {Buffer} from 'node:buffer';
 import {randomBytes, randomUUID} from 'node:crypto';
 import {readdir, unlink} from 'node:fs/promises';
 import {stdin, stdout} from 'node:process';
 // eslint-disable-next-line n/no-unsupported-features/node-builtins
 import {createInterface} from 'node:readline/promises';
+import {DatabaseSync} from 'node:sqlite';
 import {fileURLToPath} from 'node:url';
 import {parseArgs} from 'node:util';
 
 import {generatePassword} from '@lusc/util/generate-password';
-import Database, {type Database as DatabaseT} from 'better-sqlite3';
 
 import {scrypt} from './promisified.ts';
 import {dataDirectory, imageOutDirectory, pdfOutDirectory} from './uploads.ts';
 
-export const database: DatabaseT = new Database(
+export const database = new DatabaseSync(
 	fileURLToPath(new URL('initiative-tracker.db', dataDirectory)),
 );
 
 const {
-	values: {'create-login': shouldCreateLogin, prune: shouldPrune},
+	values: {'create-login': shouldCreateLogin},
 } = parseArgs({
 	options: {
 		'create-login': {
@@ -43,15 +42,10 @@ const {
 			short: 'c',
 			default: false,
 		},
-		prune: {
-			type: 'boolean',
-			default: false,
-		},
 	},
 });
 
-database.pragma('journal_mode = WAL');
-database.pragma('foreign_keys = ON');
+database.exec('PRAGMA journal_mode = WAL;');
 
 database.exec(
 	`
@@ -113,38 +107,33 @@ database.exec(
 );
 
 database
-	.prepare<{expires: number}>('DELETE FROM sessions WHERE expires < :expires')
+	.prepare('DELETE FROM sessions WHERE expires < :expires')
 	.run({expires: Date.now()});
 
-if (shouldPrune) {
-	const images = new Set(
-		database
-			.prepare<[], {image: string | null}>(
-				'SELECT image FROM initiatives UNION SELECT image FROM organisations',
-			)
-			.all()
-			.map(image => image.image),
-	);
-	const diskImages = await readdir(imageOutDirectory);
+const imageRows = database
+	.prepare(
+		'SELECT image FROM initiatives UNION SELECT image FROM organisations',
+	)
+	.all() as Array<{image: string | null}>;
 
-	for (const diskImage of diskImages) {
-		if (!images.has(diskImage)) {
-			await unlink(new URL(diskImage, imageOutDirectory));
-		}
+const images = new Set(imageRows.map(image => image.image));
+const diskImages = await readdir(imageOutDirectory);
+
+for (const diskImage of diskImages) {
+	if (!images.has(diskImage)) {
+		await unlink(new URL(diskImage, imageOutDirectory));
 	}
+}
 
-	const pdf = new Set(
-		database
-			.prepare<[], {pdf: string}>('SELECT pdf FROM initiatives')
-			.all()
-			.map(pdf => pdf.pdf),
-	);
-	const diskPdfs = await readdir(pdfOutDirectory);
+const pdfRows = database.prepare('SELECT pdf FROM initiatives').all() as Array<{
+	pdf: string;
+}>;
+const pdf = new Set(pdfRows.map(pdf => pdf.pdf));
+const diskPdfs = await readdir(pdfOutDirectory);
 
-	for (const diskPdf of diskPdfs) {
-		if (!pdf.has(diskPdf)) {
-			await unlink(new URL(diskPdf, pdfOutDirectory));
-		}
+for (const diskPdf of diskPdfs) {
+	if (!pdf.has(diskPdf)) {
+		await unlink(new URL(diskPdf, pdfOutDirectory));
 	}
 }
 
@@ -165,13 +154,7 @@ if (shouldCreateLogin) {
 	const passwordHash = await scrypt(password, salt, 64);
 
 	database
-		.prepare<{
-			userId: string;
-			username: string;
-			passwordHash: Buffer;
-			salt: Buffer;
-			isAdmin: 1 | 0;
-		}>(
+		.prepare(
 			`
 			INSERT INTO logins
 				(userId, username, passwordHash, passwordSalt, isAdmin)

@@ -44,11 +44,12 @@ export async function loginPost(request: Request, response: Response) {
 	}
 
 	const databaseResult = database
-		.prepare<
-			{username: string},
-			{userId: string; passwordHash: Buffer; passwordSalt: Buffer}
-		>('SELECT userId, passwordHash, passwordSalt from logins where LOWER(username) = :username')
-		.get({username: body.data.username});
+		.prepare(
+			'SELECT userId, passwordHash, passwordSalt from logins where LOWER(username) = :username',
+		)
+		.get({username: body.data.username}) as
+		| {userId: string; passwordHash: Buffer; passwordSalt: Buffer}
+		| undefined;
 
 	if (!databaseResult) {
 		response.render('login', {
@@ -83,11 +84,7 @@ export async function loginPost(request: Request, response: Response) {
 	cookieExpires.setMinutes(cookieExpires.getMinutes() - 5);
 
 	database
-		.prepare<{
-			userId: string;
-			sessionId: string;
-			expires: number;
-		}>(
+		.prepare(
 			'INSERT INTO sessions (userId, sessionId, expires) values (:userId, :sessionId, :expires)',
 		)
 		.run({

@@ -49,13 +49,13 @@ function enrichOrganisation(organisation: Organisation): EnrichedOrganisation {
 	const id = organisation.id;
 
 	const initiatives = database
-		.prepare<{organisationId: string}, Initiative>(
+		.prepare(
 			`SELECT initiatives.* FROM initiatives
 			INNER JOIN initiativeOrganisations
 			ON initiativeOrganisations.initiativeId = initiatives.id
 			WHERE initiativeOrganisations.organisationId = :organisationId`,
 		)
-		.all({organisationId: id});
+		.all({organisationId: id}) as Initiative[];
 
 	return {
 		...organisation,
@@ -193,7 +193,7 @@ export async function createOrganisation(
 	};
 
 	database
-		.prepare<Organisation>(
+		.prepare(
 			`
 		INSERT INTO organisations (id, name, image, website)
 		values (:id, :name, :image, :website)
@@ -223,11 +223,8 @@ export const createOrganisationEndpoint: RequestHandler = async (
 
 export function getAllOrganisations() {
 	const rows = database
-		.prepare<
-			[],
-			Organisation
-		>('SELECT id, name, image, website FROM organisations')
-		.all();
+		.prepare('SELECT id, name, image, website FROM organisations')
+		.all() as Organisation[];
 
 	return sortOrganisations(rows).map(organisation =>
 		enrichOrganisation(transformOrganisationUrls(organisation)),
@@ -246,13 +243,12 @@ export const getAllOrganisationsEndpoint: RequestHandler = (
 
 export function getOrganisation(id: string) {
 	const organisation = database
-		.prepare<
-			{id: string},
-			Organisation
-		>('SELECT id, name, website, image FROM organisations WHERE id = :id')
+		.prepare(
+			'SELECT id, name, website, image FROM organisations WHERE id = :id',
+		)
 		.get({
 			id,
-		});
+		}) as Organisation | undefined;
 
 	if (!organisation) {
 		return false;
@@ -287,7 +283,7 @@ export const deleteOrganisation: RequestHandler<{id: string}> = (
 	const {id} = request.params;
 
 	const result = database
-		.prepare<{id: string}>('DELETE FROM organisations WHERE id = :id')
+		.prepare('DELETE FROM organisations WHERE id = :id')
 		.run({id});
 
 	if (result.changes === 0) {
@@ -311,11 +307,10 @@ export const patchOrganisation: RequestHandler<{id: string}> = async (
 	const {id} = request.params;
 
 	const oldRow = database
-		.prepare<
-			{id: string},
-			Organisation
-		>('SELECT id, name, image, website FROM organisations WHERE id = :id')
-		.get({id});
+		.prepare(
+			'SELECT id, name, image, website FROM organisations WHERE id = :id',
+		)
+		.get({id}) as Organisation | undefined;
 
 	if (!oldRow) {
 		response.status(404).json({
@@ -365,9 +360,7 @@ export const patchOrganisation: RequestHandler<{id: string}> = async (
 	}
 
 	database
-		.prepare<Organisation>(
-			`UPDATE organisations SET ${query.join(', ')} WHERE id = :id`,
-		)
+		.prepare(`UPDATE organisations SET ${query.join(', ')} WHERE id = :id`)
 		.run({
 			...newData,
 			id,

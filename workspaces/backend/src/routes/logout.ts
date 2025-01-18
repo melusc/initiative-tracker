@@ -28,9 +28,7 @@ export function logout(
 
 	if (typeof session === 'string') {
 		database
-			.prepare<{
-				session: string;
-			}>('DELETE FROM sessions WHERE sessionId = :session')
+			.prepare('DELETE FROM sessions WHERE sessionId = :session')
 			.run({session});
 	}
 

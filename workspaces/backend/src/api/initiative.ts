@@ -269,7 +269,7 @@ export async function createInitiative(
 	};
 
 	database
-		.prepare<Initiative>(
+		.prepare(
 			`INSERT INTO initiatives
 			(id, shortName, fullName, website, pdf, image, deadline)
 			VALUES (:id, :shortName, :fullName, :website, :pdf, :image, :deadline)`,
@@ -302,11 +302,8 @@ export function getInitiative(
 	loginUserId: string,
 ): Initiative | false {
 	const initiative = database
-		.prepare<
-			{id: string},
-			Initiative
-		>('SELECT initiatives.* from initiatives where id = :id')
-		.get({id});
+		.prepare('SELECT initiatives.* from initiatives where id = :id')
+		.get({id}) as Initiative | undefined;
 
 	if (!initiative) {
 		return false;
@@ -340,21 +337,21 @@ function enrichInitiative(
 	loginUserId: string,
 ): EnrichedInitiative {
 	const people = database
-		.prepare<{initiativeId: string; loginUserId: string}, Person>(
+		.prepare(
 			`SELECT people.* FROM people
 			INNER JOIN signatures on signatures.personId = people.id
 			WHERE signatures.initiativeId = :initiativeId
 			AND people.owner = :loginUserId`,
 		)
-		.all({initiativeId: initiative.id, loginUserId});
+		.all({initiativeId: initiative.id, loginUserId}) as Person[];
 
 	const organisations = database
-		.prepare<{initiativeId: string}, Organisation>(
+		.prepare(
 			`SELECT organisations.* FROM organisations
 				INNER JOIN initiativeOrganisations ON organisations.id = initiativeOrganisations.organisationId
 				WHERE initiativeOrganisations.initiativeId = :initiativeId`,
 		)
-		.all({initiativeId: initiative.id});
+		.all({initiativeId: initiative.id}) as Organisation[];
 
 	return {
 		...initiative,
@@ -367,8 +364,8 @@ function enrichInitiative(
 
 export function getAllInitiatives(loginUserId: string): EnrichedInitiative[] {
 	const rows = database
-		.prepare<[], Initiative>('SELECT initiatives.* FROM initiatives')
-		.all();
+		.prepare('SELECT initiatives.* FROM initiatives')
+		.all() as Initiative[];
 
 	return sortInitiatives(rows).map(initiative =>
 		enrichInitiative(transformInitiativeUrls(initiative), loginUserId),
@@ -392,11 +389,8 @@ export const patchInitiativeEndpoint: RequestHandler<{id: string}> = async (
 	const {id} = request.params;
 
 	const oldRow = database
-		.prepare<
-			{id: string},
-			Initiative
-		>('SELECT initiatives.* FROM initiatives WHERE id = :id')
-		.get({id});
+		.prepare('SELECT initiatives.* FROM initiatives WHERE id = :id')
+		.get({id}) as Initiative | undefined;
 
 	if (!oldRow) {
 		response.status(404).json({
@@ -430,14 +424,18 @@ export const patchInitiativeEndpoint: RequestHandler<{id: string}> = async (
 		await writeFile(newPdf.suggestedFilePath, newPdf.body);
 	}
 
-	if (newData.image) {
+	// .image may be `null`
+	// in that case remove old image, no new image
+	if ('image' in newData) {
 		try {
 			if (oldRow.image) {
-				await unlink(new URL(oldRow.image, pdfOutDirectory));
+				await unlink(new URL(oldRow.image, imageOutDirectory));
 			}
 		} catch {}
 
-		await writeFile(newData.image.suggestedFilePath, newData.image.body);
+		if (newData.image) {
+			await writeFile(newData.image.suggestedFilePath, newData.image.body);
+		}
 	}
 
 	if (Object.keys(newData).length === 0) {
@@ -452,22 +450,25 @@ export const patchInitiativeEndpoint: RequestHandler<{id: string}> = async (
 	}
 
 	const query = [];
+	const parameters: Record<string, string | null> = {
+		id,
+	};
 
-	for (const key of Object.keys(newData)) {
+	for (const [key, value] of Object.entries(newData)) {
 		query.push(`${key} = :${key}`);
+
+		if (key === 'pdf') {
+			parameters['pdf'] = newData.pdf.id;
+		} else if (key === 'image') {
+			parameters['image'] = newData.image?.id ?? null;
+		} else {
+			parameters[key] = value as string | null;
+		}
 	}
 
 	database
-		.prepare<Initiative>(
-			`UPDATE initiatives SET ${query.join(', ')} WHERE id = :id`,
-		)
-		.run({
-			...newData,
-			id,
-			// @ts-expect-error It is defined when the query needs it
-			pdf: newPdf?.id ?? undefined,
-			image: newData.image?.id ?? null,
-		});
+		.prepare(`UPDATE initiatives SET ${query.join(', ')} WHERE id = :id`)
+		.run(parameters);
 
 	response.status(200).send({
 		type: 'success',
@@ -482,11 +483,8 @@ export const deleteInitiative: RequestHandler<{id: string}> = async (
 	const {id} = request.params;
 
 	const oldRow = database
-		.prepare<
-			{id: string},
-			{pdf: string; image: string}
-		>('SELECT pdf, image FROM initiatives WHERE id = :id')
-		.get({id});
+		.prepare('SELECT pdf, image FROM initiatives WHERE id = :id')
+		.get({id}) as {pdf: string; image: string} | undefined;
 
 	if (!oldRow) {
 		response.status(404).json({
@@ -505,9 +503,7 @@ export const deleteInitiative: RequestHandler<{id: string}> = async (
 		await unlink(new URL(oldRow.image, imageOutDirectory));
 	} catch {}
 
-	database
-		.prepare<{id: string}>('DELETE FROM initiatives WHERE id = :id')
-		.run({id});
+	database.prepare('DELETE FROM initiatives WHERE id = :id').run({id});
 
 	response.status(200).json({
 		type: 'success',
@@ -520,10 +516,7 @@ export const initiativeAddSignature: RequestHandler<{
 }> = (request, response) => {
 	try {
 		database
-			.prepare<{
-				initiativeId: string;
-				personId: string;
-			}>(
+			.prepare(
 				'INSERT INTO signatures (initiativeId, personId) values (:initiativeId, :personId);',
 			)
 			.run(request.params);
@@ -544,10 +537,7 @@ export const initiativeRemoveSignature: RequestHandler<{
 	personId: string;
 }> = (request, response) => {
 	const result = database
-		.prepare<{
-			initiativeId: string;
-			personId: string;
-		}>(
+		.prepare(
 			'DELETE FROM signatures where initiativeId = :initiativeId AND personId = :personId;',
 		)
 		.run(request.params);
@@ -571,10 +561,7 @@ export const initiativeAddOrganisation: RequestHandler<{
 	organisationId: string;
 }> = (request, response) => {
 	database
-		.prepare<{
-			initiativeId: string;
-			organisationId: string;
-		}>(
+		.prepare(
 			'INSERT INTO initiativeOrganisations (initiativeId, organisationId) values (:initiativeId, :organisationId);',
 		)
 		.run(request.params);
@@ -589,10 +576,7 @@ export const initiativeRemoveOrganisation: RequestHandler<{
 	organisationId: string;
 }> = (request, response) => {
 	const result = database
-		.prepare<{
-			initiativeId: string;
-			organisationId: string;
-		}>(
+		.prepare(
 			'DELETE FROM initiativeOrganisations where initiativeId = :initiativeId AND organisationId = :organisationId;',
 		)
 		.run(request.params);
