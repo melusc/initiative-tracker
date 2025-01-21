@@ -49,6 +49,8 @@ const app = express();
 app.engine('html', svelteKitEngine);
 app.set('view engine', 'html');
 app.set('views', staticRoot);
+app.set('x-powered-by', false);
+app.set('trust proxy', 'loopback');
 
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
