@@ -2,7 +2,7 @@
 	"name": "initiative-tracker",
 	"type": "module",
 	"devDependencies": {
-		"prettier": "^3.4.2",
+		"prettier": "^3.5.0",
 		"prettier-plugin-svelte": "^3.3.3"
 	},
 	"workspaces": [
@@ -25,7 +25,7 @@
 	},
 	"packageManager": "yarn@4.6.0",
 	"engines": {
-		"node": "^22.13.1"
+		"node": "^22.14.0"
 	},
 	"resolutions": {
 		"@types/express-serve-static-core": "^4.19.6"
