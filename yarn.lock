@@ -615,7 +615,7 @@ __metadata:
     "@lusc/eslint-config": "npm:^4.1.0"
     "@lusc/initiative-tracker-frontend": "workspace:^"
     "@lusc/initiative-tracker-util": "workspace:^"
-    "@lusc/tsconfig": "npm:^5.1.0"
+    "@lusc/tsconfig": "npm:^6.0.2"
     "@lusc/util": "npm:^1.4.0"
     "@types/cookie-parser": "npm:^1.4.8"
     "@types/cors": "npm:^2.8.17"
@@ -647,7 +647,7 @@ __metadata:
   dependencies:
     "@lusc/eslint-config": "npm:^4.1.0"
     "@lusc/initiative-tracker-util": "workspace:^"
-    "@lusc/tsconfig": "npm:^5.1.0"
+    "@lusc/tsconfig": "npm:^6.0.2"
     "@lusc/util": "npm:^1.4.0"
     "@sveltejs/adapter-static": "npm:^3.0.8"
     "@sveltejs/kit": "npm:^2.17.1"
@@ -670,17 +670,17 @@ __metadata:
   resolution: "@lusc/initiative-tracker-util@workspace:workspaces/util"
   dependencies:
     "@lusc/eslint-config": "npm:^4.1.0"
-    "@lusc/tsconfig": "npm:^5.1.0"
+    "@lusc/tsconfig": "npm:^6.0.2"
     "@types/node": "npm:^22.13.1"
     eslint: "npm:^9.20.1"
     typescript: "npm:^5.7.3"
   languageName: unknown
   linkType: soft
 
-"@lusc/tsconfig@npm:^5.1.0":
-  version: 5.1.0
-  resolution: "@lusc/tsconfig@npm:5.1.0"
-  checksum: 10c0/e32e2a8bbe7e8d361fbadb781684cf1e1e041334b0eaf3a18ff9ad181b9b437c4c0babe620b13e3d6f6a0d1032083dd96b0f6f8c802252d813cd64a7689ed466
+"@lusc/tsconfig@npm:^6.0.2":
+  version: 6.0.2
+  resolution: "@lusc/tsconfig@npm:6.0.2"
+  checksum: 10c0/931ef747003a2644ced047533bd0f1dce67c60249ae44541b458eac60128f157407836d9bc0166b44396a1f6addf1fdedcfad5b731365999f55b3bf3f49a68f3
   languageName: node
   linkType: hard
 
