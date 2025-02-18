@@ -80,7 +80,7 @@ export async function loginPost(request: Request, response: Response) {
 	expires.setDate(expires.getDate() + 2);
 	// Cookie should expire a bit earlier
 	// so cookie will never be valid while actual session id is not
-	const cookieExpires = new Date(expires.getTime());
+	const cookieExpires = new Date(expires);
 	cookieExpires.setMinutes(cookieExpires.getMinutes() - 5);
 
 	database

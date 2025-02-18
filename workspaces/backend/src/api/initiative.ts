@@ -250,9 +250,11 @@ export async function createInitiative(
 	const {website, fullName, shortName, pdf, image, deadline} =
 		validateResult.data;
 
+	// eslint-disable-next-line security/detect-non-literal-fs-filename
 	await writeFile(pdf.suggestedFilePath, pdf.body);
 
 	if (image) {
+		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		await writeFile(image.suggestedFilePath, image.body);
 	}
 
@@ -418,9 +420,11 @@ export const patchInitiativeEndpoint: RequestHandler<{id: string}> = async (
 
 	if (newPdf) {
 		try {
+			// eslint-disable-next-line security/detect-non-literal-fs-filename
 			await unlink(new URL(oldRow.pdf, pdfOutDirectory));
 		} catch {}
 
+		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		await writeFile(newPdf.suggestedFilePath, newPdf.body);
 	}
 
@@ -429,11 +433,13 @@ export const patchInitiativeEndpoint: RequestHandler<{id: string}> = async (
 	if ('image' in newData) {
 		try {
 			if (oldRow.image) {
+				// eslint-disable-next-line security/detect-non-literal-fs-filename
 				await unlink(new URL(oldRow.image, imageOutDirectory));
 			}
 		} catch {}
 
 		if (newData.image) {
+			// eslint-disable-next-line security/detect-non-literal-fs-filename
 			await writeFile(newData.image.suggestedFilePath, newData.image.body);
 		}
 	}
@@ -496,10 +502,12 @@ export const deleteInitiative: RequestHandler<{id: string}> = async (
 	}
 
 	try {
+		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		await unlink(new URL(oldRow.pdf, pdfOutDirectory));
 	} catch {}
 
 	try {
+		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		await unlink(new URL(oldRow.image, imageOutDirectory));
 	} catch {}
 
