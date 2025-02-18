@@ -118,8 +118,6 @@ export function isNullish(input: unknown): boolean {
 export function makeValidator<Validators extends GenericValidator>(
 	validators: Validators,
 ) {
-	const validKeysSet = new Set(Object.keys(validators));
-
 	return async <Keys extends keyof Validators & string>(
 		bodyUntyped: unknown,
 		keys: Keys[],
@@ -144,7 +142,7 @@ export function makeValidator<Validators extends GenericValidator>(
 		const body = bodyUntyped as Record<string, unknown>;
 
 		for (const key of Object.keys(body)) {
-			if (!validKeysSet.has(key)) {
+			if (!Object.hasOwn(validators, key)) {
 				return {
 					type: 'error',
 					readableError: `Unknown key "${key}".`,
@@ -156,7 +154,7 @@ export function makeValidator<Validators extends GenericValidator>(
 		const resultEntries: Array<
 			Promise<readonly [string, unknown] | ApiResponseError>
 		> = keys.map(async key => {
-			if (!(key in body)) {
+			if (!Object.hasOwn(body, key)) {
 				return {
 					type: 'error',
 					readableError: `Missing required field "${key}".`,
