@@ -40,6 +40,7 @@ export async function svelteKitEngine(
 	const state = options['state'];
 
 	try {
+		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		const content = await readFile(path, 'utf8');
 		const injected = content
 			.replace('__state__', JSON.stringify(state))

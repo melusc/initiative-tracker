@@ -117,10 +117,12 @@ const imageRows = database
 	.all() as Array<{image: string | null}>;
 
 const images = new Set(imageRows.map(image => image.image));
+// eslint-disable-next-line security/detect-non-literal-fs-filename
 const diskImages = await readdir(imageOutDirectory);
 
 for (const diskImage of diskImages) {
 	if (!images.has(diskImage)) {
+		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		await unlink(new URL(diskImage, imageOutDirectory));
 	}
 }
@@ -129,10 +131,12 @@ const pdfRows = database.prepare('SELECT pdf FROM initiatives').all() as Array<{
 	pdf: string;
 }>;
 const pdf = new Set(pdfRows.map(pdf => pdf.pdf));
+// eslint-disable-next-line security/detect-non-literal-fs-filename
 const diskPdfs = await readdir(pdfOutDirectory);
 
 for (const diskPdf of diskPdfs) {
 	if (!pdf.has(diskPdf)) {
+		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		await unlink(new URL(diskPdf, pdfOutDirectory));
 	}
 }

@@ -181,6 +181,7 @@ export async function createOrganisation(
 
 	const {name, image, website} = result.data;
 	if (image) {
+		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		await writeFile(image.suggestedFilePath, image.body);
 	}
 
@@ -337,11 +338,13 @@ export const patchOrganisation: RequestHandler<{id: string}> = async (
 
 	if ('image' in newData && oldRow.image !== null) {
 		try {
+			// eslint-disable-next-line security/detect-non-literal-fs-filename
 			await unlink(new URL(oldRow.image, imageOutDirectory));
 		} catch {}
 	}
 
 	if (newData.image) {
+		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		await writeFile(newData.image.suggestedFilePath, newData.image.body);
 	}
 

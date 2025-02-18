@@ -31,13 +31,15 @@ import {optimize as svgoOptimise} from 'svgo';
 
 import {validateUrl} from './validate-body.ts';
 
+// Implicitely create `data/` when creating `data/pdf`
 export const dataDirectory = new URL('../data/', import.meta.url);
-await mkdir(dataDirectory, {recursive: true});
 
 export const pdfOutDirectory = new URL('pdf/', dataDirectory);
+// eslint-disable-next-line security/detect-non-literal-fs-filename
 await mkdir(pdfOutDirectory, {recursive: true});
 
 export const imageOutDirectory = new URL('image/', dataDirectory);
+// eslint-disable-next-line security/detect-non-literal-fs-filename
 await mkdir(imageOutDirectory, {recursive: true});
 
 export const staticRoot = fileURLToPath(
