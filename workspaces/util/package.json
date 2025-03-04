@@ -13,9 +13,9 @@
 	"devDependencies": {
 		"@lusc/eslint-config": "^6.1.0",
 		"@lusc/tsconfig": "^6.0.2",
-		"@types/node": "^22.13.5",
+		"@types/node": "^22.13.9",
 		"eslint": "^9.21.0",
-		"typescript": "^5.7.3"
+		"typescript": "^5.8.2"
 	},
 	"scripts": {
 		"fmt": "eslint --fix",
