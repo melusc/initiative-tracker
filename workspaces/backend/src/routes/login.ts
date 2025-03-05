@@ -74,7 +74,7 @@ export async function loginPost(request: Request, response: Response) {
 		return;
 	}
 
-	const sessionId = randomBytes(64).toString('hex');
+	const sessionId = randomBytes(64).toString('base64url');
 
 	const expires = new Date();
 	expires.setDate(expires.getDate() + 2);
