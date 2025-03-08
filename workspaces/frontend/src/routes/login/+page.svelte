@@ -25,7 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <PageTitle title="Login" />
 
 <div class="login-form-center">
-	<form method="POST">
+	<form method="POST" enctype="multipart/form-data">
 		<label>
 			Username
 			<input type="text" name="username" minlength="4" required />

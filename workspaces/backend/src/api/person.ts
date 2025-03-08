@@ -30,7 +30,7 @@ import type {
 import {Router, type RequestHandler} from 'express';
 
 import {database} from '../database.ts';
-import {transformInitiativeUrls} from '../uploads.ts';
+import {multerUpload, transformInitiativeUrls} from '../uploads.ts';
 import {makeValidator} from '../validate-body.ts';
 
 function enrichPerson(person: Person): EnrichedPerson {
@@ -339,7 +339,7 @@ export const getAllPeopleEndpoint: RequestHandler = (_request, response) => {
 export const personRouter = Router();
 
 personRouter.get('/people', getAllPeopleEndpoint);
-personRouter.post('/person/create', createPersonEndpoint);
+personRouter.post('/person/create', multerUpload.none(), createPersonEndpoint);
 personRouter.get('/person/:id', getPersonEndpoint);
 personRouter.delete('/person/:id', deletePerson);
-personRouter.patch('/person/:id', patchPerson);
+personRouter.patch('/person/:id', multerUpload.none(), patchPerson);

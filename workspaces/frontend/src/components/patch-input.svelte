@@ -56,7 +56,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			return;
 		}
 
-		const requestBody = new URLSearchParams();
+		const requestBody = new FormData();
 		requestBody.set(name, String(transformedValue));
 
 		const response = await fetch(apiEndpoint, {

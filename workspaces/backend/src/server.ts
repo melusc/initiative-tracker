@@ -52,7 +52,6 @@ app.set('views', staticRoot);
 app.set('x-powered-by', false);
 app.set('trust proxy', 'loopback');
 
-app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use(
 	helmet({
@@ -133,7 +132,7 @@ app.use(
 app.get('/login', (_request, response) => {
 	response.render('login', {login: undefined, state: undefined});
 });
-app.post('/login', loginPost);
+app.post('/login', multerUpload.none(), loginPost);
 
 app.get('/logout', (request, response) => {
 	logout(request, response, '/');
@@ -317,7 +316,7 @@ app.get('/account', (_request, response) => {
 	});
 });
 
-app.post('/account', async (request, response) => {
+app.post('/account', multerUpload.none(), async (request, response) => {
 	const body = request.body as Record<string, string>;
 	if ('username' in body) {
 		const username = body['username'];

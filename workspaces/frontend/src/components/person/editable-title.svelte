@@ -55,7 +55,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	}
 
 	async function handleSave(): Promise<void> {
-		const requestBody = new URLSearchParams();
+		const requestBody = new FormData();
 		requestBody.set('name', titleNode!.textContent!);
 
 		const response = await fetch(patchApi, {
