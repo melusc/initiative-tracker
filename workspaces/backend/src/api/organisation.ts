@@ -357,17 +357,23 @@ export const patchOrganisation: RequestHandler<{id: string}> = async (
 	}
 
 	const query = [];
+	const parameters: Record<string, string | null> = {};
 
-	for (const key of Object.keys(newData)) {
+	for (const [key, value] of Object.entries(newData)) {
 		query.push(`${key} = :${key}`);
+
+		if (key === 'image') {
+			parameters['image'] = newData.image?.id ?? null;
+		} else {
+			parameters[key] = value as string | null;
+		}
 	}
 
 	database
 		.prepare(`UPDATE organisations SET ${query.join(', ')} WHERE id = :id`)
 		.run({
-			...newData,
+			...parameters,
 			id,
-			image: newData.image ? newData.image.id : null,
 		});
 
 	response.status(200).send({
