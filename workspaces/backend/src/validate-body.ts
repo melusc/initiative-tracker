@@ -83,7 +83,7 @@ export async function validateUrl(
 	if (!isValidUrl(url)) {
 		return {
 			type: 'error',
-			readableError: `${name} is not a valid URL.`,
+			readableError: `${url} is not a valid URL.`,
 			error: 'invalid-url',
 		};
 	}
@@ -91,7 +91,7 @@ export async function validateUrl(
 	if (await isInternal(new URL(url))) {
 		return {
 			type: 'error',
-			readableError: `Cannot resolve url of ${name}.`,
+			readableError: `${url} is not a valid URL.`,
 			error: 'unresolvable-url',
 		};
 	}
