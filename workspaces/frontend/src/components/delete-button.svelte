@@ -31,7 +31,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	let confirmed = $state(false);
 	async function deleteOrganisation(): Promise<void> {
 		if (confirmed) {
-			await fetch(api, {method: 'delete'});
+			const body = await fetch(api, {method: 'delete'});
+			await body.text();
 			location.href = '/';
 		} else {
 			confirmed = true;
