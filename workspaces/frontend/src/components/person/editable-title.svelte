@@ -54,6 +54,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		}
 	}
 
+	function handleFocusOut() {
+		// we only want to save when focusing away from input
+		// not when user switches to another tab or window
+		// focusout fires in both cases though
+		// activeElement will be the input if it was a tab/window change
+		if (document.activeElement !== titleNode) {
+			void handleSave();
+		}
+	}
+
 	async function handleSave(): Promise<void> {
 		const requestBody = new FormData();
 		requestBody.set('name', titleNode!.textContent!);
@@ -84,6 +94,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		bind:this={titleNode}
 		contenteditable={editEnabled}
 		onkeydown={handleKeydown}
+		onfocusout={handleFocusOut}
 	>
 		{subject.name}
 	</h1>
