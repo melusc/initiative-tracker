@@ -45,8 +45,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		showEdit = !showEdit;
 	}
 
-	function transformOptional(s: string): string | null {
-		return s.trim() === '' ? null : s;
+	function transformOptional(s: string): string {
+		return s.trim() === '' ? '' : s;
 	}
 </script>
 
@@ -72,7 +72,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		<PatchInputFile
 			name="image"
 			label="Image URL"
-			allowNull
+			allowEmpty
 			bind:value={organisation.image}
 			apiEndpoint="/api/organisation/{organisation.id}"
 			accept={[
@@ -89,6 +89,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			type="text"
 			transform={transformOptional}
 			bind:value={organisation.website}
+			allowEmpty
 			apiEndpoint="/api/organisation/{organisation.id}"
 		/>
 		{#if organisation.image}

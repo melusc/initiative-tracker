@@ -29,7 +29,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		label,
 		apiEndpoint,
 		value = $bindable(),
-		transform = (s): string | null => s,
+		allowEmpty = false,
+		transform = (s): string => s,
 		initialValue = value,
 	}: {
 		type: 'text' | 'url' | 'date';
@@ -37,7 +38,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		label: string;
 		apiEndpoint: string;
 		value: string | null;
-		transform?: (s: string) => string | null;
+		allowEmpty?: boolean;
+		transform?: (s: string) => string;
 		initialValue?: string | null;
 	} = $props();
 	let node: HTMLInputElement;
@@ -47,9 +49,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	async function handleSubmit(event: SubmitEvent): Promise<void> {
 		event.preventDefault();
 
+		const transformedValue = transform(node.value);
+
+		if (!allowEmpty && !transformedValue) {
+			successState.setError('Input must not be empty.');
+			return;
+		}
+
+		const requestBody = new URLSearchParams();
+		requestBody.set(name, String(transformedValue));
+
 		const response = await fetch(apiEndpoint, {
 			method: 'PATCH',
-			body: new URLSearchParams([[name, String(transform(node.value))]]),
+			body: requestBody,
 		});
 		const body = (await response.json()) as ApiResponse<Record<string, string>>;
 

@@ -29,18 +29,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		name,
 		label,
 		apiEndpoint,
-		allowNull = false,
+		allowEmpty = false,
 		accept,
 		value = $bindable(),
-		initialValue = value,
 	}: {
 		name: string;
 		label: string;
 		apiEndpoint: string;
-		allowNull?: boolean;
+		allowEmpty?: boolean;
 		accept?: readonly string[];
 		value: string | null;
-		initialValue?: string | null;
 	} = $props();
 
 	let file = $state<File>();
@@ -66,8 +64,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		event.preventDefault();
 
 		let transformedValue: string | File = file ?? node!.value.trim();
-		if (allowNull && !transformedValue) {
-			transformedValue = 'null';
+		if (!allowEmpty && !transformedValue) {
+			successState.setError('Input must not be empty.');
+			return;
 		}
 
 		const patchBody = new FormData();
@@ -112,7 +111,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 				class:success={$successState?.type === 'success'}
 				type="url"
 				{name}
-				value={initialValue ?? value}
+				{value}
 				bind:this={node}
 			/>
 			<input

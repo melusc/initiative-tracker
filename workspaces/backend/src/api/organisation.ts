@@ -43,7 +43,7 @@ import {
 	transformOrganisationUrls,
 	type FetchedFile,
 } from '../uploads.ts';
-import {isNullish, makeValidator, validateUrl} from '../validate-body.ts';
+import {isEmpty, makeValidator, validateUrl} from '../validate-body.ts';
 
 function enrichOrganisation(organisation: Organisation): EnrichedOrganisation {
 	const id = organisation.id;
@@ -99,7 +99,7 @@ const organisationKeyValidators = {
 		};
 	},
 	async image(image: unknown): Promise<ApiResponse<null | FetchedFile>> {
-		if (isNullish(image)) {
+		if (isEmpty(image)) {
 			return {
 				type: 'success',
 				data: null,
@@ -138,7 +138,7 @@ const organisationKeyValidators = {
 	},
 
 	async website(website: unknown): Promise<ApiResponse<string | null>> {
-		if (isNullish(website)) {
+		if (isEmpty(website)) {
 			return {
 				type: 'success',
 				data: null,

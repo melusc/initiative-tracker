@@ -47,7 +47,7 @@ import {
 	transformOrganisationUrls,
 	type FetchedFile,
 } from '../uploads.ts';
-import {isNullish, makeValidator, validateUrl} from '../validate-body.ts';
+import {isEmpty, makeValidator, validateUrl} from '../validate-body.ts';
 
 const initativeKeyValidators = {
 	shortName(shortName: unknown): ApiResponse<string> {
@@ -97,7 +97,7 @@ const initativeKeyValidators = {
 		};
 	},
 	async website(website: unknown): Promise<ApiResponse<string | null>> {
-		if (isNullish(website)) {
+		if (isEmpty(website)) {
 			return {
 				type: 'success',
 				data: null,
@@ -120,7 +120,7 @@ const initativeKeyValidators = {
 		};
 	},
 	deadline(input: unknown): ApiResponse<string | null> {
-		if (isNullish(input)) {
+		if (isEmpty(input)) {
 			return {
 				type: 'success',
 				data: null,
@@ -190,7 +190,7 @@ const initativeKeyValidators = {
 		}
 	},
 	async image(image: unknown): Promise<ApiResponse<FetchedFile | null>> {
-		if (isNullish(image)) {
+		if (isEmpty(image)) {
 			return {
 				type: 'success',
 				data: null,

@@ -46,8 +46,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		showEdit = !showEdit;
 	}
 
-	function transformOptional(s: string): string | null {
-		return s.trim() === '' ? null : s;
+	function transformOptional(s: string): string {
+		return s.trim() === '' ? '' : s;
 	}
 </script>
 
@@ -82,6 +82,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			label="Deadline"
 			type="date"
 			bind:value={initiative.deadline}
+			allowEmpty
 			apiEndpoint="/api/initiative/{initiative.id}"
 			transform={transformOptional}
 		/>
@@ -90,6 +91,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			label="Website"
 			type="text"
 			bind:value={initiative.website}
+			allowEmpty
 			apiEndpoint="/api/initiative/{initiative.id}"
 			transform={transformOptional}
 		/>
@@ -97,7 +99,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			name="pdf"
 			label="PDF Url"
 			bind:value={initiative.pdf}
-			initialValue=""
 			apiEndpoint="/api/initiative/{initiative.id}"
 			accept={['application/pdf']}
 		/>
@@ -105,9 +106,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			name="image"
 			label="Image Url"
 			bind:value={initiative.image}
-			initialValue=""
 			apiEndpoint="/api/initiative/{initiative.id}"
-			allowNull
+			allowEmpty
 			accept={[
 				'image/jpeg',
 				'image/png',
