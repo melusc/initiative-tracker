@@ -96,6 +96,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			<img class="image-url" src={organisation.image} alt="" />
 		{/if}
 	{:else}
+		{#if organisation.image}
+			<a
+				href={standalone
+					? organisation.website
+					: `/organisation/${organisation.id}`}
+			>
+				<img class="image-url" src={organisation.image} alt="" />
+			</a>
+		{/if}
 		<a
 			href={standalone ? undefined : `/organisation/${organisation.id}`}
 			class="short-name">{organisation.name}</a
@@ -108,15 +117,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 				target="_blank"
 			>
 				Website <ExternalLinkIcon />
-			</a>
-		{/if}
-		{#if organisation.image}
-			<a
-				href={standalone
-					? organisation.website
-					: `/organisation/${organisation.id}`}
-			>
-				<img class="image-url" src={organisation.image} alt="" />
 			</a>
 		{/if}
 	{/if}

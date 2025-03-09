@@ -118,6 +118,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		/>
 		<img class="image-url" src={initiative.image} alt="" />
 	{:else}
+		{#if initiative.image}
+			<a
+				href={standalone ? initiative.website : `/initiative/${initiative.id}`}
+			>
+				<img class="image-url" src={initiative.image} alt="" />
+			</a>
+		{/if}
 		<a
 			href={standalone ? undefined : `/initiative/${initiative.id}`}
 			class="short-name">{initiative.shortName}</a
@@ -137,13 +144,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			</a>
 		{/if}
 		<a class="pdf-url" href={initiative.pdf}>Download initiative as PDF</a>
-		{#if initiative.image}
-			<a
-				href={standalone ? initiative.website : `/initiative/${initiative.id}`}
-			>
-				<img class="image-url" src={initiative.image} alt="" />
-			</a>
-		{/if}
 	{/if}
 
 	{#if standalone}
