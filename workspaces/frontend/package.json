@@ -16,7 +16,7 @@
 		"@lusc/eslint-config": "^6.2.0",
 		"@lusc/tsconfig": "^6.0.2",
 		"@sveltejs/adapter-static": "^3.0.8",
-		"@sveltejs/kit": "^2.19.0",
+		"@sveltejs/kit": "^2.19.2",
 		"@sveltejs/vite-plugin-svelte": "^5.0.3",
 		"@tsconfig/svelte": "^5.0.4",
 		"@typescript-eslint/parser": "^8.26.1",
@@ -27,7 +27,7 @@
 		"svelte-eslint-parser": "^1.0.1",
 		"tslib": "^2.8.1",
 		"typescript": "^5.8.2",
-		"vite": "^6.2.1"
+		"vite": "^6.2.2"
 	},
 	"dependencies": {
 		"@lusc/initiative-tracker-util": "workspace:^",
