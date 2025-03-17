@@ -35,9 +35,9 @@ import {
 } from './api/organisation.ts';
 import {createPerson, getAllPeople, getPerson} from './api/person.ts';
 import {database} from './database.ts';
-import {loginProtect} from './middle-ware/login-protect.ts';
-import {requireAdmin} from './middle-ware/require-admin.ts';
-import {setHeaders} from './middle-ware/set-headers.ts';
+import {loginProtect} from './middleware/login-protect.ts';
+import {requireAdmin} from './middleware/require-admin.ts';
+import {setHeaders} from './middleware/set-headers.ts';
 import {changePassword, changeUsername} from './routes/account.ts';
 import {loginPost} from './routes/login.ts';
 import {logout} from './routes/logout.ts';

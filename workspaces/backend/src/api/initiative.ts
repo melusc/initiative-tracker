@@ -35,7 +35,7 @@ import type {
 import {Router, type RequestHandler} from 'express';
 
 import {database} from '../database.ts';
-import {requireAdmin} from '../middle-ware/require-admin.ts';
+import {requireAdmin} from '../middleware/require-admin.ts';
 import {
 	fetchImage,
 	fetchPdf,
