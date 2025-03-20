@@ -437,15 +437,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lusc/eslint-config@npm:^6.3.0":
-  version: 6.3.0
-  resolution: "@lusc/eslint-config@npm:6.3.0"
+"@lusc/eslint-config@npm:^7.1.0":
+  version: 7.1.0
+  resolution: "@lusc/eslint-config@npm:7.1.0"
   dependencies:
     "@eslint-community/eslint-plugin-eslint-comments": "npm:^4.4.1"
     "@eslint/js": "npm:^9.22.0"
     "@typescript-eslint/parser": "npm:^8.26.1"
-    eslint-import-resolver-typescript: "npm:^4.0.0"
-    eslint-plugin-import-x: "npm:^4.8.0"
+    eslint-import-resolver-typescript: "npm:^4.2.2"
+    eslint-plugin-import-x: "npm:^4.9.0"
     eslint-plugin-n: "npm:^17.16.2"
     eslint-plugin-promise: "npm:^7.2.1"
     eslint-plugin-regexp: "npm:^2.7.0"
@@ -456,7 +456,7 @@ __metadata:
     typescript-eslint: "npm:^8.26.1"
   peerDependencies:
     eslint: ^9.22.0
-  checksum: 10c0/a1364251a6a63cc0268313504de8143ccfd6db645818be56a5e2ee963bb678f8799669f36e3344307258d28ba9040b5356e778e2c86fb9bf5d68c7fd327d472d
+  checksum: 10c0/ddacc27bf66ca47958c76e155f54b60b7fad8442922a9d92af1c6b619bf151cc573d03c8d5fae04e66fa7d24100e2ba2d5bbb5c95a8696cf66a668a6180b06ee
   languageName: node
   linkType: hard
 
@@ -464,7 +464,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@lusc/initiative-tracker-backend@workspace:workspaces/backend"
   dependencies:
-    "@lusc/eslint-config": "npm:^6.3.0"
+    "@lusc/eslint-config": "npm:^7.1.0"
     "@lusc/initiative-tracker-frontend": "workspace:^"
     "@lusc/initiative-tracker-util": "workspace:^"
     "@lusc/tsconfig": "npm:^6.0.2"
@@ -497,7 +497,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@lusc/initiative-tracker-frontend@workspace:workspaces/frontend"
   dependencies:
-    "@lusc/eslint-config": "npm:^6.3.0"
+    "@lusc/eslint-config": "npm:^7.1.0"
     "@lusc/initiative-tracker-util": "workspace:^"
     "@lusc/tsconfig": "npm:^6.0.2"
     "@lusc/util": "npm:^1.4.3"
@@ -521,7 +521,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@lusc/initiative-tracker-util@workspace:workspaces/util"
   dependencies:
-    "@lusc/eslint-config": "npm:^6.3.0"
+    "@lusc/eslint-config": "npm:^7.1.0"
     "@lusc/tsconfig": "npm:^6.0.2"
     "@types/node": "npm:^22.13.10"
     eslint: "npm:^9.22.0"
@@ -1144,7 +1144,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/utils@npm:8.27.0, @typescript-eslint/utils@npm:^8.26.1":
+"@typescript-eslint/utils@npm:8.27.0, @typescript-eslint/utils@npm:^8.27.0":
   version: 8.27.0
   resolution: "@typescript-eslint/utils@npm:8.27.0"
   dependencies:
@@ -2194,7 +2194,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-import-resolver-typescript@npm:^4.0.0":
+"eslint-import-resolver-typescript@npm:^4.2.2":
   version: 4.2.2
   resolution: "eslint-import-resolver-typescript@npm:4.2.2"
   dependencies:
@@ -2232,24 +2232,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-import-x@npm:^4.8.0":
-  version: 4.9.0
-  resolution: "eslint-plugin-import-x@npm:4.9.0"
+"eslint-plugin-import-x@npm:^4.9.0":
+  version: 4.9.1
+  resolution: "eslint-plugin-import-x@npm:4.9.1"
   dependencies:
     "@types/doctrine": "npm:^0.0.9"
-    "@typescript-eslint/utils": "npm:^8.26.1"
+    "@typescript-eslint/utils": "npm:^8.27.0"
     debug: "npm:^4.4.0"
     doctrine: "npm:^3.0.0"
     eslint-import-resolver-node: "npm:^0.3.9"
     get-tsconfig: "npm:^4.10.0"
-    picomatch: "npm:^4.0.2"
-    rspack-resolver: "npm:^1.2.1"
+    is-glob: "npm:^4.0.3"
+    minimatch: "npm:^10.0.1"
+    rspack-resolver: "npm:^1.2.2"
     semver: "npm:^7.7.1"
     stable-hash: "npm:^0.0.5"
     tslib: "npm:^2.8.1"
   peerDependencies:
     eslint: ^8.57.0 || ^9.0.0
-  checksum: 10c0/bc0241fd956383474a16b9e366784c861e5ebe5b956d66b5f1c3d7cfe493e5863b90d3fe306e7065b11745853ea898e4232346472928bcc4c9ecc77bac3df13f
+  checksum: 10c0/07c433b70d264c757c1b8b337bd6c3146df61095bd3e290b07e3feb5b38e2f11aa0ecbe9633229cd942998b2bdeb40a47736128c017682befc030d4b5367c6ff
   languageName: node
   linkType: hard
 
@@ -3411,6 +3412,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"minimatch@npm:^10.0.1":
+  version: 10.0.1
+  resolution: "minimatch@npm:10.0.1"
+  dependencies:
+    brace-expansion: "npm:^2.0.1"
+  checksum: 10c0/e6c29a81fe83e1877ad51348306be2e8aeca18c88fdee7a99df44322314279e15799e41d7cb274e4e8bb0b451a3bc622d6182e157dfa1717d6cda75e9cd8cd5d
+  languageName: node
+  linkType: hard
+
 "minimatch@npm:^3.1.2":
   version: 3.1.2
   resolution: "minimatch@npm:3.1.2"
@@ -4250,7 +4260,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rspack-resolver@npm:^1.2.1, rspack-resolver@npm:^1.2.2":
+"rspack-resolver@npm:^1.2.2":
   version: 1.2.2
   resolution: "rspack-resolver@npm:1.2.2"
   dependencies:
