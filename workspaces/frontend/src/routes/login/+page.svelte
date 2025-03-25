@@ -28,7 +28,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	<form method="POST" enctype="multipart/form-data">
 		<label>
 			Username
-			<input type="text" name="username" minlength="4" required />
+			<input type="text" name="username" required />
 		</label>
 		<label>
 			Password
