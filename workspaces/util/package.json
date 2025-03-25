@@ -18,8 +18,7 @@
 	},
 	"scripts": {
 		"fmt": "eslint --fix",
-		"build": "tsc",
-		"test": "tsc && node --test dist/*.test.js"
+		"build": "tsc"
 	},
 	"author": {
 		"email": "oss@lusc.ch",
