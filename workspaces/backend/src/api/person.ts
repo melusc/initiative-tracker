@@ -15,7 +15,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import {makeSlug} from '@lusc/initiative-tracker-util/slug.js';
 import {
 	sortInitiatives,
 	sortPeople,
@@ -27,6 +26,7 @@ import type {
 	Person,
 	ApiResponse,
 } from '@lusc/initiative-tracker-util/types.js';
+import {makeSlug} from '@lusc/util/slug';
 import {Router, type RequestHandler} from 'express';
 
 import {database} from '../database.ts';

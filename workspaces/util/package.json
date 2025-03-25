@@ -3,7 +3,6 @@
 	"private": true,
 	"exports": {
 		"./color-hash.js": "./dist/color-hash.js",
-		"./slug.js": "./dist/slug.js",
 		"./type-of.js": "./dist/type-of.js",
 		"./types.js": "./dist/types.js",
 		"./sort.js": "./dist/sort.js",

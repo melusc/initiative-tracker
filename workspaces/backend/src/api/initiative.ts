@@ -18,7 +18,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import {Buffer} from 'node:buffer';
 import {unlink, writeFile} from 'node:fs/promises';
 
-import {makeSlug} from '@lusc/initiative-tracker-util/slug.js';
 import {
 	sortInitiatives,
 	sortOrganisations,
@@ -32,6 +31,7 @@ import type {
 	Person,
 	ApiResponse,
 } from '@lusc/initiative-tracker-util/types.js';
+import {makeSlug} from '@lusc/util/slug';
 import {Router, type RequestHandler} from 'express';
 
 import {database} from '../database.ts';
