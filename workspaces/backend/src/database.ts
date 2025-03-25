@@ -65,9 +65,10 @@ database.exec(
 		);
 
 		CREATE TABLE IF NOT EXISTS people (
-				id TEXT PRIMARY KEY,
+				id TEXT,
 				name TEXT NOT NULL,
 				owner TEXT NOT NULL,
+				PRIMARY KEY (id, owner),
 				FOREIGN KEY(owner) REFERENCES logins(userId) ON DELETE CASCADE
 		);
 

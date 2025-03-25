@@ -112,7 +112,7 @@ export async function createPerson(
 		};
 	}
 
-	const id = makeSlug(name);
+	const id = makeSlug(name, {appendRandomHex: false});
 	try {
 		database
 			.prepare(

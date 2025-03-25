@@ -230,6 +230,22 @@ const initativeKeyValidators = {
 
 const initiativeValidator = makeValidator(initativeKeyValidators);
 
+function findAvailableInitiativeSlug(name: string): string {
+	const baseSlug = makeSlug(name, {appendRandomHex: false});
+
+	for (let counter = 0; ; ++counter) {
+		const slug = counter === 0 ? baseSlug : `${baseSlug}-${counter}`;
+
+		const initiative = database
+			.prepare('SELECT id from initiatives where id = :slug')
+			.get({slug}) as {id: string} | undefined;
+
+		if (!initiative) {
+			return slug;
+		}
+	}
+}
+
 export async function createInitiative(
 	loginUserId: string,
 	body: Record<string, unknown>,
@@ -258,7 +274,7 @@ export async function createInitiative(
 		await writeFile(image.suggestedFilePath, image.body);
 	}
 
-	const id = makeSlug(shortName);
+	const id = findAvailableInitiativeSlug(shortName);
 
 	const result: Initiative = {
 		id,

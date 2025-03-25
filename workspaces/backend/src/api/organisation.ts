@@ -164,6 +164,22 @@ const organisationKeyValidators = {
 
 const organisationValidator = makeValidator(organisationKeyValidators);
 
+function findAvailableOrganisationSlug(name: string): string {
+	const baseSlug = makeSlug(name, {appendRandomHex: false});
+
+	for (let counter = 0; ; ++counter) {
+		const slug = counter === 0 ? baseSlug : `${baseSlug}-${counter}`;
+
+		const organisation = database
+			.prepare('SELECT id from organisations where id = :slug')
+			.get({slug}) as {id: string} | undefined;
+
+		if (!organisation) {
+			return slug;
+		}
+	}
+}
+
 export async function createOrganisation(
 	request: Request,
 ): Promise<ApiResponse<EnrichedOrganisation>> {
@@ -185,7 +201,7 @@ export async function createOrganisation(
 		await writeFile(image.suggestedFilePath, image.body);
 	}
 
-	const id = makeSlug(name);
+	const id = findAvailableOrganisationSlug(name);
 	const organisation: Organisation = {
 		id,
 		name,
