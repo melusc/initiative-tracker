@@ -28,6 +28,6 @@
 		"node": "^22.14.0"
 	},
 	"resolutions": {
-		"@types/express-serve-static-core": "^4.19.6"
+		"@types/express-serve-static-core": "^5.0.6"
 	}
 }
