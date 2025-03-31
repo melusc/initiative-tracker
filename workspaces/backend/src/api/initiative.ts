@@ -309,10 +309,11 @@ export const createInitiativeEndpoint: RequestHandler = async (
 	const result = await createInitiative(response.locals.login.id, body);
 
 	if (result.type === 'error') {
-		return response.status(400).json(result);
+		response.status(400).json(result);
+		return;
 	}
 
-	return response.status(201).json(result);
+	response.status(201).json(result);
 };
 
 export function getInitiative(
@@ -337,14 +338,15 @@ export const getInitiativeEndpoint: RequestHandler<{id: string}> = (
 	const initiative = getInitiative(request.params.id, response.locals.login.id);
 
 	if (!initiative) {
-		return response.status(404).json({
+		response.status(404).json({
 			type: 'error',
 			readableError: 'Initiative does not exist.',
 			error: 'not-found',
 		});
+		return;
 	}
 
-	return response.status(200).json({
+	response.status(200).json({
 		type: 'success',
 		data: initiative,
 	});

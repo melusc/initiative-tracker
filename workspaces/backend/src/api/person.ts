@@ -157,7 +157,7 @@ export const createPersonEndpoint: RequestHandler = async (
 		return;
 	}
 
-	return response.status(201).json(result);
+	response.status(201).json(result);
 };
 
 export function getPerson(id: string, owner: string): EnrichedPerson | false {
@@ -184,14 +184,15 @@ export const getPersonEndpoint: RequestHandler<{id: string}> = (
 	const result = getPerson(request.params.id, response.locals.login.id);
 
 	if (!result) {
-		return response.status(404).json({
+		response.status(404).json({
 			type: 'error',
 			readableError: 'Person does not exist.',
 			error: 'not-found',
 		});
+		return;
 	}
 
-	return response.status(200).json({
+	response.status(200).json({
 		type: 'success',
 		data: result,
 	});

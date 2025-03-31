@@ -280,14 +280,15 @@ export const getOrganisationEndpoint: RequestHandler<{id: string}> = (
 ) => {
 	const result = getOrganisation(request.params.id);
 	if (!result) {
-		return response.status(404).json({
+		response.status(404).json({
 			type: 'error',
 			readableError: 'Organisation does not exist.',
 			error: 'not-found',
 		});
+		return;
 	}
 
-	return response.status(200).json({
+	response.status(200).json({
 		type: 'success',
 		data: result,
 	});
