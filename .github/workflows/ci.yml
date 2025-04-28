@@ -86,6 +86,7 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             cd /var/www/initiative-tracker
             corepack prepare
+            corepack enable
             yarn config set nodeLinker node-modules
             yarn workspaces focus --all --production
             cd ..
