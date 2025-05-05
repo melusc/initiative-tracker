@@ -24,20 +24,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	const {input, values}: {input: Input; values: Record<string, string>} =
 		$props();
 
-	let file = $state<File>();
+	let files = $state<FileList | null>();
+	let file = $derived(files?.[0]);
 	let fileInputElement = $state<HTMLInputElement>();
 
 	function clickUpload(): void {
 		if (file) {
-			file = undefined;
 			fileInputElement!.value = '';
+			files = null;
 		} else {
 			fileInputElement!.click();
 		}
-	}
-
-	function handleFileInput(): void {
-		file = fileInputElement!.files?.[0];
 	}
 
 	const acceptJoined = $derived(input.accept?.join(','));
@@ -66,7 +63,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		type="file"
 		name={input.name}
 		accept={acceptJoined}
-		oninput={handleFileInput}
+		bind:files
 		bind:this={fileInputElement}
 	/>
 </div>
