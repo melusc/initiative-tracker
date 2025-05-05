@@ -24,7 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	import type {Input} from './create-form.d.ts';
 	import FileInput from './file-input.svelte';
 
-	const {title, inputs} = $props<{title: string; inputs: Input[]}>();
+	const {title, inputs}: {title: string; inputs: Input[]} = $props();
 
 	const {
 		error,
@@ -88,8 +88,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	input {
 		color: var(--text-dark);
 		border-radius: 0.5em;
-		padding: 0.3em 0.5em;
+		padding: 0.5em 0.7em;
 		font-size: 0.8em;
+		border: none;
 	}
 
 	.submit {

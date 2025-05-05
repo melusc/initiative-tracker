@@ -24,6 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	import SaveIcon from './icons/save.svelte';
 	import TrashIcon from './icons/trash.svelte';
 	import UploadIcon from './icons/upload.svelte';
+	import InputDropTarget from './input-drop-target.svelte';
 
 	let {
 		name,
@@ -86,6 +87,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			successState.setSuccess();
 		}
 	}
+
+	function onFileInput(files: FileList) {
+		file = files[0]!;
+	}
+
+	function onUrlInput(url: string) {
+		file = undefined;
+		node!.value = url;
+	}
 </script>
 
 <form onsubmit={handleSubmit}>
@@ -96,7 +106,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		<div in:slide out:slide class="error">{$successState.error}</div>
 	{/if}
 
-	<div class="input-wrap">
+	<InputDropTarget {accept} {onFileInput} {onUrlInput}>
 		{#if file}
 			<input
 				class:error={$successState?.type === 'error'}
@@ -143,7 +153,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		>
 			<SaveIcon />
 		</button>
-	</div>
+	</InputDropTarget>
 </form>
 
 <style>
@@ -157,13 +167,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	button > :global(svg) {
 		height: 1em;
 		width: 1em;
-	}
-
-	.input-wrap {
-		display: flex;
-		flex-direction: row;
-		gap: 0;
-		height: max-content;
 	}
 
 	button,

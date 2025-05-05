@@ -18,36 +18,49 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <script lang="ts">
 	import TrashIcon from '../icons/trash.svelte';
 	import UploadIcon from '../icons/upload.svelte';
+	import InputDropTarget from '../input-drop-target.svelte';
 
 	import type {Input} from './create-form.d.ts';
 
 	const {input, values}: {input: Input; values: Record<string, string>} =
 		$props();
 
-	let files = $state<FileList | null>();
+	let files = $state<FileList | undefined>();
 	let file = $derived(files?.[0]);
+	let urlValue = $state('');
 	let fileInputElement = $state<HTMLInputElement>();
 
 	function clickUpload(): void {
 		if (file) {
 			fileInputElement!.value = '';
-			files = null;
+			files = undefined;
+			urlValue = '';
 		} else {
 			fileInputElement!.click();
 		}
 	}
 
 	const acceptJoined = $derived(input.accept?.join(','));
+
+	function onFileInput(files_: FileList) {
+		files = files_;
+	}
+
+	function onUrlInput(url: string) {
+		fileInputElement!.value = '';
+		files = undefined;
+		urlValue = url;
+	}
 </script>
 
-<div class="input-wrap">
+<InputDropTarget accept={input.accept} {onFileInput} {onUrlInput}>
 	{#if file}
 		<input type="text" value={file.name} readonly />
 	{:else}
 		<input
 			type="url"
 			name={input.name}
-			value={values[input.name] ?? ''}
+			value={urlValue || (values[input.name] ?? '')}
 			placeholder="Input a url or upload a file"
 		/>
 	{/if}
@@ -66,19 +79,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		bind:files
 		bind:this={fileInputElement}
 	/>
-</div>
+</InputDropTarget>
 
 <style>
 	button > :global(svg) {
 		height: 1em;
 		width: 1em;
-	}
-
-	.input-wrap {
-		display: flex;
-		flex-direction: row;
-		gap: 0;
-		height: max-content;
 	}
 
 	button,
@@ -87,8 +93,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			0.4s ease-out border-color,
 			0.4s ease-out color;
 
-		padding: 0.3em 0.5em;
-		border: 1px solid var(--text-light);
+		padding: 0.5em 0.7em;
+		border: none;
 		background: #fff;
 		color: var(--text-dark);
 		font-size: 0.8em;
@@ -96,7 +102,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 	input {
 		border-radius: 0.5em 0 0 0.5em;
-		border-right: none;
 		width: 100%;
 		padding: 0.3em 0.5em;
 
