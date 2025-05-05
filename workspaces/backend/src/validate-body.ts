@@ -71,7 +71,7 @@ function isValidUrl(url: string) {
 export async function validateUrl(
 	name: string,
 	url: unknown,
-): Promise<ApiResponse<void>> {
+): Promise<ApiResponse<string>> {
 	if (typeof url !== 'string') {
 		return {
 			type: 'error',
@@ -80,25 +80,35 @@ export async function validateUrl(
 		};
 	}
 
-	if (!isValidUrl(url)) {
+	const trimmedUrl = url.trim();
+
+	if (!trimmedUrl) {
 		return {
 			type: 'error',
-			readableError: `${url} is not a valid URL.`,
+			readableError: `Missing url for ${name}.`,
 			error: 'invalid-url',
 		};
 	}
 
-	if (await isInternal(new URL(url))) {
+	if (!isValidUrl(trimmedUrl)) {
 		return {
 			type: 'error',
-			readableError: `${url} is not a valid URL.`,
+			readableError: `${trimmedUrl} is not a valid URL.`,
+			error: 'invalid-url',
+		};
+	}
+
+	if (await isInternal(new URL(trimmedUrl))) {
+		return {
+			type: 'error',
+			readableError: `${trimmedUrl} is not a valid URL.`,
 			error: 'unresolvable-url',
 		};
 	}
 
 	return {
 		type: 'success',
-		data: undefined,
+		data: trimmedUrl,
 	};
 }
 

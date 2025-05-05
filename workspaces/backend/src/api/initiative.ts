@@ -109,7 +109,7 @@ const initativeKeyValidators = {
 			return isValidUrl;
 		}
 
-		const websiteUrl = new URL(website as string);
+		const websiteUrl = new URL(isValidUrl.data);
 		websiteUrl.hash = '';
 		websiteUrl.username = '';
 		websiteUrl.password = '';
@@ -175,7 +175,7 @@ const initativeKeyValidators = {
 				return isValidUrl;
 			}
 
-			const localPdf = await fetchPdf(new URL(pdf as string));
+			const localPdf = await fetchPdf(new URL(isValidUrl.data));
 
 			return {
 				type: 'success',
@@ -211,7 +211,7 @@ const initativeKeyValidators = {
 				return isValidUrl;
 			}
 
-			const localImage = await fetchImage(new URL(image as string));
+			const localImage = await fetchImage(new URL(isValidUrl.data));
 
 			return {
 				type: 'success',

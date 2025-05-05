@@ -121,7 +121,7 @@ const organisationKeyValidators = {
 				return isValidUrl;
 			}
 
-			const localImage = await fetchImage(new URL(image as string));
+			const localImage = await fetchImage(new URL(isValidUrl.data));
 
 			return {
 				type: 'success',
@@ -150,7 +150,7 @@ const organisationKeyValidators = {
 			return isValidUrl;
 		}
 
-		const websiteUrl = new URL(website as string);
+		const websiteUrl = new URL(isValidUrl.data);
 		websiteUrl.hash = '';
 		websiteUrl.username = '';
 		websiteUrl.password = '';
