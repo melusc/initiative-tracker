@@ -119,6 +119,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		flex-direction: row;
 		gap: 0;
 		height: max-content;
+		border-radius: 0.5em;
+	}
+
+	.input-wrap:focus-within {
+		outline: #0060df 1px auto;
 	}
 
 	button,
@@ -140,6 +145,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		width: 100%;
 
 		margin-right: 0;
+		outline: none;
 	}
 
 	button {

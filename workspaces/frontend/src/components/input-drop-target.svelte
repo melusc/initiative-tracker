@@ -89,7 +89,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		border-radius: 0.5em;
 	}
 
-	.dragging-over {
-		outline: solid orange;
+	.drop-zone :global(input) {
+		outline: none;
+	}
+
+	.dragging-over,
+	.drop-zone:focus-within {
+		outline: #0060df 1px auto;
 	}
 </style>
