@@ -449,9 +449,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lusc/initiative-tracker-backend@workspace:workspaces/backend":
+"@lusc/initiative-tracker-backend@workspace:backend":
   version: 0.0.0-use.local
-  resolution: "@lusc/initiative-tracker-backend@workspace:workspaces/backend"
+  resolution: "@lusc/initiative-tracker-backend@workspace:backend"
   dependencies:
     "@lusc/eslint-config": "npm:^7.1.1"
     "@lusc/initiative-tracker-frontend": "workspace:^"
@@ -482,9 +482,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@lusc/initiative-tracker-frontend@workspace:^, @lusc/initiative-tracker-frontend@workspace:workspaces/frontend":
+"@lusc/initiative-tracker-frontend@workspace:^, @lusc/initiative-tracker-frontend@workspace:frontend":
   version: 0.0.0-use.local
-  resolution: "@lusc/initiative-tracker-frontend@workspace:workspaces/frontend"
+  resolution: "@lusc/initiative-tracker-frontend@workspace:frontend"
   dependencies:
     "@lusc/eslint-config": "npm:^7.1.1"
     "@lusc/initiative-tracker-util": "workspace:^"
@@ -506,9 +506,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@lusc/initiative-tracker-util@workspace:^, @lusc/initiative-tracker-util@workspace:workspaces/util":
+"@lusc/initiative-tracker-util@workspace:^, @lusc/initiative-tracker-util@workspace:util":
   version: 0.0.0-use.local
-  resolution: "@lusc/initiative-tracker-util@workspace:workspaces/util"
+  resolution: "@lusc/initiative-tracker-util@workspace:util"
   dependencies:
     "@lusc/eslint-config": "npm:^7.1.1"
     "@lusc/tsconfig": "npm:^7.0.0"

@@ -6,7 +6,9 @@
 		"prettier-plugin-svelte": "^3.3.3"
 	},
 	"workspaces": [
-		"workspaces/*"
+		"backend/",
+		"frontend/",
+		"util/"
 	],
 	"author": {
 		"email": "oss@lusc.ch",
