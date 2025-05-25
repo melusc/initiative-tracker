@@ -20,7 +20,7 @@
 	"dependencies": {
 		"@lusc/initiative-tracker-frontend": "workspace:^",
 		"@lusc/initiative-tracker-util": "workspace:^",
-		"@lusc/util": "^1.4.3",
+		"@lusc/util": "^2.0.0",
 		"cookie-parser": "^1.4.7",
 		"cors": "^2.8.5",
 		"express": "^5.1.0",
