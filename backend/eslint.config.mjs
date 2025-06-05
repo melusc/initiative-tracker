@@ -8,6 +8,14 @@ export default [
 			'promise/prefer-await-to-callbacks': 'off',
 			// express v5 will support promises
 			'@typescript-eslint/no-misused-promises': 'off',
+			'unicorn/prevent-abbreviations': [
+				'error',
+				{
+					allowList: {
+						env: true,
+					},
+				},
+			],
 		},
 	},
 ];

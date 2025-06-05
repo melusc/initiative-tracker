@@ -35,6 +35,7 @@ import {
 } from './api/organisation.ts';
 import {createPerson, getAllPeople, getPerson} from './api/person.ts';
 import {database} from './database.ts';
+import env from './env.ts';
 import {loginProtect} from './middleware/login-protect.ts';
 import {requireAdmin} from './middleware/require-admin.ts';
 import {setHeaders} from './middleware/set-headers.ts';
@@ -410,6 +411,6 @@ app.use((_request, response) => {
 		.render('404', {login: response.locals.login, state: undefined});
 });
 
-app.listen(3129, '127.0.0.1', () => {
-	console.log('Listening on http://localhost:3129/');
+app.listen(env.port, '127.0.0.1', () => {
+	console.log('Listening on http://localhost:%s/', env.port);
 });
