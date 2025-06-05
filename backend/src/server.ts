@@ -410,6 +410,6 @@ app.use((_request, response) => {
 		.render('404', {login: response.locals.login, state: undefined});
 });
 
-app.listen(3129, () => {
+app.listen(3129, '127.0.0.1', () => {
 	console.log('Listening on http://localhost:3129/');
 });
