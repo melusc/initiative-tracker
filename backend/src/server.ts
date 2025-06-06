@@ -60,11 +60,13 @@ app.use(
 			},
 		},
 
-		// Nginx already sets the following
+		// Nginx is configured to set these
 		xContentTypeOptions: false,
 		strictTransportSecurity: false,
 		xFrameOptions: false,
 		xXssProtection: false,
+		crossOriginOpenerPolicy: false,
+		crossOriginResourcePolicy: false,
 	}),
 );
 app.use(morgan('dev'));
