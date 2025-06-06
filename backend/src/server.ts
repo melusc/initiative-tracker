@@ -38,7 +38,6 @@ import {database} from './database.ts';
 import env from './env.ts';
 import {loginProtect} from './middleware/login-protect.ts';
 import {requireAdmin} from './middleware/require-admin.ts';
-import {setHeaders} from './middleware/set-headers.ts';
 import {changePassword, changeUsername} from './routes/account.ts';
 import {loginPost} from './routes/login.ts';
 import {logout} from './routes/logout.ts';
@@ -71,12 +70,6 @@ app.use(
 );
 app.use(cors());
 app.use(morgan('dev'));
-
-app.use(
-	setHeaders({
-		'permissions-policy': 'interest-cohort=()',
-	}),
-);
 
 app.use((request, response, next) => {
 	const segments = request.path.split('/');
