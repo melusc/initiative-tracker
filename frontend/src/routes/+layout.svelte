@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	import Header from '../components/header/header.svelte';
 	import '../common/sanitise.css';
 	import '../common/theme.css';
-	import '../common/font.css';
+	import '../common/base.css';
 
 	const {children}: {children: Snippet} = $props();
 </script>

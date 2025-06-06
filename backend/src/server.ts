@@ -57,6 +57,8 @@ app.use(
 		contentSecurityPolicy: {
 			directives: {
 				'script-src': ["'self'", "'unsafe-inline'"],
+				'style-src': ["'self'", 'https://fonts.googleapis.com'],
+				'style-src-attr': ["'unsafe-inline'"],
 			},
 		},
 
