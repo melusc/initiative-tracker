@@ -17,7 +17,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import {RelativeUrl} from '@lusc/util/relative-url';
 import cookieParser from 'cookie-parser';
-import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -68,7 +67,6 @@ app.use(
 		xXssProtection: false,
 	}),
 );
-app.use(cors());
 app.use(morgan('dev'));
 
 app.use((request, response, next) => {
