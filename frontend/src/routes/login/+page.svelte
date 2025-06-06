@@ -45,7 +45,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 <style>
 	.login-form-center {
-		width: 100vw;
+		width: 100%;
 		display: grid;
 		place-items: center;
 		margin-top: 3em;
