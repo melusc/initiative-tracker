@@ -15,7 +15,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import {DatabaseSync} from 'node:sqlite';
+// eslint-disable-next-line n/no-unsupported-features/node-builtins
+import type {DatabaseSync} from 'node:sqlite';
 
 import type {LoginInfo} from '@lusc/initiative-tracker-util/types.js';
 import type {RequestHandler} from 'express';
