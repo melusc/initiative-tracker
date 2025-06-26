@@ -40,6 +40,7 @@ import {
 	requireLogin,
 } from './middleware/login-protect.ts';
 import {changePassword, changeUsername} from './routes/account.ts';
+import {assetRouter} from './routes/assets.ts';
 import {loginPost} from './routes/login.ts';
 import {logout} from './routes/logout.ts';
 import {svelteKitEngine} from './svelte-kit-engine.ts';
@@ -101,6 +102,8 @@ app.use(
 		},
 	}),
 );
+
+app.use('/assets', assetRouter);
 
 app.get('/login', (_request, response) => {
 	response.render('login', {login: undefined, state: undefined});

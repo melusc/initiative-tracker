@@ -23,31 +23,13 @@ import {imageOutDirectory, pdfOutDirectory} from '../uploads.ts';
 
 const router = Router();
 
-router.use((_request, response, next) => {
-	response.setHeader('Cache-Control', 'public, max-age=3600, immutable');
-	next();
-});
-
-router.get('/pdf/:id', (request, response, next) => {
-	response.sendFile(
-		request.params.id,
-		{
-			root: fileURLToPath(pdfOutDirectory),
-		},
-		(error: Error | undefined) => {
-			if (error) {
-				// 404
-				next();
-			}
-		},
-	);
-});
-
-router.get('/image/:id', (request, response, next) => {
+router.get('/:id', (request, response, next) => {
 	response.sendFile(
 		request.params.id,
 		{
 			root: fileURLToPath(imageOutDirectory),
+			maxAge: '7d',
+			immutable: true,
 		},
 		(error: Error | undefined) => {
 			if (error) {
@@ -58,4 +40,21 @@ router.get('/image/:id', (request, response, next) => {
 	);
 });
 
-export {router as userContent};
+router.get('/:id', (request, response, next) => {
+	response.sendFile(
+		request.params.id,
+		{
+			root: fileURLToPath(pdfOutDirectory),
+			maxAge: '7d',
+			immutable: true,
+		},
+		(error: Error | undefined) => {
+			if (error) {
+				// 404
+				next();
+			}
+		},
+	);
+});
+
+export {router as assetRouter};
