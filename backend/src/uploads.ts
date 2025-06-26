@@ -87,11 +87,11 @@ export function transformImageUrl(imageUrl: string | null) {
 		return null;
 	}
 
-	return `/api/user-content/image/${imageUrl}`;
+	return `/assets/${imageUrl}`;
 }
 
 export function transformPdfUrl(pdfUrl: string) {
-	return `/api/user-content/pdf/${pdfUrl}`;
+	return `/assets/${pdfUrl}`;
 }
 
 /**
