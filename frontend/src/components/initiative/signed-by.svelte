@@ -29,14 +29,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		);
 
 		if (response.ok) {
-			initiative.signatures = initiative.signatures.filter(
-				person => person.id !== id,
-			);
+			initiative.signatures =
+				initiative.signatures?.filter(person => person.id !== id) ?? null;
 		}
 	}
 </script>
 
-{#if initiative.signatures.length > 0}
+{#if initiative.signatures && initiative.signatures.length > 0}
 	{@const people = initiative.signatures}
 	<div class="signed-by">
 		{#each people as person (person.id)}

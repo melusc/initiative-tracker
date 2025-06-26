@@ -30,6 +30,7 @@ import {makeSlug} from '@lusc/util/slug';
 import {Router, type RequestHandler} from 'express';
 
 import {database} from '../database.ts';
+import {requireLogin} from '../middleware/login-protect.ts';
 import {multerUpload, transformInitiativeUrls} from '../uploads.ts';
 import {makeValidator} from '../validate-body.ts';
 
@@ -147,7 +148,7 @@ export const createPersonEndpoint: RequestHandler = async (
 ) => {
 	const result = await createPerson(
 		request.body as Record<string, unknown>,
-		response.locals.login.id,
+		response.locals.login!.id,
 	);
 
 	if (result.type === 'error') {
@@ -181,7 +182,7 @@ export const getPersonEndpoint: RequestHandler<{id: string}> = (
 	request,
 	response,
 ) => {
-	const result = getPerson(request.params.id, response.locals.login.id);
+	const result = getPerson(request.params.id, response.locals.login!.id);
 
 	if (!result) {
 		response.status(404).json({
@@ -208,7 +209,7 @@ export const patchPerson: RequestHandler<{id: string}> = async (
 		.prepare(
 			'SELECT id, name, owner FROM people WHERE id = :id AND owner = :owner',
 		)
-		.get({id, owner: response.locals.login.id}) as Person | undefined;
+		.get({id, owner: response.locals.login!.id}) as Person | undefined;
 
 	if (!oldRow) {
 		response.status(404).json({
@@ -241,7 +242,7 @@ export const patchPerson: RequestHandler<{id: string}> = async (
 			)
 			.get({
 				name: validateResult.data.name,
-				owner: response.locals.login.id,
+				owner: response.locals.login!.id,
 			}) as Person | undefined;
 		if (sameName) {
 			response.status(400).json({
@@ -277,7 +278,7 @@ export const patchPerson: RequestHandler<{id: string}> = async (
 			.run({
 				...newData,
 				id,
-				owner: response.locals.login.id,
+				owner: response.locals.login!.id,
 			});
 
 		response.status(200).send({
@@ -304,7 +305,7 @@ export const deletePerson: RequestHandler<{id: string}> = (
 
 	const result = database
 		.prepare('DELETE FROM people WHERE id = :id AND owner = :owner')
-		.run({id, owner: response.locals.login.id});
+		.run({id, owner: response.locals.login!.id});
 
 	if (result.changes === 0) {
 		response.status(404).json({
@@ -333,13 +334,15 @@ export function getAllPeople(owner: string) {
 export const getAllPeopleEndpoint: RequestHandler = (_request, response) => {
 	response.status(200).json({
 		type: 'success',
-		data: getAllPeople(response.locals.login.id),
+		data: getAllPeople(response.locals.login!.id),
 	});
 };
 
 export const personRouter = Router();
 
-personRouter.get('/people', getAllPeopleEndpoint);
+personRouter.get('/people', requireLogin(), getAllPeopleEndpoint);
+
+personRouter.use('/person', requireLogin());
 personRouter.post('/person/create', multerUpload.none(), createPersonEndpoint);
 personRouter.get('/person/:id', getPersonEndpoint);
 personRouter.delete('/person/:id', deletePerson);

@@ -37,7 +37,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		people &&
 			people.filter(
 				person =>
-					!initiative.signatures.some(signature => signature.id === person.id),
+					!initiative.signatures?.find(signature => signature.id === person.id),
 			),
 	);
 
@@ -60,7 +60,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			if (body.type === 'success') {
 				successState.setSuccess();
 				initiative.signatures = sortPeople([
-					...initiative.signatures,
+					...(initiative.signatures ?? []),
 					(people as Person[]).find(s => s.id === personId)!,
 				]);
 

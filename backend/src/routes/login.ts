@@ -99,9 +99,11 @@ export async function loginPost(request: Request, response: Response) {
 		secure: true,
 	});
 
-	if (request.search.has('redirect')) {
+	const search = new RelativeUrl(request.originalUrl).searchParams;
+
+	if (search.has('redirect')) {
 		// Avoid redirects to other websites
-		const redirectUrl = new RelativeUrl(request.search.get('redirect')!);
+		const redirectUrl = new RelativeUrl(search.get('redirect')!);
 
 		response.redirect(302, redirectUrl.href);
 	} else {

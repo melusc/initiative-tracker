@@ -81,10 +81,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	}
 
 	.header-menu {
-		border-radius: 1em;
 		box-shadow: var(--box-shadow);
+		border: 1px solid #4449;
 
-		position: absolute;
+		position: fixed;
 		right: 0;
 		top: 0;
 
