@@ -35,7 +35,7 @@ import {makeSlug} from '@lusc/util/slug';
 import {Router, type RequestHandler} from 'express';
 
 import {database} from '../database.ts';
-import {requireAdmin} from '../middleware/require-admin.ts';
+import {requireAdmin, requireLogin} from '../middleware/login-protect.ts';
 import {
 	fetchImage,
 	fetchPdf,
@@ -306,7 +306,7 @@ export const createInitiativeEndpoint: RequestHandler = async (
 ) => {
 	const body = mergeExpressBodyFile(request, ['pdf', 'image']);
 
-	const result = await createInitiative(response.locals.login.id, body);
+	const result = await createInitiative(response.locals.login!.id, body);
 
 	if (result.type === 'error') {
 		response.status(400).json(result);
@@ -318,8 +318,8 @@ export const createInitiativeEndpoint: RequestHandler = async (
 
 export function getInitiative(
 	id: string,
-	loginUserId: string,
-): Initiative | false {
+	loginUserId: string | undefined,
+): EnrichedInitiative | Initiative | false {
 	const initiative = database
 		.prepare('SELECT initiatives.* from initiatives where id = :id')
 		.get({id}) as Initiative | undefined;
@@ -335,7 +335,10 @@ export const getInitiativeEndpoint: RequestHandler<{id: string}> = (
 	request,
 	response,
 ) => {
-	const initiative = getInitiative(request.params.id, response.locals.login.id);
+	const initiative = getInitiative(
+		request.params.id,
+		response.locals.login?.id,
+	);
 
 	if (!initiative) {
 		response.status(404).json({
@@ -354,16 +357,19 @@ export const getInitiativeEndpoint: RequestHandler<{id: string}> = (
 
 function enrichInitiative(
 	initiative: Initiative,
-	loginUserId: string,
+	loginUserId: string | undefined,
 ): EnrichedInitiative {
-	const people = database
-		.prepare(
-			`SELECT people.* FROM people
+	const people =
+		loginUserId === undefined
+			? null
+			: (database
+					.prepare(
+						`SELECT people.* FROM people
 			INNER JOIN signatures on signatures.personId = people.id
 			WHERE signatures.initiativeId = :initiativeId
 			AND people.owner = :loginUserId`,
-		)
-		.all({initiativeId: initiative.id, loginUserId}) as Person[];
+					)
+					.all({initiativeId: initiative.id, loginUserId}) as Person[]);
 
 	const organisations = database
 		.prepare(
@@ -375,14 +381,16 @@ function enrichInitiative(
 
 	return {
 		...initiative,
-		signatures: sortPeople(people),
+		signatures: people && sortPeople(people),
 		organisations: sortOrganisations(organisations).map(organisation =>
 			transformOrganisationUrls(organisation),
 		),
 	};
 }
 
-export function getAllInitiatives(loginUserId: string): EnrichedInitiative[] {
+export function getAllInitiatives(
+	loginUserId: string | undefined,
+): EnrichedInitiative[] {
 	const rows = database
 		.prepare('SELECT initiatives.* FROM initiatives')
 		.all() as Initiative[];
@@ -398,7 +406,7 @@ export const getAllInitiativesEndpoint: RequestHandler = (
 ) => {
 	response.status(200).json({
 		type: 'success',
-		data: getAllInitiatives(response.locals.login.id),
+		data: getAllInitiatives(response.locals.login?.id),
 	});
 };
 
@@ -467,7 +475,7 @@ export const patchInitiativeEndpoint: RequestHandler<{id: string}> = async (
 			type: 'success',
 			data: enrichInitiative(
 				transformInitiativeUrls(oldRow),
-				response.locals.login.id,
+				response.locals.login!.id,
 			),
 		});
 		return;
@@ -496,7 +504,7 @@ export const patchInitiativeEndpoint: RequestHandler<{id: string}> = async (
 
 	response.status(200).send({
 		type: 'success',
-		data: getInitiative(id, response.locals.login.id),
+		data: getInitiative(id, response.locals.login!.id),
 	});
 };
 
@@ -626,10 +634,12 @@ export const initiativeRouter = Router();
 /* NON-ADMIN */
 initiativeRouter.put(
 	'/initiative/:initiativeId/sign/:personId',
+	requireLogin(),
 	initiativeAddSignature,
 );
 initiativeRouter.delete(
 	'/initiative/:initiativeId/sign/:personId',
+	requireLogin(),
 	initiativeRemoveSignature,
 );
 

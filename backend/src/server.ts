@@ -15,7 +15,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import {RelativeUrl} from '@lusc/util/relative-url';
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import helmet from 'helmet';
@@ -35,8 +34,11 @@ import {
 import {createPerson, getAllPeople, getPerson} from './api/person.ts';
 import {database} from './database.ts';
 import env from './env.ts';
-import {loginProtect} from './middleware/login-protect.ts';
-import {requireAdmin} from './middleware/require-admin.ts';
+import {
+	requireAdmin,
+	identifyUser,
+	requireLogin,
+} from './middleware/login-protect.ts';
 import {changePassword, changeUsername} from './routes/account.ts';
 import {loginPost} from './routes/login.ts';
 import {logout} from './routes/logout.ts';
@@ -50,6 +52,7 @@ app.set('view engine', 'html');
 app.set('views', staticRoot);
 app.set('x-powered-by', false);
 app.set('trust proxy', 'loopback');
+app.set('query parser', false);
 
 app.use(cookieParser());
 app.use(
@@ -73,27 +76,6 @@ app.use(
 );
 app.use(morgan('dev'));
 
-app.use((request, response, next) => {
-	const segments = request.path.split('/');
-	if (segments.includes('..')) {
-		response.status(418).type('txt').send('..');
-		return;
-	}
-
-	next();
-});
-
-app.use((request, response, next) => {
-	if (request.path.includes('\\')) {
-		response
-			.status(404)
-			.render('404', {login: response.locals.login, state: undefined});
-		return;
-	}
-
-	next();
-});
-
 app.get('/robots.txt', (_request, response) => {
 	response
 		.status(200)
@@ -107,12 +89,7 @@ Disallow: /`,
 		);
 });
 
-app.use(loginProtect(['login', 'static'], database));
-
-app.use((request, _response, next) => {
-	request.search = new RelativeUrl(request.url).searchParams;
-	next();
-});
+app.use(identifyUser(database));
 
 app.use('/api', apiRouter);
 app.use(
@@ -137,7 +114,7 @@ app.get('/logout', (request, response) => {
 app.get('/', (_, response) => {
 	response.render('index', {
 		login: response.locals.login,
-		state: getAllInitiatives(response.locals.login.id),
+		state: getAllInitiatives(response.locals.login?.id),
 	});
 });
 
@@ -164,7 +141,7 @@ app.post(
 	async (request, response) => {
 		const body = mergeExpressBodyFile(request, ['pdf', 'image']);
 
-		const initiative = await createInitiative(response.locals.login.id, body);
+		const initiative = await createInitiative(response.locals.login!.id, body);
 
 		if (initiative.type === 'error') {
 			response.status(400).render('create-initiative', {
@@ -182,7 +159,10 @@ app.post(
 );
 
 app.get('/initiative/:id', (request, response) => {
-	const initiative = getInitiative(request.params.id, response.locals.login.id);
+	const initiative = getInitiative(
+		request.params.id,
+		response.locals.login?.id,
+	);
 	if (initiative) {
 		response.status(200).render('initiative', {
 			login: response.locals.login,
@@ -195,8 +175,8 @@ app.get('/initiative/:id', (request, response) => {
 	}
 });
 
-app.get('/people', (_request, response) => {
-	const people = getAllPeople(response.locals.login.id);
+app.get('/people', requireLogin(), (_request, response) => {
+	const people = getAllPeople(response.locals.login!.id);
 
 	response.render('people', {
 		state: people,
@@ -204,34 +184,40 @@ app.get('/people', (_request, response) => {
 	});
 });
 
-app.get('/person/create', (_, response) => {
+app.get('/person/create', requireLogin(), (_, response) => {
 	response.render('create-person', {
 		login: response.locals.login,
 		state: {values: {}},
 	});
 });
 
-app.post('/person/create', multerUpload.none(), async (request, response) => {
-	const body = request.body as Record<string, unknown>;
+app.post(
+	'/person/create',
+	requireLogin(),
+	multerUpload.none(),
+	async (request, response) => {
+		const body = request.body as Record<string, unknown>;
 
-	const person = await createPerson(body, response.locals.login.id);
+		const person = await createPerson(body, response.locals.login!.id);
 
-	if (person.type === 'error') {
-		response.status(400).render('create-person', {
-			login: response.locals.login,
-			state: {
-				error: person.readableError,
-				values: request.body as Record<string, unknown>,
-			},
-		});
-		return;
-	}
+		if (person.type === 'error') {
+			response.status(400).render('create-person', {
+				login: response.locals.login,
+				state: {
+					error: person.readableError,
+					values: request.body as Record<string, unknown>,
+				},
+			});
+			return;
+		}
 
-	response.redirect(303, `/person/${person.data.id}`);
-});
+		response.redirect(303, `/person/${person.data.id}`);
+	},
+);
 
-app.get('/person/:id', (request, response) => {
-	const person = getPerson(request.params.id, response.locals.login.id);
+app.get('/person/:id', requireLogin(), (request, response) => {
+	const id = request.params['id']!;
+	const person = getPerson(id, response.locals.login!.id);
 	if (person) {
 		response.status(200).render('person', {
 			login: response.locals.login,
@@ -303,7 +289,7 @@ app.get('/organisation/:id', (request, response) => {
 	}
 });
 
-app.get('/account', (_request, response) => {
+app.get('/account', requireLogin(), (_request, response) => {
 	response.render('account', {
 		login: response.locals.login,
 		state: {
@@ -312,16 +298,70 @@ app.get('/account', (_request, response) => {
 	});
 });
 
-app.post('/account', multerUpload.none(), async (request, response) => {
-	const body = request.body as Record<string, string>;
-	if ('username' in body) {
-		const username = body['username'];
-		if (typeof username !== 'string') {
+app.post(
+	'/account',
+	requireLogin(),
+	multerUpload.none(),
+	async (request, response) => {
+		const body = request.body as Record<string, string>;
+		if ('username' in body) {
+			const username = body['username'];
+			if (typeof username !== 'string') {
+				response.status(400).render('account', {
+					login: response.locals.login,
+					state: {
+						error: {
+							username: 'Username was not a string.',
+						},
+					},
+				});
+				return;
+			}
+
+			try {
+				changeUsername(username, response.locals.login!.id);
+				response.status(200).render('account', {
+					login: {
+						...response.locals.login,
+						name: username.trim(),
+					},
+					state: {
+						success: {
+							username: 'Username changed successfully.',
+						},
+					},
+				});
+			} catch (error: unknown) {
+				const message =
+					error instanceof Error ? error.message : 'Something went wrong.';
+				response.status(400).render('account', {
+					login: response.locals.login,
+					state: {
+						values: {username},
+						error: {
+							username: message,
+						},
+					},
+				});
+			}
+
+			return;
+		}
+
+		const currentPassword = body['currentPassword'];
+		const newPassword = body['newPassword'];
+		const newPasswordRepeat = body['newPasswordRepeat'];
+
+		if (
+			typeof currentPassword !== 'string' ||
+			typeof newPassword !== 'string' ||
+			typeof newPasswordRepeat !== 'string'
+		) {
 			response.status(400).render('account', {
 				login: response.locals.login,
 				state: {
 					error: {
-						username: 'Username was not a string.',
+						password: 'Please fill in all inputs.',
 					},
 				},
 			});
@@ -329,76 +369,27 @@ app.post('/account', multerUpload.none(), async (request, response) => {
 		}
 
 		try {
-			changeUsername(username, response.locals.login.id);
-			response.status(200).render('account', {
-				login: {
-					...response.locals.login,
-					name: username.trim(),
-				},
-				state: {
-					success: {
-						username: 'Username changed successfully.',
-					},
-				},
-			});
+			await changePassword(
+				response.locals.login!.id,
+				currentPassword,
+				newPassword,
+				newPasswordRepeat,
+			);
+			logout(request, response, '/account');
 		} catch (error: unknown) {
 			const message =
 				error instanceof Error ? error.message : 'Something went wrong.';
 			response.status(400).render('account', {
 				login: response.locals.login,
 				state: {
-					values: {username},
 					error: {
-						username: message,
+						password: message,
 					},
 				},
 			});
 		}
-
-		return;
-	}
-
-	const currentPassword = body['currentPassword'];
-	const newPassword = body['newPassword'];
-	const newPasswordRepeat = body['newPasswordRepeat'];
-
-	if (
-		typeof currentPassword !== 'string' ||
-		typeof newPassword !== 'string' ||
-		typeof newPasswordRepeat !== 'string'
-	) {
-		response.status(400).render('account', {
-			login: response.locals.login,
-			state: {
-				error: {
-					password: 'Please fill in all inputs.',
-				},
-			},
-		});
-		return;
-	}
-
-	try {
-		await changePassword(
-			response.locals.login.id,
-			currentPassword,
-			newPassword,
-			newPasswordRepeat,
-		);
-		logout(request, response, '/account');
-	} catch (error: unknown) {
-		const message =
-			error instanceof Error ? error.message : 'Something went wrong.';
-		response.status(400).render('account', {
-			login: response.locals.login,
-			state: {
-				error: {
-					password: message,
-				},
-			},
-		});
-	}
-});
+	},
+);
 
 app.use((_request, response) => {
 	response

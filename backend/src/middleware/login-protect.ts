@@ -19,24 +19,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import type {DatabaseSync} from 'node:sqlite';
 
 import type {LoginInfo} from '@lusc/initiative-tracker-util/types.js';
-import type {RequestHandler} from 'express';
+import type {Request, RequestHandler, Response} from 'express';
 import {z} from 'zod';
 
-export function loginProtect(
-	allowedPaths: Set<string> | string[],
-	database: DatabaseSync,
-): RequestHandler {
+export function identifyUser(database: DatabaseSync): RequestHandler {
 	return (request, response, next) => {
-		allowedPaths = new Set(allowedPaths);
-
-		const segments = request.path.split('/');
-		// '/path/...'.split is ['', 'path', ...]
-		const firstSegment = segments[1];
-
-		if (allowedPaths.has(firstSegment!)) {
-			next();
-			return;
-		}
+		let loginInfo: LoginInfo | undefined;
 
 		const cookies = z
 			.object({
@@ -76,28 +64,73 @@ export function loginProtect(
 						});
 				}
 
-				Object.defineProperty(response.locals, 'login', {
-					value: {
-						name: session.username,
-						id: session.userId,
-						isAdmin: session.isAdmin === 1,
-					} satisfies LoginInfo,
-					writable: false,
-					configurable: false,
-				});
-
-				next();
-				return;
+				loginInfo = {
+					name: session.username,
+					id: session.userId,
+					isAdmin: session.isAdmin === 1,
+				};
 			}
 		}
 
-		const searchParameters = new URLSearchParams({
-			redirect: request.url,
+		Object.defineProperty(response.locals, 'login', {
+			value: loginInfo,
+			writable: false,
+			configurable: false,
 		});
-		response.clearCookie('session', {
-			httpOnly: true,
-			secure: true,
+
+		next();
+		return;
+	};
+}
+
+export function loginRedirect(request: Request, response: Response) {
+	const searchParameters = new URLSearchParams({
+		redirect: request.url,
+	});
+	response.clearCookie('session', {
+		httpOnly: true,
+		secure: true,
+	});
+	response.redirect(302, '/login?' + searchParameters.toString());
+}
+
+export function requireLogin(): RequestHandler {
+	return (request, response, next) => {
+		if (response.locals.login) {
+			next();
+			return;
+		}
+
+		loginRedirect(request, response);
+	};
+}
+
+export function requireAdmin(): RequestHandler {
+	return (request, response, next) => {
+		if (!response.locals.login) {
+			loginRedirect(request, response);
+			return;
+		}
+
+		if (response.locals.login.isAdmin) {
+			next();
+			return;
+		}
+
+		response.status(401);
+
+		if (request.accepts('html')) {
+			response.render('401', {
+				login: response.locals.login,
+				state: undefined,
+			});
+			return;
+		}
+
+		response.json({
+			type: 'error',
+			readableError: 'Not an admin',
+			error: 'not-an-admin',
 		});
-		response.redirect(302, '/login?' + searchParameters.toString());
 	};
 }

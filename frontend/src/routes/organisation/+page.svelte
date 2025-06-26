@@ -34,10 +34,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		<h1 class="name">{organisation.name}</h1>
 		<Organisation bind:organisation allowEdit standalone />
 
-		{#if organisation.signatures.length > 0}
+		{#if organisation.initiatives.length > 0}
 			<h1 class="initiatives-title">Initiatives</h1>
 			<div class="initiatives">
-				{#each organisation.signatures as initiative (initiative.id)}
+				{#each organisation.initiatives as initiative (initiative.id)}
 					<Initiative {initiative} allowEdit={false} standalone={false} />
 				{/each}
 			</div>

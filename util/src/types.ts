@@ -26,7 +26,7 @@ export type Initiative = {
 };
 
 export type EnrichedInitiative = Initiative & {
-	signatures: Person[];
+	signatures: Person[] | null;
 	organisations: Organisation[];
 };
 
@@ -38,7 +38,7 @@ export type Organisation = {
 };
 
 export type EnrichedOrganisation = Organisation & {
-	signatures: Initiative[];
+	initiatives: Initiative[];
 };
 
 export type Person = {

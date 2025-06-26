@@ -33,7 +33,7 @@ import {makeSlug} from '@lusc/util/slug';
 import {Router, type Request, type RequestHandler} from 'express';
 
 import {database} from '../database.ts';
-import {requireAdmin} from '../middleware/require-admin.ts';
+import {requireAdmin} from '../middleware/login-protect.ts';
 import {
 	fetchImage,
 	imageOutDirectory,
@@ -59,7 +59,7 @@ function enrichOrganisation(organisation: Organisation): EnrichedOrganisation {
 
 	return {
 		...organisation,
-		signatures: sortInitiatives(initiatives).map(initiative =>
+		initiatives: sortInitiatives(initiatives).map(initiative =>
 			transformInitiativeUrls(initiative),
 		),
 	};

@@ -39,9 +39,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		<h1 class="name">{initiative.shortName}</h1>
 		<Initiative bind:initiative allowEdit standalone />
 
-		<h1>Signatures</h1>
-		<SignedBy bind:initiative />
-		<AddSignature bind:initiative />
+		{#if initiative.signatures}
+			<h1>Signatures</h1>
+			<SignedBy bind:initiative />
+			<AddSignature bind:initiative />
+		{/if}
 
 		{#if login?.isAdmin}
 			<h1>Organisations</h1>
