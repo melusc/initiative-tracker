@@ -27,7 +27,7 @@ router.get('/:id', (request, response, next) => {
 	response.sendFile(
 		request.params.id,
 		{
-			root: fileURLToPath(pdfOutDirectory),
+			root: fileURLToPath(imageOutDirectory),
 			maxAge: '7d',
 			immutable: true,
 		},
@@ -44,7 +44,7 @@ router.get('/:id', (request, response, next) => {
 	response.sendFile(
 		request.params.id,
 		{
-			root: fileURLToPath(imageOutDirectory),
+			root: fileURLToPath(pdfOutDirectory),
 			maxAge: '7d',
 			immutable: true,
 		},
