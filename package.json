@@ -2,7 +2,7 @@
 	"name": "initiative-tracker",
 	"type": "module",
 	"devDependencies": {
-		"prettier": "^3.6.1",
+		"prettier": "^3.6.2",
 		"prettier-plugin-svelte": "^3.4.0"
 	},
 	"workspaces": [
