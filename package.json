@@ -30,6 +30,6 @@
 		"node": "^24.3.0"
 	},
 	"resolutions": {
-		"@types/express-serve-static-core": "^5.0.6"
+		"@types/express-serve-static-core": "^5.0.7"
 	}
 }
