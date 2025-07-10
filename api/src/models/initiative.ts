@@ -95,10 +95,10 @@ export class Initiative extends InjectableApi {
 			id: this.id,
 			shortName: this.shortName,
 			fullName: this.fullName,
-			website: this.website,
-			pdf: this.pdf,
-			image: this.image,
-			deadline: this.deadline,
+			website: this.website ?? null,
+			pdf: this.pdf.name,
+			image: this.image?.name ?? null,
+			deadline: this.deadline ?? null,
 		};
 	}
 
@@ -131,7 +131,7 @@ export class Initiative extends InjectableApi {
 
 		const id = this.getInitiativeSlug(shortName);
 
-		const row = {
+		const row: SqlInitiativeRow = {
 			id,
 			shortName,
 			fullName,
@@ -190,15 +190,15 @@ export class Initiative extends InjectableApi {
 		);
 	}
 
-	static all() {
+	static async all(): Promise<Initiative[]> {
 		const result = this.database
 			.prepare('SELECT * from initaitives')
 			.all() as SqlInitiativeRow[];
 
-		return result.map(row => this.fromRow(row));
+		return Promise.all(result.map(row => this.fromRow(row)));
 	}
 
-	static fromId(id: string) {
+	static async fromId(id: string): Promise<Initiative | undefined> {
 		const result = this.database
 			.prepare('SELECT * from initiatives WHERE id = :id')
 			.get({

@@ -26,6 +26,7 @@ import {
 } from './injectable-api.js';
 import {Asset, ImageAsset, PdfAsset} from './models/asset.js';
 import {Initiative} from './models/initiative.js';
+import {Organisation} from './models/organisation.js';
 
 function initDatabase(database: DatabaseSync) {
 	database.exec('PRAGMA journal_mode=WAL;');
@@ -112,12 +113,14 @@ export function createApi(options: ApiOptions): Api {
 		Asset: undefined!,
 		ImageAsset: undefined!,
 		PdfAsset: undefined!,
+		Organisation: undefined!,
 	};
 
 	const InitiativeInjected = inject(Initiative, internalApiOptions);
 	const AssetInjected = inject(Asset, internalApiOptions);
 	const ImageAssetInjected = inject(ImageAsset, internalApiOptions);
 	const PdfAssetInjected = inject(PdfAsset, internalApiOptions);
+	const OrganisationInjected = inject(Organisation, internalApiOptions);
 
 	// @ts-expect-error They depend on each other cyclically
 	internalApiOptions.Initiative = InitiativeInjected;
@@ -127,11 +130,14 @@ export function createApi(options: ApiOptions): Api {
 	internalApiOptions.ImageAsset = ImageAssetInjected;
 	// @ts-expect-error Same as above
 	internalApiOptions.PdfAsset = PdfAssetInjected;
+	// @ts-expect-error Same as above
+	internalApiOptions.Organisation = OrganisationInjected;
 
 	return {
 		Initiative: InitiativeInjected,
 		Asset: AssetInjected,
 		ImageAsset: ImageAssetInjected,
 		PdfAsset: PdfAssetInjected,
+		Organisation: OrganisationInjected,
 	} as const;
 }

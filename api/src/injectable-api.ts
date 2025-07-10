@@ -20,6 +20,7 @@ import type {DatabaseSync} from 'node:sqlite';
 
 import type {Asset, ImageAsset, PdfAsset} from './models/asset.js';
 import type {Initiative} from './models/initiative.js';
+import type {Organisation} from './models/organisation.js';
 
 export type ApiOptions = {
 	readonly database: DatabaseSync;
@@ -32,6 +33,7 @@ export type Api = {
 	readonly Asset: typeof Asset;
 	readonly PdfAsset: typeof PdfAsset;
 	readonly ImageAsset: typeof ImageAsset;
+	readonly Organisation: typeof Organisation;
 };
 
 export type InternalApiOptions = ApiOptions & Api;
@@ -138,5 +140,15 @@ export class InjectableApi {
 	/** @internal */
 	static get ImageAsset() {
 		return this.apiOptions.ImageAsset;
+	}
+
+	/** @internal */
+	get Organisation() {
+		return this.apiOptions.Organisation;
+	}
+
+	/** @internal */
+	static get Organisation() {
+		return this.apiOptions.Organisation;
 	}
 }

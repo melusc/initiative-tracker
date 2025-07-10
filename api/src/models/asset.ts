@@ -219,8 +219,7 @@ export class PdfAsset extends Asset {
 		const extension = await this._validateAndGetExtension(pdf);
 
 		const name = await this._write(pdf, extension);
-		const asset = await this.fromName(name);
-		return asset!;
+		return new this.Asset(name, privateConstructorKey);
 	}
 }
 
@@ -245,7 +244,6 @@ export class ImageAsset extends Asset {
 		}
 
 		const name = await this._write(data, extension);
-		const asset = await this.fromName(name);
-		return asset!;
+		return new this.Asset(name, privateConstructorKey);
 	}
 }
