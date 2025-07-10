@@ -27,7 +27,7 @@
 	"scripts": {
 		"fmt": "eslint --fix",
 		"build": "tsc",
-		"test": "vitest"
+		"test": "vitest run"
 	},
 	"author": {
 		"email": "oss@lusc.ch",
