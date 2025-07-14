@@ -26,7 +26,7 @@ import {fileTypeFromBuffer as fileTypeFromBuffer_} from 'file-type';
 import ip from 'ip';
 import {optimize as svgoOptimise} from 'svgo';
 
-import {ApiError, NotImplementedError} from '../error.js';
+import {ApiError} from '../error.js';
 import {InjectableApi} from '../injectable-api.js';
 
 // Add support for svg
@@ -79,6 +79,12 @@ export class Asset extends InjectableApi {
 
 	private static generateName(extension: string) {
 		return [randomBytes(40).toString('base64url'), extension].join('.');
+	}
+
+	/** @internal */
+	static optimise(extension: string, data: Buffer): Buffer | string {
+		void extension;
+		return data;
 	}
 
 	/** @internal */
@@ -154,6 +160,10 @@ export class Asset extends InjectableApi {
 	}
 
 	private static async _validateUrl(url: unknown): Promise<string> {
+		if (url instanceof URL) {
+			url = url.href;
+		}
+
 		if (typeof url !== 'string') {
 			throw new ApiError(`Invalid url ${typeOf(url)}.`);
 		}
@@ -167,17 +177,17 @@ export class Asset extends InjectableApi {
 		const parsedUrl = new URL(trimmedUrl);
 
 		if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
-			throw new Error(`Invalid protocol ${parsedUrl.protocol}.`);
+			throw new ApiError(`Invalid protocol ${parsedUrl.protocol}.`);
 		}
 
 		if (await this._isInternal(new URL(trimmedUrl))) {
-			throw new Error(`Invalid url "${trimmedUrl}".`);
+			throw new ApiError(`Invalid url "${trimmedUrl}".`);
 		}
 
 		return trimmedUrl;
 	}
 
-	private static async _safeFetch(url: string) {
+	private static async _safeFetch(url: string | URL) {
 		await this._validateUrl(url);
 
 		const controller = new AbortController();
@@ -197,13 +207,17 @@ export class Asset extends InjectableApi {
 		return Buffer.from(body);
 	}
 
-	static async fromUrl(url: string) {
+	static async createFromUrl(url: string | URL) {
 		const buffer = await this._safeFetch(url);
-		return this.new(buffer);
+		return this.createFromFile(buffer);
 	}
 
-	static new(_buffer: Buffer): Promise<Asset> {
-		throw new NotImplementedError('Asset.new');
+	static async createFromFile(buffer: Buffer): Promise<Asset> {
+		const extension = await this._validateAndGetExtension(buffer);
+		const optimised = this.optimise(extension, buffer);
+
+		const name = await this._write(optimised, extension);
+		return new this.Asset(name, privateConstructorKey);
 	}
 
 	toJson() {
@@ -213,14 +227,7 @@ export class Asset extends InjectableApi {
 
 export class PdfAsset extends Asset {
 	/** @internal */
-	static override readonly _validMimeTypes = new Set('application/pdf');
-
-	static override async new(pdf: Buffer) {
-		const extension = await this._validateAndGetExtension(pdf);
-
-		const name = await this._write(pdf, extension);
-		return new this.Asset(name, privateConstructorKey);
-	}
+	static override readonly _validMimeTypes = new Set(['application/pdf']);
 }
 
 export class ImageAsset extends Asset {
@@ -232,18 +239,17 @@ export class ImageAsset extends Asset {
 		'image/svg+xml',
 	]);
 
-	static override async new(image: Buffer) {
-		const extension = await this._validateAndGetExtension(image);
-
-		let data: Buffer | string = image;
-
-		if (extension === 'svg') {
-			data = svgoOptimise(image.toString(), {
-				multipass: true,
-			}).data;
+	static override optimise(extension: string, data: Buffer): Buffer | string {
+		if (extension !== 'svg') {
+			return data;
 		}
 
-		const name = await this._write(data, extension);
-		return new this.Asset(name, privateConstructorKey);
+		try {
+			return svgoOptimise(data.toString(), {
+				multipass: true,
+			}).data;
+		} catch {
+			return data;
+		}
 	}
 }
