@@ -161,11 +161,11 @@ export class Initiative extends InjectableApi {
 		);
 	}
 
-	private static async fromRow(row: SqlInitiativeRow): Promise<Initiative>;
-	private static async fromRow(
+	static async #fromRow(row: SqlInitiativeRow): Promise<Initiative>;
+	static async #fromRow(
 		row: SqlInitiativeRow | undefined,
 	): Promise<Initiative | undefined>;
-	private static async fromRow(row: SqlInitiativeRow | undefined) {
+	static async #fromRow(row: SqlInitiativeRow | undefined) {
 		if (!row) {
 			return;
 		}
@@ -195,7 +195,7 @@ export class Initiative extends InjectableApi {
 			.prepare('SELECT * from initaitives')
 			.all() as SqlInitiativeRow[];
 
-		return Promise.all(result.map(row => this.fromRow(row)));
+		return Promise.all(result.map(row => this.#fromRow(row)));
 	}
 
 	static async fromId(id: string): Promise<Initiative | undefined> {
@@ -205,7 +205,7 @@ export class Initiative extends InjectableApi {
 				id,
 			}) as SqlInitiativeRow | undefined;
 
-		return this.fromRow(result);
+		return this.#fromRow(result);
 	}
 
 	updateShortName(newShortName: string) {

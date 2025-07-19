@@ -26,7 +26,9 @@ import {
 } from './injectable-api.js';
 import {Asset, ImageAsset, PdfAsset} from './models/asset.js';
 import {Initiative} from './models/initiative.js';
+import {Login} from './models/login.js';
 import {Organisation} from './models/organisation.js';
+import {Session} from './models/session.js';
 
 function initDatabase(database: DatabaseSync) {
 	database.exec('PRAGMA journal_mode=WAL;');
@@ -35,8 +37,7 @@ function initDatabase(database: DatabaseSync) {
 		CREATE TABLE IF NOT EXISTS logins (
 				userId TEXT PRIMARY KEY,
 				username TEXT NOT NULL UNIQUE,
-				passwordHash BLOB NOT NULL,
-				passwordSalt BLOB NOT NULL,
+				passwordHash TEXT NOT NULL,
 				isAdmin BOOLEAN NOT NULL CHECK (isAdmin IN (0, 1))
 		);
 
@@ -114,6 +115,8 @@ export function createApi(options: ApiOptions): Api {
 		ImageAsset: undefined!,
 		PdfAsset: undefined!,
 		Organisation: undefined!,
+		Login: undefined!,
+		Session: undefined!,
 	};
 
 	const InitiativeInjected = inject(Initiative, internalApiOptions);
@@ -121,6 +124,8 @@ export function createApi(options: ApiOptions): Api {
 	const ImageAssetInjected = inject(ImageAsset, internalApiOptions);
 	const PdfAssetInjected = inject(PdfAsset, internalApiOptions);
 	const OrganisationInjected = inject(Organisation, internalApiOptions);
+	const LoginInjected = inject(Login, internalApiOptions);
+	const SessionInjected = inject(Session, internalApiOptions);
 
 	// @ts-expect-error They depend on each other cyclically
 	internalApiOptions.Initiative = InitiativeInjected;
@@ -132,6 +137,10 @@ export function createApi(options: ApiOptions): Api {
 	internalApiOptions.PdfAsset = PdfAssetInjected;
 	// @ts-expect-error Same as above
 	internalApiOptions.Organisation = OrganisationInjected;
+	// @ts-expect-error Same as above
+	internalApiOptions.Login = LoginInjected;
+	// @ts-expect-error Same as above
+	internalApiOptions.Session = SessionInjected;
 
 	return {
 		Initiative: InitiativeInjected,
@@ -139,5 +148,7 @@ export function createApi(options: ApiOptions): Api {
 		ImageAsset: ImageAssetInjected,
 		PdfAsset: PdfAssetInjected,
 		Organisation: OrganisationInjected,
+		Login: LoginInjected,
+		Session: SessionInjected,
 	} as const;
 }
