@@ -38,6 +38,7 @@ await writeFile(new URL('.gitignore', parentTemporaryDirectory), '*');
 
 type UtilityApi = Readonly<
 	Api & {
+		database: DatabaseSync;
 		listFiles(): Promise<ReadonlySet<string>>;
 		listPdf(): Promise<ReadonlySet<string>>;
 		listImages(): Promise<ReadonlySet<string>>;
@@ -108,6 +109,7 @@ export const apiTest = test.extend({
 
 		const utilityApi = {
 			...api,
+			database,
 			listFiles,
 			listPdf,
 			listImages,
