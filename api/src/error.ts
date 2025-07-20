@@ -18,7 +18,3 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 export class ApiError extends Error {
 	override name = 'ApiError';
 }
-
-export class NotImplementedError extends Error {
-	override name = 'NotImplementedError';
-}
