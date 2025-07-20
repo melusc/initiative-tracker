@@ -19,6 +19,6 @@ import {expect} from 'vitest';
 
 import {apiTest} from '../utilities.js';
 
-apiTest.todo('Organisation', ({api: {Organisation}}) => {
-	expect(Organisation).toBeDefined();
+apiTest.todo('Login', ({api: {Login}}) => {
+	expect(Login).toBeDefined();
 });

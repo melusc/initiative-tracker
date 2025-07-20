@@ -15,10 +15,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import {test, expect} from 'vitest';
+import {expect} from 'vitest';
 
-import {Initiative} from '../../src/models/initiative.js';
+import {apiTest} from '../utilities.js';
 
-test('todo', () => {
+apiTest.todo('Initiative', ({api: {Initiative}}) => {
 	expect(Initiative).toBeDefined();
 });
