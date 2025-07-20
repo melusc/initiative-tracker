@@ -118,3 +118,68 @@ apiTest(
 		expect(initiativeCopy!.toJson()).toStrictEqual(initiative.toJson());
 	},
 );
+
+apiTest(
+	'Adding and removing organisations',
+	async ({api: {Initiative, Login, Organisation, PdfAsset}}) => {
+		const owner = await Login.create('login', 'login', true);
+
+		// eslint-disable-next-line security/detect-non-literal-fs-filename
+		const pdfBuffer = await readFile(sampleAssetPaths.pdf);
+		const pdfAsset = await PdfAsset.createFromFile(pdfBuffer);
+
+		const organisation1 = Organisation.create(
+			'B organisation1',
+			undefined,
+			'https://organisation1/',
+		);
+		const organisation2 = Organisation.create(
+			'A organisation2',
+			undefined,
+			'https://organisation2/',
+		);
+
+		const initiative = Initiative.create(
+			'initiative',
+			'initiative',
+			undefined,
+			pdfAsset,
+			undefined,
+			undefined,
+		);
+
+		await initiative.resolveSignaturesOrganisations(owner);
+		expect(initiative.organisations).toHaveLength(0);
+
+		initiative.addOrganisation(organisation1);
+
+		expect(initiative.organisations).toHaveLength(1);
+
+		let initiativeCopy = await Initiative.fromId(initiative.id);
+		await initiativeCopy!.resolveSignaturesOrganisations(owner);
+		expect(
+			initiativeCopy!.organisations.map(organisation => organisation.id),
+		).toStrictEqual([organisation1.id]);
+
+		initiative.addOrganisation(organisation2);
+
+		expect(
+			initiative.organisations.map(organisation => organisation.id),
+		).toStrictEqual([organisation2.id, organisation1.id]);
+
+		initiativeCopy = await Initiative.fromId(initiative.id);
+		await initiativeCopy!.resolveSignaturesOrganisations(owner);
+		expect(
+			initiativeCopy!.organisations.map(organisation => organisation.id),
+		).toStrictEqual([organisation2.id, organisation1.id]);
+
+		initiative.removeOrganisation(organisation2);
+
+		expect(initiative.organisations).toHaveLength(1);
+		expect(initiative.organisations[0]!.id).toStrictEqual(organisation1.id);
+
+		initiativeCopy = await Initiative.fromId(initiative.id);
+		await initiativeCopy!.resolveSignaturesOrganisations(owner);
+		expect(initiativeCopy!.organisations).toHaveLength(1);
+	},
+);

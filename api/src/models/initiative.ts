@@ -464,8 +464,8 @@ export class Initiative extends InjectableApi {
 			this.database
 				.prepare(
 					`INSERT INTO initiativeOrganisations
-					WHERE initiativeId = :initiativeId
-					AND organisationId = :organisationId`,
+					(initiativeId, organisationId)
+					VALUES (:initiativeId, :organisationId)`,
 				)
 				.run({
 					initiativeId: this.id,
