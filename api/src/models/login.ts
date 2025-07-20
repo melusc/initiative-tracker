@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import {randomBytes} from 'node:crypto';
+
 import bcrypt from 'bcrypt';
 
 import {ApiError} from '../error.js';
@@ -78,7 +80,7 @@ export class Login extends InjectableApi {
 		const row = this.database
 			.prepare(
 				`SELECT * from logins
-			WHERE userId = :userId`,
+				WHERE userId = :userId`,
 			)
 			.get({
 				userId,
@@ -91,7 +93,7 @@ export class Login extends InjectableApi {
 		const row = this.database
 			.prepare(
 				`SELECT * from logins
-			WHERE username = :username`,
+				WHERE username = :username`,
 			)
 			.get({
 				username,
@@ -100,11 +102,38 @@ export class Login extends InjectableApi {
 		return this.#fromRow(row);
 	}
 
-	static async login(username: string, password: string) {
+	static async create(username: string, password: string, isAdmin: boolean) {
+		const otherLogin = this.fromUsername(username);
+
+		if (otherLogin) {
+			throw new ApiError(`User with username "${username}" already exists.`);
+		}
+
+		const passwordHash = await bcrypt.hash(password, this.#HASH_ROUNDS);
+
+		const id = randomBytes(40).toString('base64url');
+
+		this.database
+			.prepare(
+				`INSERT INTO logins
+				(userId, username, passwordHash, isAdmin)
+				VALUES (:id, :username, :passwordHash, :isAdmin)`,
+			)
+			.run({
+				id,
+				username,
+				passwordHash,
+				isAdmin: isAdmin ? 1 : 0,
+			});
+
+		return new this.Login(id, username, isAdmin, privateConstructorKey);
+	}
+
+	static async fromCredentials(username: string, password: string) {
 		const row = this.database
 			.prepare(
 				`SELECT * from logins
-			WHERE username = :username`,
+				WHERE username = :username`,
 			)
 			.get({
 				username,
@@ -126,7 +155,7 @@ export class Login extends InjectableApi {
 		const row = this.database
 			.prepare(
 				`SELECT passwordHash from logins
-			WHERE userId = :userId`,
+				WHERE userId = :userId`,
 			)
 			.get({
 				userId: this.userId,
@@ -141,8 +170,8 @@ export class Login extends InjectableApi {
 		this.database
 			.prepare(
 				`UPDATE logins
-			SET passwordHash = :hash
-			WHERE userId = :userId`,
+				SET passwordHash = :hash
+				WHERE userId = :userId`,
 			)
 			.run({
 				userId: this.userId,
@@ -158,8 +187,8 @@ export class Login extends InjectableApi {
 		this.database
 			.prepare(
 				`UPDATE logins
-			SET username = :username
-			WHERE userId = :userId`,
+				SET username = :username
+				WHERE userId = :userId`,
 			)
 			.run({
 				userId: this.userId,
@@ -177,8 +206,8 @@ export class Login extends InjectableApi {
 		this.database
 			.prepare(
 				`UPDATE logins
-			SET isAdmin = :isAdmin
-			WHERE userId = :userId`,
+				SET isAdmin = :isAdmin
+				WHERE userId = :userId`,
 			)
 			.run({
 				userId: this.userId,
