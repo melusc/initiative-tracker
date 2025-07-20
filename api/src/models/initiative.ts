@@ -15,12 +15,19 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import {
+	sortOrganisations,
+	sortPeople,
+} from '@lusc/initiative-tracker-util/sort.js';
 import {makeSlug} from '@lusc/util/slug';
 
 import {ApiError} from '../error.js';
 import {InjectableApi} from '../injectable-api.js';
 
 import type {Asset} from './asset.js';
+import type {Login} from './login.js';
+import type {Organisation, OrganisationJson} from './organisation.js';
+import type {Person, PersonJson} from './person.js';
 
 type SqlInitiativeRow = {
 	id: string;
@@ -32,6 +39,18 @@ type SqlInitiativeRow = {
 	deadline: string | null;
 };
 
+export type InitiativeJson = {
+	id: string;
+	shortName: string;
+	fullName: string;
+	website: string | null;
+	pdf: string;
+	image: string | null;
+	deadline: string | null;
+	signatures: PersonJson[];
+	organisations: OrganisationJson[];
+};
+
 const privateConstructorKey = Symbol();
 
 export class Initiative extends InjectableApi {
@@ -41,6 +60,9 @@ export class Initiative extends InjectableApi {
 	private _pdf: Asset;
 	private _image: Asset | undefined;
 	private _deadline: string | undefined;
+	private _signatures: Person[] = [];
+	private _organisations: Organisation[] = [];
+	private _resolvedSignaturesOrganisations = false;
 
 	constructor(
 		readonly id: string,
@@ -90,7 +112,15 @@ export class Initiative extends InjectableApi {
 		return this._deadline;
 	}
 
-	toJson() {
+	get signatures() {
+		return this._signatures;
+	}
+
+	get organisations() {
+		return this._organisations;
+	}
+
+	toJson(): InitiativeJson {
 		return {
 			id: this.id,
 			shortName: this.shortName,
@@ -99,6 +129,10 @@ export class Initiative extends InjectableApi {
 			pdf: this.pdf.name,
 			image: this.image?.name ?? null,
 			deadline: this.deadline ?? null,
+			signatures: this.signatures.map(signature => signature.toJson()),
+			organisations: this.organisations.map(organisation =>
+				organisation.toJson(),
+			),
 		};
 	}
 
@@ -307,6 +341,42 @@ export class Initiative extends InjectableApi {
 		this._image = newImage;
 	}
 
+	async resolveSignaturesOrganisations(owner: Login) {
+		const signatureRows = this.database
+			.prepare(
+				`SELECT personId FROM signatures
+			WHERE initiativeId = :initiativeId`,
+			)
+			.all({
+				initiativeId: this.id,
+			}) as Array<{personId: string}>;
+
+		const signatures = signatureRows
+			.map(({personId}) => this.Person.fromId(personId, owner))
+			.filter(person => person !== undefined);
+
+		this._signatures = sortPeople(signatures);
+
+		const organisationRows = this.database
+			.prepare(
+				`SELECT organisationId FROM initiativeOrganisations
+			WHERE initiativeId = :initiativeId`,
+			)
+			.all({
+				initiativeId: this.id,
+			}) as Array<{organisationId: string}>;
+
+		const organisations = (await Promise.all(
+			organisationRows.map(({organisationId}) =>
+				this.Organisation.fromId(organisationId),
+			),
+		)) as Array<Organisation>;
+
+		this._organisations = sortOrganisations(organisations);
+
+		this._resolvedSignaturesOrganisations = true;
+	}
+
 	updateDeadline(newDeadline: string | undefined) {
 		if (this.deadline === newDeadline) {
 			return;
@@ -343,5 +413,90 @@ export class Initiative extends InjectableApi {
 		try {
 			await this.pdf.rm();
 		} catch {}
+	}
+
+	addSignature(person: Person) {
+		if (!this._resolvedSignaturesOrganisations) {
+			throw new ApiError('Must initialise signatures and organisations.');
+		}
+
+		try {
+			this.database
+				.prepare(
+					`INSERT INTO signatures
+					(initiativeId, personId)
+					VALUES (:initiativeId, :personId)`,
+				)
+				.run({
+					initiativeId: this.id,
+					personId: person.id,
+				});
+
+			this._signatures = sortPeople([...this.signatures, person]);
+		} catch {}
+	}
+
+	removeSignature(person: Person) {
+		if (!this._resolvedSignaturesOrganisations) {
+			throw new ApiError('Must initialise signatures and organisations.');
+		}
+
+		this.database
+			.prepare(
+				`DELETE FROM signatures
+				WHERE initiativeId = :initiativeId
+				AND personId = :personId`,
+			)
+			.run({
+				initiativeId: this.id,
+				personId: person.id,
+			});
+
+		this._signatures = this._signatures.filter(other => other.id !== person.id);
+	}
+
+	addOrganisation(organisation: Organisation) {
+		if (!this._resolvedSignaturesOrganisations) {
+			throw new ApiError('Must initialise signatures and organisations.');
+		}
+
+		try {
+			this.database
+				.prepare(
+					`INSERT INTO initiativeOrganisations
+					WHERE initiativeId = :initiativeId
+					AND organisationId = :organisationId`,
+				)
+				.run({
+					initiativeId: this.id,
+					organisationId: organisation.id,
+				});
+
+			this._organisations = sortOrganisations([
+				...this.organisations,
+				organisation,
+			]);
+		} catch {}
+	}
+
+	removeOrganisation(organisation: Organisation) {
+		if (!this._resolvedSignaturesOrganisations) {
+			throw new ApiError('Must initialise signatures and organisations.');
+		}
+
+		this.database
+			.prepare(
+				`DELETE FROM initiativeOrganisations
+				WHERE initiativeId = :initiativeId
+				AND organisationId = :organisationId`,
+			)
+			.run({
+				initiativeId: this.id,
+				organisationId: organisation.id,
+			});
+
+		this._organisations = this.organisations.filter(
+			other => other.id !== organisation.id,
+		);
 	}
 }

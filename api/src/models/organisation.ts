@@ -15,12 +15,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import {sortInitiatives} from '@lusc/initiative-tracker-util/sort.js';
 import {makeSlug} from '@lusc/util/slug';
 
 import {ApiError} from '../error.js';
 import {InjectableApi} from '../injectable-api.js';
 
 import type {Asset} from './asset.js';
+import type {Initiative, InitiativeJson} from './initiative.js';
 
 type SqlOrganisationRow = {
 	id: string;
@@ -29,12 +31,22 @@ type SqlOrganisationRow = {
 	website: string | null;
 };
 
+export type OrganisationJson = {
+	id: string;
+	name: string;
+	image: string | null;
+	website: string | null;
+	initiatives: InitiativeJson[];
+};
+
 const privateConstructorKey = Symbol();
 
 export class Organisation extends InjectableApi {
 	private _name: string;
 	private _image: Asset | undefined;
 	private _website: string | undefined;
+	private _initiatives: Initiative[] = [];
+	private _initiativesResolved = false;
 
 	constructor(
 		readonly id: string,
@@ -66,12 +78,17 @@ export class Organisation extends InjectableApi {
 		return this._website;
 	}
 
-	toJson() {
+	get initiatives() {
+		return this._initiatives;
+	}
+
+	toJson(): OrganisationJson {
 		return {
 			id: this.id,
 			name: this.name,
 			image: this.image?.name ?? null,
 			website: this.website ?? null,
+			initiatives: this.initiatives.map(initiative => initiative.toJson()),
 		};
 	}
 
@@ -161,6 +178,28 @@ export class Organisation extends InjectableApi {
 		return this.#fromRow(result);
 	}
 
+	// Avoid infinite recursion
+	// Only resolve explicitly
+	async resolveInitiatives() {
+		const initiativeRows = this.database
+			.prepare(
+				`SELECT initiativeId FROM initiativeOrganisations
+				WHERE organisationId = :organisationId`,
+			)
+			.all({
+				organisationId: this.id,
+			}) as Array<{initiativeId: string}>;
+
+		const initiatives = (await Promise.all(
+			initiativeRows.map(({initiativeId}) =>
+				this.Initiative.fromId(initiativeId),
+			),
+		)) as Array<Initiative>;
+
+		this._initiatives = sortInitiatives(initiatives);
+		this._initiativesResolved = true;
+	}
+
 	updateName(newName: string) {
 		if (newName === this.name) {
 			return;
@@ -220,6 +259,48 @@ export class Organisation extends InjectableApi {
 			});
 
 		this._website = newWebsite;
+	}
+
+	addInitiative(initiative: Initiative) {
+		if (!this._initiativesResolved) {
+			throw new ApiError('Must initialise initiatives.');
+		}
+
+		try {
+			this.database
+				.prepare(
+					`INSERT INTO initiativeOrganisations
+					(initiativeId, organisationId)
+					VALUES (:initiativeId, :organisationId)`,
+				)
+				.run({
+					initiativeId: initiative.id,
+					organisationId: this.id,
+				});
+
+			this._initiatives = sortInitiatives([...this.initiatives, initiative]);
+		} catch {}
+	}
+
+	removeInitiative(initiative: Initiative) {
+		if (!this._initiativesResolved) {
+			throw new ApiError('Must initialise initiatives.');
+		}
+
+		this.database
+			.prepare(
+				`DELETE FROM initiativeOrganisations
+				WHERE organisationId = :organisationId
+				AND initiativeId = :initiativeId`,
+			)
+			.run({
+				organisationId: this.id,
+				initiativeId: initiative.id,
+			});
+
+		this._initiatives = this.initiatives.filter(
+			other => other.id !== initiative.id,
+		);
 	}
 
 	async rm() {

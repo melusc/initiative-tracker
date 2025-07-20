@@ -15,11 +15,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import {sortInitiatives} from '@lusc/initiative-tracker-util/sort.js';
 import {makeSlug} from '@lusc/util/slug';
 
 import {ApiError} from '../error.js';
 import {InjectableApi} from '../injectable-api.js';
 
+import type {Initiative, InitiativeJson} from './initiative.js';
 import type {Login} from './login.js';
 
 type SqlPersonRow = {
@@ -28,11 +30,20 @@ type SqlPersonRow = {
 	owner: string;
 };
 
+export type PersonJson = {
+	id: string;
+	name: string;
+	owner: string;
+	signatures: InitiativeJson[];
+};
+
 const privateConstructorKey = Symbol();
 
 export class Person extends InjectableApi {
 	private _name: string;
 	private _owner: Login;
+	private _signatures: Initiative[] = [];
+	private _signaturesResolved = false;
 
 	constructor(
 		readonly id: string,
@@ -56,6 +67,10 @@ export class Person extends InjectableApi {
 
 	get owner() {
 		return this._owner;
+	}
+
+	get signatures() {
+		return this._signatures;
 	}
 
 	static #fromRow(row: SqlPersonRow): Person;
@@ -141,6 +156,37 @@ export class Person extends InjectableApi {
 		return new this.Person(slug, name, owner, privateConstructorKey);
 	}
 
+	// Avoid infinite recursion
+	// Only resolve explicitly
+	async resolveSignatures() {
+		const signatureRows = this.database
+			.prepare(
+				`SELECT initiativeId FROM signatures
+				WHERE personId = :personId`,
+			)
+			.all({
+				personId: this.id,
+			}) as Array<{initiativeId: string}>;
+
+		const signatures = (await Promise.all(
+			signatureRows.map(({initiativeId}) =>
+				this.Initiative.fromId(initiativeId),
+			),
+		)) as Array<Initiative>;
+
+		this._signatures = sortInitiatives(signatures);
+		this._signaturesResolved = true;
+	}
+
+	toJson(): PersonJson {
+		return {
+			id: this.id,
+			name: this.name,
+			owner: this.owner.userId,
+			signatures: this.signatures.map(signature => signature.toJson()),
+		};
+	}
+
 	updateName(newName: string) {
 		if (newName === this.name) {
 			return;
@@ -174,5 +220,47 @@ export class Person extends InjectableApi {
 			.run({
 				id: this.id,
 			});
+	}
+
+	addSignature(initiative: Initiative) {
+		if (!this._signaturesResolved) {
+			throw new ApiError('Must initialise signatures.');
+		}
+
+		try {
+			this.database
+				.prepare(
+					`INSERT INTO signatures
+					(initiativeId, personId)
+					VALUES (:initiativeId, :personId)`,
+				)
+				.run({
+					initiativeId: initiative.id,
+					personId: this.id,
+				});
+
+			this._signatures = sortInitiatives([...this.signatures, initiative]);
+		} catch {}
+	}
+
+	removeSignature(initiative: Initiative) {
+		if (!this._signaturesResolved) {
+			throw new ApiError('Must initialise signatures.');
+		}
+
+		this.database
+			.prepare(
+				`DELETE FROM signatures
+				WHERE initiativeId = :initiativeId
+				AND personId = :personId`,
+			)
+			.run({
+				initiativeId: initiative.id,
+				personId: this.id,
+			});
+
+		this._signatures = this.signatures.filter(
+			other => other.id !== initiative.id,
+		);
 	}
 }
