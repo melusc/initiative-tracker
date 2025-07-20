@@ -54,7 +54,7 @@ export class Asset extends InjectableApi {
 		constructorKey: symbol,
 	) {
 		if (constructorKey !== privateConstructorKey) {
-			throw new Error('Asset.constructor is private');
+			throw new ApiError('Asset.constructor is private');
 		}
 
 		super();
@@ -201,7 +201,7 @@ export class Asset extends InjectableApi {
 		const body = await response.arrayBuffer();
 
 		if (body.byteLength > this.fileSizeLimit) {
-			throw new Error('File is too large');
+			throw new ApiError('File is too large');
 		}
 
 		return Buffer.from(body);

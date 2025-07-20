@@ -75,7 +75,7 @@ export class Initiative extends InjectableApi {
 		constructorKey: symbol,
 	) {
 		if (constructorKey !== privateConstructorKey) {
-			throw new Error('Initiative.constructor is private.');
+			throw new ApiError('Initiative.constructor is private.');
 		}
 
 		super();

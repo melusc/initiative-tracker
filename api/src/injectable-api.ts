@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // eslint-disable-next-line n/no-unsupported-features/node-builtins
 import type {DatabaseSync} from 'node:sqlite';
 
+import {ApiError} from './error.js';
 import type {Asset, ImageAsset, PdfAsset} from './models/asset.js';
 import type {Initiative} from './models/initiative.js';
 import type {Login} from './models/login.js';
@@ -70,12 +71,12 @@ export function inject<ClassType>(
 export class InjectableApi {
 	/** @internal */
 	get apiOptions(): InternalApiOptions {
-		throw new Error('API Options not injected.');
+		throw new ApiError('API Options not injected.');
 	}
 
 	/** @internal */
 	static get apiOptions(): InternalApiOptions {
-		throw new Error('API Options not injected.');
+		throw new ApiError('API Options not injected.');
 	}
 
 	/** @internal */
