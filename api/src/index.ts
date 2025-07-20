@@ -28,6 +28,7 @@ import {Asset, ImageAsset, PdfAsset} from './models/asset.js';
 import {Initiative} from './models/initiative.js';
 import {Login} from './models/login.js';
 import {Organisation} from './models/organisation.js';
+import {Person} from './models/person.js';
 import {Session} from './models/session.js';
 
 function initDatabase(database: DatabaseSync) {
@@ -117,6 +118,7 @@ export function createApi(options: ApiOptions): Api {
 		Organisation: undefined!,
 		Login: undefined!,
 		Session: undefined!,
+		Person: undefined!,
 	};
 
 	const InitiativeInjected = inject(Initiative, internalApiOptions);
@@ -126,6 +128,7 @@ export function createApi(options: ApiOptions): Api {
 	const OrganisationInjected = inject(Organisation, internalApiOptions);
 	const LoginInjected = inject(Login, internalApiOptions);
 	const SessionInjected = inject(Session, internalApiOptions);
+	const PersonInjected = inject(Person, internalApiOptions);
 
 	// @ts-expect-error They depend on each other cyclically
 	internalApiOptions.Initiative = InitiativeInjected;
@@ -141,6 +144,8 @@ export function createApi(options: ApiOptions): Api {
 	internalApiOptions.Login = LoginInjected;
 	// @ts-expect-error Same as above
 	internalApiOptions.Session = SessionInjected;
+	// @ts-expect-error Same as above
+	internalApiOptions.Person = PersonInjected;
 
 	return {
 		Initiative: InitiativeInjected,
@@ -150,5 +155,6 @@ export function createApi(options: ApiOptions): Api {
 		Organisation: OrganisationInjected,
 		Login: LoginInjected,
 		Session: SessionInjected,
+		Person: PersonInjected,
 	} as const;
 }

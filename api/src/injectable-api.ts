@@ -22,6 +22,7 @@ import type {Asset, ImageAsset, PdfAsset} from './models/asset.js';
 import type {Initiative} from './models/initiative.js';
 import type {Login} from './models/login.js';
 import type {Organisation} from './models/organisation.js';
+import type {Person} from './models/person.js';
 import type {Session} from './models/session.js';
 
 export type ApiOptions = {
@@ -38,6 +39,7 @@ export type Api = {
 	readonly Organisation: typeof Organisation;
 	readonly Login: typeof Login;
 	readonly Session: typeof Session;
+	readonly Person: typeof Person;
 };
 
 export type InternalApiOptions = ApiOptions & Api;
@@ -171,7 +173,18 @@ export class InjectableApi {
 		return this.apiOptions.Session;
 	}
 
+	/** @internal */
 	static get Session() {
 		return this.apiOptions.Session;
+	}
+
+	/** @internal */
+	get Person() {
+		return this.apiOptions.Person;
+	}
+
+	/** @internal */
+	static get Person() {
+		return this.apiOptions.Person;
 	}
 }

@@ -216,8 +216,8 @@ export class Initiative extends InjectableApi {
 		this.database
 			.prepare(
 				`UPDATE initiatives
-			SET shortName = :shortName
-			WHERE id = :id`,
+				SET shortName = :shortName
+				WHERE id = :id`,
 			)
 			.run({
 				shortName: newShortName,
@@ -235,8 +235,8 @@ export class Initiative extends InjectableApi {
 		this.database
 			.prepare(
 				`UPDATE initiatives
-			SET fullName = :fullName
-			WHERE id = :id`,
+				SET fullName = :fullName
+				WHERE id = :id`,
 			)
 			.run({
 				fullName: newFullName,
@@ -254,8 +254,8 @@ export class Initiative extends InjectableApi {
 		this.database
 			.prepare(
 				`UPDATE initiatives
-			SET website = :website
-			WHERE id = :id`,
+				SET website = :website
+				WHERE id = :id`,
 			)
 			.run({
 				website: newWebsite ?? null,
@@ -269,8 +269,8 @@ export class Initiative extends InjectableApi {
 		this.database
 			.prepare(
 				`UPDATE initiatives
-			SET pdf = :pdf
-			WHERE id = :id`,
+				SET pdf = :pdf
+				WHERE id = :id`,
 			)
 			.run({
 				pdf: newPdf.name,
@@ -292,8 +292,8 @@ export class Initiative extends InjectableApi {
 		this.database
 			.prepare(
 				`UPDATE initiatives
-			SET image = :image
-			WHERE id = :id`,
+				SET image = :image
+				WHERE id = :id`,
 			)
 			.run({
 				image: newImage?.name ?? null,
@@ -315,8 +315,8 @@ export class Initiative extends InjectableApi {
 		this.database
 			.prepare(
 				`UPDATE initiatives
-			SET deadline = :deadline
-			WHERE id = :id`,
+				SET deadline = :deadline
+				WHERE id = :id`,
 			)
 			.run({
 				deadline: newDeadline ?? null,
@@ -324,5 +324,24 @@ export class Initiative extends InjectableApi {
 			});
 
 		this._deadline = newDeadline;
+	}
+
+	async rm() {
+		this.database
+			.prepare(
+				`DELETE FROM initiatives
+				WHERE id = :id`,
+			)
+			.run({
+				id: this.id,
+			});
+
+		try {
+			await this.image?.rm();
+		} catch {}
+
+		try {
+			await this.pdf.rm();
+		} catch {}
 	}
 }

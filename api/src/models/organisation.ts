@@ -169,8 +169,8 @@ export class Organisation extends InjectableApi {
 		this.database
 			.prepare(
 				`UPDATE organisations
-			SET name = :name
-			WHERE id = :id`,
+				SET name = :name
+				WHERE id = :id`,
 			)
 			.run({
 				name: newName,
@@ -188,8 +188,8 @@ export class Organisation extends InjectableApi {
 		this.database
 			.prepare(
 				`UPDATE organisations
-			SET image = :image
-			WHERE id = :id`,
+				SET image = :image
+				WHERE id = :id`,
 			)
 			.run({
 				image: newImage?.name ?? null,
@@ -211,8 +211,8 @@ export class Organisation extends InjectableApi {
 		this.database
 			.prepare(
 				`UPDATE organisations
-			SET website = :website
-			WHERE id = :id`,
+				SET website = :website
+				WHERE id = :id`,
 			)
 			.run({
 				website: newWebsite ?? null,
@@ -220,5 +220,20 @@ export class Organisation extends InjectableApi {
 			});
 
 		this._website = newWebsite;
+	}
+
+	async rm() {
+		this.database
+			.prepare(
+				`DELETE FROM organisations
+				WHERE id = :id`,
+			)
+			.run({
+				id: this.id,
+			});
+
+		try {
+			await this.image?.rm();
+		} catch {}
 	}
 }
