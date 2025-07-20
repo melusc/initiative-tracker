@@ -32,10 +32,10 @@ const privateConstructorKey = Symbol();
 
 export class Session extends InjectableApi {
 	// 7 days
-	static #SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+	private static _SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 
 	constructor(
-		readonly sessionId: string,
+		readonly id: string,
 		readonly user: Login,
 		readonly expiryDate: Date,
 		constructorKey: symbol,
@@ -47,19 +47,33 @@ export class Session extends InjectableApi {
 		super();
 	}
 
+	static removeExpired() {
+		const iterator = this.database
+			.prepare(`SELECT * from sessions`)
+			.iterate() as Iterable<SqlSessionRow>;
+
+		for (const sessionRow of iterator) {
+			const session = this._fromRow(sessionRow);
+
+			if (session?.isExpired()) {
+				session.invalidate();
+			}
+		}
+	}
+
 	static create(user: Login) {
-		const expires = Date.now() + this.#SESSION_DURATION_MS;
+		const expires = Date.now() + this._SESSION_DURATION_MS;
 
 		const sessionId = randomBytes(128).toString('base64url');
 		this.database
 			.prepare(
 				`INSERT INTO sessions
-			(sessionId, userId, expires)
-			VALUES (:sessionId, :userId, :expires)`,
+				(sessionId, userId, expires)
+				VALUES (:sessionId, :userId, :expires)`,
 			)
 			.run({
 				sessionId,
-				userId: user.userId,
+				userId: user.id,
 				expires,
 			} satisfies SqlSessionRow);
 
@@ -71,14 +85,7 @@ export class Session extends InjectableApi {
 		);
 	}
 
-	static fromSessionId(sessionId: string): Session | undefined {
-		const row = this.database
-			.prepare(
-				`SELECT * from sessions
-			WHERE sessionId = :sessionId`,
-			)
-			.get({sessionId}) as SqlSessionRow | undefined;
-
+	private static _fromRow(row: SqlSessionRow | undefined): Session | undefined {
 		if (!row) {
 			return;
 		}
@@ -89,18 +96,25 @@ export class Session extends InjectableApi {
 			return;
 		}
 
-		const session = new this.Session(
-			sessionId,
+		return new this.Session(
+			row.sessionId,
 			user,
 			new Date(row.expires),
 			privateConstructorKey,
 		);
+	}
 
-		if (session.isExpired()) {
-			return;
-		}
+	static fromSessionId(sessionId: string): Session | undefined {
+		const row = this.database
+			.prepare(
+				`SELECT * from sessions
+				WHERE sessionId = :sessionId`,
+			)
+			.get({sessionId}) as SqlSessionRow | undefined;
 
-		return session;
+		const session = this._fromRow(row);
+
+		return !session || session.isExpired() ? undefined : session;
 	}
 
 	isExpired() {
@@ -110,12 +124,24 @@ export class Session extends InjectableApi {
 	invalidate() {
 		this.database
 			.prepare(
-				`DELETE FROM logins
-			WHERE sessionId = :sessionId`,
+				`DELETE FROM sessions
+				WHERE sessionId = :sessionId`,
 			)
 			.run({
-				sessionId: this.sessionId,
+				sessionId: this.id,
 			});
+	}
+
+	shouldRenew() {
+		if (this.isExpired()) {
+			return false;
+		}
+
+		// Renew when more than 50% expired
+		const timeToExpire = this.expiryDate.getTime() - Date.now();
+		return (
+			timeToExpire > 0 && timeToExpire < this.Session._SESSION_DURATION_MS * 0.5
+		);
 	}
 
 	renew() {

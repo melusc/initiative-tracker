@@ -73,9 +73,9 @@ export class Person extends InjectableApi {
 		return this._signatures;
 	}
 
-	static #fromRow(row: SqlPersonRow): Person;
-	static #fromRow(row: SqlPersonRow | undefined): Person | undefined;
-	static #fromRow(row: SqlPersonRow | undefined) {
+	private static _fromRow(row: SqlPersonRow): Person;
+	private static _fromRow(row: SqlPersonRow | undefined): Person | undefined;
+	private static _fromRow(row: SqlPersonRow | undefined) {
 		if (!row) {
 			return;
 		}
@@ -96,10 +96,10 @@ export class Person extends InjectableApi {
 			)
 			.get({
 				name,
-				owner: owner.userId,
+				owner: owner.id,
 			}) as SqlPersonRow | undefined;
 
-		return this.#fromRow(row);
+		return this._fromRow(row);
 	}
 
 	static fromId(id: string, owner: Login) {
@@ -110,10 +110,10 @@ export class Person extends InjectableApi {
 			)
 			.get({
 				name: id,
-				owner: owner.userId,
+				owner: owner.id,
 			}) as SqlPersonRow | undefined;
 
-		return this.#fromRow(row);
+		return this._fromRow(row);
 	}
 
 	static all(owner: Login) {
@@ -123,10 +123,10 @@ export class Person extends InjectableApi {
 				WHERE owner = :owner`,
 			)
 			.all({
-				owner: owner.userId,
+				owner: owner.id,
 			}) as SqlPersonRow[];
 
-		return rows.map(row => this.#fromRow(row));
+		return rows.map(row => this._fromRow(row));
 	}
 
 	static create(name: string, owner: Login) {
@@ -147,7 +147,7 @@ export class Person extends InjectableApi {
 				.run({
 					id: slug,
 					name,
-					owner: owner.userId,
+					owner: owner.id,
 				});
 		} catch {
 			throw new ApiError(`Person with the same name exists already.`);
@@ -182,7 +182,7 @@ export class Person extends InjectableApi {
 		return {
 			id: this.id,
 			name: this.name,
-			owner: this.owner.userId,
+			owner: this.owner.id,
 			signatures: this.signatures.map(signature => signature.toJson()),
 		};
 	}

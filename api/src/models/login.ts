@@ -32,13 +32,13 @@ type SqlLoginRow = {
 const privateConstructorKey = Symbol();
 
 export class Login extends InjectableApi {
-	static #HASH_ROUNDS = 10;
+	private static _HASH_ROUNDS = 10;
 
 	private _username: string;
 	private _isAdmin: boolean;
 
 	constructor(
-		readonly userId: string,
+		readonly id: string,
 		username: string,
 		isAdmin: boolean,
 		contructorKey: symbol,
@@ -61,9 +61,9 @@ export class Login extends InjectableApi {
 		return this._isAdmin;
 	}
 
-	static #fromRow(row: SqlLoginRow): Login;
-	static #fromRow(row: SqlLoginRow | undefined): Login | undefined;
-	static #fromRow(row: SqlLoginRow | undefined) {
+	private static _fromRow(row: SqlLoginRow): Login;
+	private static _fromRow(row: SqlLoginRow | undefined): Login | undefined;
+	private static _fromRow(row: SqlLoginRow | undefined) {
 		if (!row) {
 			return;
 		}
@@ -86,7 +86,7 @@ export class Login extends InjectableApi {
 				userId,
 			}) as SqlLoginRow | undefined;
 
-		return this.#fromRow(row);
+		return this._fromRow(row);
 	}
 
 	static fromUsername(username: string) {
@@ -99,17 +99,17 @@ export class Login extends InjectableApi {
 				username,
 			}) as SqlLoginRow | undefined;
 
-		return this.#fromRow(row);
+		return this._fromRow(row);
 	}
 
 	static async create(username: string, password: string, isAdmin: boolean) {
-		const otherLogin = this.fromUsername(username);
+		const otherLogin = this.Login.fromUsername(username);
 
 		if (otherLogin) {
 			throw new ApiError(`User with username "${username}" already exists.`);
 		}
 
-		const passwordHash = await bcrypt.hash(password, this.#HASH_ROUNDS);
+		const passwordHash = await bcrypt.hash(password, this._HASH_ROUNDS);
 
 		const id = randomBytes(40).toString('base64url');
 
@@ -148,7 +148,7 @@ export class Login extends InjectableApi {
 			return;
 		}
 
-		return this.#fromRow(row);
+		return this._fromRow(row);
 	}
 
 	async verifyPassword(password: string) {
@@ -158,14 +158,14 @@ export class Login extends InjectableApi {
 				WHERE userId = :userId`,
 			)
 			.get({
-				userId: this.userId,
+				userId: this.id,
 			}) as {passwordHash: string};
 
 		return bcrypt.compare(password, row.passwordHash);
 	}
 
 	async updatePassword(newPassword: string) {
-		const hash = await bcrypt.hash(newPassword, this.Login.#HASH_ROUNDS);
+		const hash = await bcrypt.hash(newPassword, this.Login._HASH_ROUNDS);
 
 		this.database
 			.prepare(
@@ -174,7 +174,7 @@ export class Login extends InjectableApi {
 				WHERE userId = :userId`,
 			)
 			.run({
-				userId: this.userId,
+				userId: this.id,
 				hash,
 			});
 	}
@@ -191,7 +191,7 @@ export class Login extends InjectableApi {
 				WHERE userId = :userId`,
 			)
 			.run({
-				userId: this.userId,
+				userId: this.id,
 				username: newUsername,
 			});
 
@@ -210,7 +210,7 @@ export class Login extends InjectableApi {
 				WHERE userId = :userId`,
 			)
 			.run({
-				userId: this.userId,
+				userId: this.id,
 				isAdmin: isAdmin ? 1 : 0,
 			});
 	}

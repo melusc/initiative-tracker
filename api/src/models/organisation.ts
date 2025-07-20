@@ -140,11 +140,11 @@ export class Organisation extends InjectableApi {
 		);
 	}
 
-	static async #fromRow(row: SqlOrganisationRow): Promise<Organisation>;
-	static async #fromRow(
+	private static async _fromRow(row: SqlOrganisationRow): Promise<Organisation>;
+	private static async _fromRow(
 		row: SqlOrganisationRow | undefined,
 	): Promise<Organisation | undefined>;
-	static async #fromRow(row: SqlOrganisationRow | undefined) {
+	private static async _fromRow(row: SqlOrganisationRow | undefined) {
 		if (!row) {
 			return;
 		}
@@ -165,7 +165,7 @@ export class Organisation extends InjectableApi {
 			.prepare('SELECT * from organisations')
 			.all() as SqlOrganisationRow[];
 
-		return Promise.all(result.map(row => this.#fromRow(row)));
+		return Promise.all(result.map(row => this._fromRow(row)));
 	}
 
 	static fromId(id: string): Promise<Organisation | undefined> {
@@ -175,7 +175,7 @@ export class Organisation extends InjectableApi {
 				id,
 			}) as SqlOrganisationRow | undefined;
 
-		return this.#fromRow(result);
+		return this._fromRow(result);
 	}
 
 	// Avoid infinite recursion
