@@ -599,6 +599,7 @@ __metadata:
     "@types/node": "npm:^24.0.15"
     eslint: "npm:^9.31.0"
     typescript: "npm:^5.8.3"
+    vitest: "npm:^3.2.4"
   languageName: unknown
   linkType: soft
 
