@@ -91,7 +91,7 @@ describe('Asset', () => {
 		'https://localhost.lusc.ch/def',
 		'ftp://ftp.google.com',
 		'j3892',
-	])('Internal URL %s', async (url, {api: {ImageAsset}}) => {
+	])('Internal or invalid URL %s', async (url, {api: {ImageAsset}}) => {
 		await expect(
 			(async () => {
 				await ImageAsset.createFromUrl(url);
@@ -100,10 +100,7 @@ describe('Asset', () => {
 	});
 
 	apiTest('Removing file', async ({api: {ImageAsset, Asset}}) => {
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
-		const fileBuffer = await readFile(sampleAssetPaths.jpg);
-
-		const asset = await ImageAsset.createFromBuffer(fileBuffer);
+		const asset = await ImageAsset.createFromFile(sampleAssetPaths.jpg);
 
 		const assetCopy1 = await Asset.fromName(asset.name);
 		expect(assetCopy1).toBeDefined();

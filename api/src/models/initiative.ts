@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import {randomBytes} from 'node:crypto';
+
 import {
 	sortOrganisations,
 	sortPeople,
@@ -31,6 +33,7 @@ import type {Person, PersonJson} from './person.js';
 
 type SqlInitiativeRow = {
 	id: string;
+	slug: string;
 	shortName: string;
 	fullName: string;
 	website: string | null;
@@ -41,6 +44,7 @@ type SqlInitiativeRow = {
 
 export type InitiativeJson = {
 	id: string;
+	slug: string;
 	shortName: string;
 	fullName: string;
 	website: string | null;
@@ -54,6 +58,7 @@ export type InitiativeJson = {
 const privateConstructorKey = Symbol();
 
 export class Initiative extends InjectableApi {
+	private _slug: string;
 	private _shortName: string;
 	private _fullName: string;
 	private _website: string | undefined;
@@ -66,6 +71,7 @@ export class Initiative extends InjectableApi {
 
 	constructor(
 		readonly id: string,
+		slug: string,
 		shortName: string,
 		fullName: string,
 		website: string | undefined,
@@ -80,12 +86,17 @@ export class Initiative extends InjectableApi {
 
 		super();
 
+		this._slug = slug;
 		this._shortName = shortName;
 		this._fullName = fullName;
 		this._website = website;
 		this._pdf = pdf;
 		this._image = image;
 		this._deadline = deadline;
+	}
+
+	get slug() {
+		return this._slug;
 	}
 
 	get shortName() {
@@ -123,6 +134,7 @@ export class Initiative extends InjectableApi {
 	toJson(): InitiativeJson {
 		return {
 			id: this.id,
+			slug: this.slug,
 			shortName: this.shortName,
 			fullName: this.fullName,
 			website: this.website ?? null,
@@ -136,17 +148,17 @@ export class Initiative extends InjectableApi {
 		};
 	}
 
-	private static getInitiativeSlug(name: string) {
+	private static getInitiativeSlug(name: string, currentId?: string) {
 		const baseSlug = makeSlug(name, {appendRandomHex: false});
 
 		for (let counter = 0; ; ++counter) {
 			const slug = counter === 0 ? baseSlug : `${baseSlug}-${counter}`;
 
 			const initiative = this.database
-				.prepare('SELECT id from initiatives where id = :slug')
+				.prepare('SELECT id from initiatives where slug = :slug')
 				.get({slug}) as {id: string} | undefined;
 
-			if (!initiative) {
+			if (!initiative || initiative.id === currentId) {
 				return slug;
 			}
 		}
@@ -163,10 +175,12 @@ export class Initiative extends InjectableApi {
 		website ||= undefined;
 		deadline ||= undefined;
 
-		const id = this.getInitiativeSlug(shortName);
+		const id = randomBytes(40).toString('base64url');
+		const slug = this.getInitiativeSlug(shortName);
 
 		const row: SqlInitiativeRow = {
 			id,
+			slug,
 			shortName,
 			fullName,
 			website: website ?? null,
@@ -178,13 +192,14 @@ export class Initiative extends InjectableApi {
 		this.database
 			.prepare(
 				`INSERT INTO initiatives
-				(id, shortName, fullName, website, pdf, image, deadline)
-				VALUES (:id, :shortName, :fullName, :website, :pdf, :image, :deadline)`,
+				(id, slug, shortName, fullName, website, pdf, image, deadline)
+				VALUES (:id, :slug, :shortName, :fullName, :website, :pdf, :image, :deadline)`,
 			)
 			.run(row);
 
 		return new this.Initiative(
 			id,
+			slug,
 			shortName,
 			fullName,
 			website,
@@ -214,6 +229,7 @@ export class Initiative extends InjectableApi {
 
 		return new this.Initiative(
 			row.id,
+			row.slug,
 			row.shortName,
 			row.fullName,
 			row.website ?? undefined,
@@ -242,23 +258,38 @@ export class Initiative extends InjectableApi {
 		return this._fromRow(result);
 	}
 
+	static async fromSlug(slug: string): Promise<Initiative | undefined> {
+		const row = this.database
+			.prepare('SELECT * from initiatives WHERE slug = :slug')
+			.get({
+				slug,
+			}) as SqlInitiativeRow | undefined;
+
+		return this._fromRow(row);
+	}
+
 	updateShortName(newShortName: string) {
 		if (newShortName === this.shortName) {
 			return;
 		}
 
+		const newSlug = this.Initiative.getInitiativeSlug(newShortName, this.id);
+
 		this.database
 			.prepare(
 				`UPDATE initiatives
-				SET shortName = :shortName
+				SET shortName = :shortName,
+					slug = :slug
 				WHERE id = :id`,
 			)
 			.run({
 				shortName: newShortName,
 				id: this.id,
+				slug: newSlug,
 			});
 
 		this._shortName = newShortName;
+		this._slug = newSlug;
 	}
 
 	updateFullName(newFullName: string) {
@@ -345,12 +376,10 @@ export class Initiative extends InjectableApi {
 		const signatureRows = this.database
 			.prepare(
 				`SELECT personId FROM signatures
-				WHERE initiativeId = :initiativeId
-				AND ownerId = :ownerId`,
+				WHERE initiativeId = :initiativeId`,
 			)
 			.all({
 				initiativeId: this.id,
-				ownerId: owner.id,
 			}) as Array<{personId: string}>;
 
 		const signatures = signatureRows
@@ -426,13 +455,12 @@ export class Initiative extends InjectableApi {
 			this.database
 				.prepare(
 					`INSERT INTO signatures
-					(initiativeId, personId, ownerId)
-					VALUES (:initiativeId, :personId, :ownerId)`,
+					(initiativeId, personId)
+					VALUES (:initiativeId, :personId)`,
 				)
 				.run({
 					initiativeId: this.id,
 					personId: person.id,
-					ownerId: person.owner.id,
 				});
 
 			this._signatures = sortPeople([...this.signatures, person]);

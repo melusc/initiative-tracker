@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import {randomBytes} from 'node:crypto';
+
 import {sortInitiatives} from '@lusc/initiative-tracker-util/sort.js';
 import {makeSlug} from '@lusc/util/slug';
 
@@ -26,12 +28,14 @@ import type {Login} from './login.js';
 
 type SqlPersonRow = {
 	id: string;
+	slug: string;
 	name: string;
 	owner: string;
 };
 
 export type PersonJson = {
 	id: string;
+	slug: string;
 	name: string;
 	owner: string;
 	signatures: InitiativeJson[];
@@ -40,6 +44,7 @@ export type PersonJson = {
 const privateConstructorKey = Symbol();
 
 export class Person extends InjectableApi {
+	private _slug: string;
 	private _name: string;
 	private _owner: Login;
 	private _signatures: Initiative[] = [];
@@ -47,6 +52,7 @@ export class Person extends InjectableApi {
 
 	constructor(
 		readonly id: string,
+		slug: string,
 		name: string,
 		owner: Login,
 		constructorKey: symbol,
@@ -57,8 +63,13 @@ export class Person extends InjectableApi {
 
 		super();
 
+		this._slug = slug;
 		this._name = name;
 		this._owner = owner;
+	}
+
+	get slug() {
+		return this._slug;
 	}
 
 	get name() {
@@ -73,19 +84,31 @@ export class Person extends InjectableApi {
 		return this._signatures;
 	}
 
-	private static _fromRow(row: SqlPersonRow): Person;
-	private static _fromRow(row: SqlPersonRow | undefined): Person | undefined;
-	private static _fromRow(row: SqlPersonRow | undefined) {
+	private static _fromRow(row: SqlPersonRow, owner: Login): Person;
+	private static _fromRow(
+		row: SqlPersonRow | undefined,
+		owner: Login,
+	): Person | undefined;
+	private static _fromRow(row: SqlPersonRow | undefined, owner: Login) {
 		if (!row) {
 			return;
 		}
 
-		const owner = this.Login.fromUserId(row.owner);
-		if (!owner) {
+		// Check if owner is who we expected
+		// Could indicate that SQL query was written without
+		// `WHERE owner = :owner`
+		const resolvedOwner = this.Login.fromUserId(row.owner);
+		if (resolvedOwner?.id !== owner.id) {
 			return;
 		}
 
-		return new this.Person(row.id, row.name, owner, privateConstructorKey);
+		return new this.Person(
+			row.id,
+			row.slug,
+			row.name,
+			owner,
+			privateConstructorKey,
+		);
 	}
 
 	static fromName(name: string, owner: Login) {
@@ -99,7 +122,7 @@ export class Person extends InjectableApi {
 				owner: owner.id,
 			}) as SqlPersonRow | undefined;
 
-		return this._fromRow(row);
+		return this._fromRow(row, owner);
 	}
 
 	static fromId(id: string, owner: Login) {
@@ -113,7 +136,21 @@ export class Person extends InjectableApi {
 				owner: owner.id,
 			}) as SqlPersonRow | undefined;
 
-		return this._fromRow(row);
+		return this._fromRow(row, owner);
+	}
+
+	static fromSlug(slug: string, owner: Login) {
+		const row = this.database
+			.prepare(
+				`SELECT * from people
+				WHERE slug = :slug AND owner = :owner`,
+			)
+			.get({
+				slug,
+				owner: owner.id,
+			}) as SqlPersonRow | undefined;
+
+		return this._fromRow(row, owner);
 	}
 
 	static all(owner: Login) {
@@ -126,26 +163,29 @@ export class Person extends InjectableApi {
 				owner: owner.id,
 			}) as SqlPersonRow[];
 
-		return rows.map(row => this._fromRow(row));
+		return rows.map(row => this._fromRow(row, owner));
 	}
 
 	static create(name: string, owner: Login) {
-		const sameName = this.fromName(name, owner);
+		const slug = makeSlug(name, {appendRandomHex: false});
+
+		const sameName = this.fromSlug(slug, owner);
 		if (sameName) {
 			throw new ApiError('Person with the same name exists already.');
 		}
 
-		const slug = makeSlug(name, {appendRandomHex: false});
+		const id = randomBytes(40).toString('base64url');
 
 		try {
 			this.database
 				.prepare(
 					`INSERT INTO people
-					(id, name, owner)
-					VALUES (:id, :name, :owner)`,
+					(id, slug, name, owner)
+					VALUES (:id, :slug, :name, :owner)`,
 				)
 				.run({
-					id: slug,
+					id,
+					slug,
 					name,
 					owner: owner.id,
 				});
@@ -153,7 +193,7 @@ export class Person extends InjectableApi {
 			throw new ApiError(`Person with the same name exists already.`);
 		}
 
-		return new this.Person(slug, name, owner, privateConstructorKey);
+		return new this.Person(id, slug, name, owner, privateConstructorKey);
 	}
 
 	// Avoid infinite recursion
@@ -181,6 +221,7 @@ export class Person extends InjectableApi {
 	toJson(): PersonJson {
 		return {
 			id: this.id,
+			slug: this.slug,
 			name: this.name,
 			owner: this.owner.id,
 			signatures: this.signatures.map(signature => signature.toJson()),
@@ -192,7 +233,8 @@ export class Person extends InjectableApi {
 			return;
 		}
 
-		const sameName = this.Person.fromName(newName, this.owner);
+		const newSlug = makeSlug(newName, {appendRandomHex: false});
+		const sameName = this.Person.fromSlug(newSlug, this.owner);
 		if (sameName) {
 			throw new ApiError('Person with the same name exists already.');
 		}
@@ -200,15 +242,18 @@ export class Person extends InjectableApi {
 		this.database
 			.prepare(
 				`UPDATE people
-				SET name = :name
+				SET name = :name,
+					slug = :slug
 				WHERE id = :id`,
 			)
 			.run({
 				name: newName,
+				slug: newSlug,
 				id: this.id,
 			});
 
 		this._name = newName;
+		this._slug = newSlug;
 	}
 
 	rm() {
@@ -231,13 +276,12 @@ export class Person extends InjectableApi {
 			this.database
 				.prepare(
 					`INSERT INTO signatures
-					(initiativeId, personId, ownerId)
-					VALUES (:initiativeId, :personId, :ownerId)`,
+					(initiativeId, personId)
+					VALUES (:initiativeId, :personId)`,
 				)
 				.run({
 					initiativeId: initiative.id,
 					personId: this.id,
-					ownerId: this.owner.id,
 				});
 
 			this._signatures = sortInitiatives([...this.signatures, initiative]);

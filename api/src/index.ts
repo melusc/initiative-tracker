@@ -50,15 +50,17 @@ function initDatabase(database: DatabaseSync) {
 		);
 
 		CREATE TABLE IF NOT EXISTS people (
-				id TEXT,
+				id TEXT PRIMARY KEY,
+				slug TEXT NOT NULL,
 				name TEXT NOT NULL,
 				owner TEXT NOT NULL,
-				PRIMARY KEY (id, owner),
-				FOREIGN KEY(owner) REFERENCES logins(userId) ON DELETE CASCADE
+				FOREIGN KEY(owner) REFERENCES logins(userId) ON DELETE CASCADE,
+				UNIQUE (slug, owner)
 		);
 
 		CREATE TABLE IF NOT EXISTS initiatives (
 				id TEXT PRIMARY KEY,
+				slug TEXT NOT NULL UNIQUE,
 				shortName TEXT NOT NULL,
 				fullName TEXT NOT NULL,
 				website TEXT,
@@ -69,6 +71,7 @@ function initDatabase(database: DatabaseSync) {
 
 		CREATE TABLE IF NOT EXISTS organisations (
 				id TEXT PRIMARY KEY,
+				slug TEXT NOT NULL UNIQUE,
 				name TEXT NOT NULL,
 				image TEXT,
 				website TEXT
@@ -76,10 +79,9 @@ function initDatabase(database: DatabaseSync) {
 
 		CREATE TABLE IF NOT EXISTS signatures (
 				personId TEXT NOT NULL,
-				ownerId TEXT NOT NULL,
 				initiativeId TEXT NOT NULL,
-				PRIMARY KEY (personId, ownerId, initiativeId),
-				FOREIGN KEY(personId, ownerId) REFERENCES people(id, owner) ON DELETE CASCADE,
+				PRIMARY KEY (personId, initiativeId),
+				FOREIGN KEY(personId) REFERENCES people(id) ON DELETE CASCADE,
 				FOREIGN KEY(initiativeId) REFERENCES initiatives(id) ON DELETE CASCADE
 		);
 

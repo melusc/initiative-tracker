@@ -20,7 +20,7 @@
 
 import {Buffer} from 'node:buffer';
 import {randomBytes} from 'node:crypto';
-import {mkdir, readdir, readFile, rm, writeFile} from 'node:fs/promises';
+import {mkdir, readFile, rm, writeFile} from 'node:fs/promises';
 // eslint-disable-next-line n/no-unsupported-features/node-builtins
 import {DatabaseSync} from 'node:sqlite';
 
@@ -39,9 +39,6 @@ await writeFile(new URL('.gitignore', parentTemporaryDirectory), '*');
 type UtilityApi = Readonly<
 	Api & {
 		database: DatabaseSync;
-		listFiles(): Promise<ReadonlySet<string>>;
-		listPdf(): Promise<ReadonlySet<string>>;
-		listImages(): Promise<ReadonlySet<string>>;
 	}
 >;
 
@@ -90,29 +87,9 @@ export const apiTest = test.extend({
 			fileSizeLimit: 10 * 1024 * 1024,
 		});
 
-		async function listFiles(
-			filter?: (name: string) => boolean,
-		): Promise<ReadonlySet<string>> {
-			filter ??= () => true;
-			// eslint-disable-next-line security/detect-non-literal-fs-filename
-			const files = await readdir(assetDirectory);
-			return new Set(files.filter(name => filter(name)));
-		}
-
-		async function listPdf(): Promise<ReadonlySet<string>> {
-			return listFiles(name => name.endsWith('.pdf'));
-		}
-
-		async function listImages(): Promise<ReadonlySet<string>> {
-			return listFiles(name => !name.endsWith('.pdf'));
-		}
-
 		const utilityApi = {
 			...api,
 			database,
-			listFiles,
-			listPdf,
-			listImages,
 		} satisfies UtilityApi;
 
 		await use(utilityApi);

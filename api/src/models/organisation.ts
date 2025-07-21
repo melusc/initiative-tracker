@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import {randomBytes} from 'node:crypto';
+
 import {sortInitiatives} from '@lusc/initiative-tracker-util/sort.js';
 import {makeSlug} from '@lusc/util/slug';
 
@@ -26,6 +28,7 @@ import type {Initiative, InitiativeJson} from './initiative.js';
 
 type SqlOrganisationRow = {
 	id: string;
+	slug: string;
 	name: string;
 	image: string | null;
 	website: string | null;
@@ -33,6 +36,7 @@ type SqlOrganisationRow = {
 
 export type OrganisationJson = {
 	id: string;
+	slug: string;
 	name: string;
 	image: string | null;
 	website: string | null;
@@ -42,6 +46,7 @@ export type OrganisationJson = {
 const privateConstructorKey = Symbol();
 
 export class Organisation extends InjectableApi {
+	private _slug: string;
 	private _name: string;
 	private _image: Asset | undefined;
 	private _website: string | undefined;
@@ -50,6 +55,7 @@ export class Organisation extends InjectableApi {
 
 	constructor(
 		readonly id: string,
+		slug: string,
 		name: string,
 		image: Asset | undefined,
 		website: string | undefined,
@@ -61,9 +67,14 @@ export class Organisation extends InjectableApi {
 
 		super();
 
+		this._slug = slug;
 		this._name = name;
 		this._image = image;
 		this._website = website;
+	}
+
+	get slug() {
+		return this._slug;
 	}
 
 	get name() {
@@ -85,6 +96,7 @@ export class Organisation extends InjectableApi {
 	toJson(): OrganisationJson {
 		return {
 			id: this.id,
+			slug: this.slug,
 			name: this.name,
 			image: this.image?.name ?? null,
 			website: this.website ?? null,
@@ -92,17 +104,17 @@ export class Organisation extends InjectableApi {
 		};
 	}
 
-	private static getOrganisationSlug(name: string) {
+	private static getOrganisationSlug(name: string, currentId?: string) {
 		const baseSlug = makeSlug(name, {appendRandomHex: false});
 
 		for (let counter = 0; ; ++counter) {
 			const slug = counter === 0 ? baseSlug : `${baseSlug}-${counter}`;
 
 			const initiative = this.database
-				.prepare('SELECT id from organisations where id = :slug')
+				.prepare('SELECT id from organisations where slug = :slug')
 				.get({slug}) as {id: string} | undefined;
 
-			if (!initiative) {
+			if (!initiative || initiative.id === currentId) {
 				return slug;
 			}
 		}
@@ -113,11 +125,13 @@ export class Organisation extends InjectableApi {
 		image: Asset | undefined,
 		website: string | undefined,
 	) {
+		const id = randomBytes(40).toString('base64url');
 		const slug = this.getOrganisationSlug(name);
 		website ||= undefined;
 
 		const row: SqlOrganisationRow = {
-			id: slug,
+			id,
+			slug,
 			name,
 			image: image?.name ?? null,
 			website: website ?? null,
@@ -126,12 +140,13 @@ export class Organisation extends InjectableApi {
 		this.database
 			.prepare(
 				`INSERT INTO organisations
-				(id, name, image, website)
-				VALUES (:id, :name, :image, :website)`,
+				(id, slug, name, image, website)
+				VALUES (:id, :slug, :name, :image, :website)`,
 			)
 			.run(row);
 
 		return new this.Organisation(
+			id,
 			slug,
 			name,
 			image,
@@ -153,6 +168,7 @@ export class Organisation extends InjectableApi {
 
 		return new this.Organisation(
 			row.id,
+			row.slug,
 			row.name,
 			image,
 			row.website ?? undefined,
@@ -176,6 +192,16 @@ export class Organisation extends InjectableApi {
 			}) as SqlOrganisationRow | undefined;
 
 		return this._fromRow(result);
+	}
+
+	static fromSlug(slug: string): Promise<Organisation | undefined> {
+		const row = this.database
+			.prepare('SELECT * from organisations WHERE slug = :slug')
+			.get({
+				slug,
+			}) as SqlOrganisationRow | undefined;
+
+		return this._fromRow(row);
 	}
 
 	// Avoid infinite recursion
@@ -205,18 +231,23 @@ export class Organisation extends InjectableApi {
 			return;
 		}
 
+		const newSlug = this.Organisation.getOrganisationSlug(newName, this.id);
+
 		this.database
 			.prepare(
 				`UPDATE organisations
-				SET name = :name
+				SET name = :name,
+					slug = :slug
 				WHERE id = :id`,
 			)
 			.run({
 				name: newName,
 				id: this.id,
+				slug: newSlug,
 			});
 
 		this._name = newName;
+		this._slug = newSlug;
 	}
 
 	async updateImage(newImage: Asset | undefined) {

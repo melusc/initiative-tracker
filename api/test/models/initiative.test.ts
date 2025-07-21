@@ -15,8 +15,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import {readFile} from 'node:fs/promises';
-
 import {expect} from 'vitest';
 
 import type {Asset} from '../../src/models/asset.js';
@@ -28,16 +26,12 @@ apiTest.for([
 ] as const)(
 	'Creating an initiative %s optional values',
 	async ([_, withOptionals], {api: {Initiative, PdfAsset, ImageAsset}}) => {
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
-		const pdfBuffer = await readFile(sampleAssetPaths.pdf);
-		const pdfAsset = await PdfAsset.createFromBuffer(pdfBuffer);
+		const pdfAsset = await PdfAsset.createFromFile(sampleAssetPaths.pdf);
 
 		let imageAsset: Asset | undefined;
 
 		if (withOptionals) {
-			// eslint-disable-next-line security/detect-non-literal-fs-filename
-			const imageBuffer = await readFile(sampleAssetPaths.jpg);
-			imageAsset = await ImageAsset.createFromBuffer(imageBuffer);
+			imageAsset = await ImageAsset.createFromFile(sampleAssetPaths.jpg);
 		}
 
 		const initiative = Initiative.create(
@@ -52,7 +46,8 @@ apiTest.for([
 		const initiativeCopy = (await Initiative.fromId(initiative.id))!;
 
 		expect(initiativeCopy.toJson()).toEqual({
-			id: 'initiative-1',
+			id: initiative.id,
+			slug: 'initiative-1',
 			shortName: 'Initiative 1',
 			fullName: 'Initiative Long Name',
 			website: withOptionals ? 'https://google.com/' : null,
@@ -66,20 +61,55 @@ apiTest.for([
 );
 
 apiTest(
+	'Creating initiatives with clashing slugs',
+	async ({api: {Initiative, PdfAsset}}) => {
+		const pdfAsset1 = await PdfAsset.createFromFile(sampleAssetPaths.pdf);
+		const pdfAsset2 = await PdfAsset.createFromFile(sampleAssetPaths.pdf);
+		const pdfAsset3 = await PdfAsset.createFromFile(sampleAssetPaths.pdf);
+
+		const initiative1 = Initiative.create(
+			'Initiative',
+			'Initiative',
+			undefined,
+			pdfAsset1,
+			undefined,
+			undefined,
+		);
+		const initiative2 = Initiative.create(
+			'Înitiativé',
+			'Înitiativé',
+			undefined,
+			pdfAsset2,
+			undefined,
+			undefined,
+		);
+
+		expect(initiative1.slug).toStrictEqual('initiative');
+		expect(initiative2.slug).toStrictEqual('initiative-1');
+
+		const initiative3 = Initiative.create(
+			'abc',
+			'abc',
+			undefined,
+			pdfAsset3,
+			undefined,
+			undefined,
+		);
+
+		initiative3.updateShortName('initiative');
+		expect(initiative3.slug).toStrictEqual('initiative-2');
+	},
+);
+
+apiTest(
 	'Modifying values',
 	async ({api: {Initiative, PdfAsset, ImageAsset, Asset}}) => {
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
-		const pdfBuffer = await readFile(sampleAssetPaths.pdf);
-		const pdfAsset1 = await PdfAsset.createFromBuffer(pdfBuffer);
-		const pdfAsset2 = await PdfAsset.createFromBuffer(pdfBuffer);
+		const pdfAsset1 = await PdfAsset.createFromFile(sampleAssetPaths.pdf);
+		const pdfAsset2 = await PdfAsset.createFromFile(sampleAssetPaths.pdf);
 
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
-		const imageBuffer1 = await readFile(sampleAssetPaths.svg);
-		const imageAsset1 = await ImageAsset.createFromBuffer(imageBuffer1);
+		const imageAsset1 = await ImageAsset.createFromFile(sampleAssetPaths.svg);
 
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
-		const imageBuffer2 = await readFile(sampleAssetPaths.jpg);
-		const imageAsset2 = await ImageAsset.createFromBuffer(imageBuffer2);
+		const imageAsset2 = await ImageAsset.createFromFile(sampleAssetPaths.jpg);
 
 		const initiative = Initiative.create(
 			'Initiative',
@@ -92,6 +122,7 @@ apiTest(
 
 		initiative.updateShortName('Initiative New');
 		expect(initiative.shortName).toStrictEqual('Initiative New');
+		expect(initiative.slug).toStrictEqual('initiative-new');
 
 		initiative.updateFullName('Initiative Long New');
 		expect(initiative.fullName).toStrictEqual('Initiative Long New');
@@ -124,9 +155,7 @@ apiTest(
 	async ({api: {Initiative, Login, Organisation, PdfAsset}}) => {
 		const owner = await Login.create('login', 'login', true);
 
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
-		const pdfBuffer = await readFile(sampleAssetPaths.pdf);
-		const pdfAsset = await PdfAsset.createFromBuffer(pdfBuffer);
+		const pdfAsset = await PdfAsset.createFromFile(sampleAssetPaths.pdf);
 
 		const organisation1 = Organisation.create(
 			'B organisation1',
@@ -190,11 +219,9 @@ apiTest(
 		const login1 = await Login.create('login1', 'login1', true);
 		const login2 = await Login.create('login2', 'login2', true);
 
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
-		const pdfBuffer = await readFile(sampleAssetPaths.pdf);
-		const pdfAsset = await PdfAsset.createFromBuffer(pdfBuffer);
+		const pdfAsset = await PdfAsset.createFromFile(sampleAssetPaths.pdf);
 
-		const initiativeLogin1 = Initiative.create(
+		const initiativeLoginP1 = Initiative.create(
 			'Initiative',
 			'Initiative',
 			undefined,
@@ -202,44 +229,71 @@ apiTest(
 			undefined,
 			undefined,
 		);
-		const initiativeLogin2 = (await Initiative.fromId(initiativeLogin1.id))!;
+		const initiativeLoginP2 = (await Initiative.fromId(initiativeLoginP1.id))!;
 
-		await initiativeLogin1.resolveSignaturesOrganisations(login1);
-		await initiativeLogin2.resolveSignaturesOrganisations(login2);
+		await initiativeLoginP1.resolveSignaturesOrganisations(login1);
+		await initiativeLoginP2.resolveSignaturesOrganisations(login2);
 
 		const person1 = Person.create('p1', login1);
 		const person2 = Person.create('p2', login1);
 		const person3 = Person.create('p3', login2);
 		const person4 = Person.create('p4', login2);
 
-		initiativeLogin1.addSignature(person1);
+		initiativeLoginP1.addSignature(person1);
 
-		await initiativeLogin1.resolveSignaturesOrganisations(login1);
-		await initiativeLogin2.resolveSignaturesOrganisations(login2);
+		await initiativeLoginP1.resolveSignaturesOrganisations(login1);
+		await initiativeLoginP2.resolveSignaturesOrganisations(login2);
 
-		expect(initiativeLogin1.signatures).toHaveLength(1);
-		expect(initiativeLogin2.signatures).toHaveLength(0);
+		expect(initiativeLoginP1.signatures).toHaveLength(1);
+		expect(initiativeLoginP2.signatures).toHaveLength(0);
 
-		initiativeLogin1.addSignature(person2);
-		initiativeLogin2.addSignature(person3);
+		initiativeLoginP1.addSignature(person2);
+		initiativeLoginP2.addSignature(person3);
 
-		await initiativeLogin1.resolveSignaturesOrganisations(login1);
-		await initiativeLogin2.resolveSignaturesOrganisations(login2);
+		await initiativeLoginP1.resolveSignaturesOrganisations(login1);
+		await initiativeLoginP2.resolveSignaturesOrganisations(login2);
 
-		expect(initiativeLogin1.signatures).toHaveLength(2);
-		expect(initiativeLogin2.signatures).toHaveLength(1);
+		expect(initiativeLoginP1.signatures).toHaveLength(2);
+		expect(initiativeLoginP2.signatures).toHaveLength(1);
 
-		initiativeLogin1.removeSignature(person2);
-		initiativeLogin2.removeSignature(person3);
-		initiativeLogin2.addSignature(person4);
+		initiativeLoginP1.removeSignature(person2);
+		initiativeLoginP2.removeSignature(person3);
+		initiativeLoginP2.addSignature(person4);
 
-		expect(initiativeLogin1.signatures).toHaveLength(1);
-		expect(initiativeLogin2.signatures).toHaveLength(1);
+		expect(initiativeLoginP1.signatures).toHaveLength(1);
+		expect(initiativeLoginP2.signatures).toHaveLength(1);
 
-		await initiativeLogin1.resolveSignaturesOrganisations(login1);
-		await initiativeLogin2.resolveSignaturesOrganisations(login2);
+		await initiativeLoginP1.resolveSignaturesOrganisations(login1);
+		await initiativeLoginP2.resolveSignaturesOrganisations(login2);
 
-		expect(initiativeLogin1.signatures).toHaveLength(1);
-		expect(initiativeLogin2.signatures).toHaveLength(1);
+		expect(initiativeLoginP1.signatures).toHaveLength(1);
+		expect(initiativeLoginP2.signatures).toHaveLength(1);
+	},
+);
+
+apiTest(
+	'Removing initiative',
+	async ({api: {Initiative, PdfAsset, ImageAsset}}) => {
+		const pdfAsset = await PdfAsset.createFromFile(sampleAssetPaths.pdf);
+
+		const imageAsset = await ImageAsset.createFromFile(sampleAssetPaths.jpg);
+
+		const initiative = Initiative.create(
+			'Initiative',
+			'Initiative',
+			undefined,
+			pdfAsset,
+			imageAsset,
+			undefined,
+		);
+
+		await expect(Initiative.fromId(initiative.id)).resolves.toBeDefined();
+
+		await initiative.rm();
+
+		await expect(Initiative.fromId(initiative.id)).resolves.toBeUndefined();
+
+		await expect(PdfAsset.fromName(pdfAsset.name)).resolves.toBeUndefined();
+		await expect(ImageAsset.fromName(imageAsset.name)).resolves.toBeUndefined();
 	},
 );

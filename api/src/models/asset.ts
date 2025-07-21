@@ -220,6 +220,12 @@ export class Asset extends InjectableApi {
 		return new this.Asset(name, privateConstructorKey);
 	}
 
+	static async createFromFile(path: URL): Promise<Asset> {
+		// eslint-disable-next-line security/detect-non-literal-fs-filename
+		const buffer = await readFile(path);
+		return this.createFromBuffer(buffer);
+	}
+
 	toJson() {
 		return this.name;
 	}
