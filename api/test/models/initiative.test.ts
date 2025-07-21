@@ -183,3 +183,63 @@ apiTest(
 		expect(initiativeCopy!.organisations).toHaveLength(1);
 	},
 );
+
+apiTest(
+	'Adding signatures',
+	async ({api: {Login, Initiative, Person, PdfAsset}}) => {
+		const login1 = await Login.create('login1', 'login1', true);
+		const login2 = await Login.create('login2', 'login2', true);
+
+		// eslint-disable-next-line security/detect-non-literal-fs-filename
+		const pdfBuffer = await readFile(sampleAssetPaths.pdf);
+		const pdfAsset = await PdfAsset.createFromBuffer(pdfBuffer);
+
+		const initiativeLogin1 = Initiative.create(
+			'Initiative',
+			'Initiative',
+			undefined,
+			pdfAsset,
+			undefined,
+			undefined,
+		);
+		const initiativeLogin2 = (await Initiative.fromId(initiativeLogin1.id))!;
+
+		await initiativeLogin1.resolveSignaturesOrganisations(login1);
+		await initiativeLogin2.resolveSignaturesOrganisations(login2);
+
+		const person1 = Person.create('p1', login1);
+		const person2 = Person.create('p2', login1);
+		const person3 = Person.create('p3', login2);
+		const person4 = Person.create('p4', login2);
+
+		initiativeLogin1.addSignature(person1);
+
+		await initiativeLogin1.resolveSignaturesOrganisations(login1);
+		await initiativeLogin2.resolveSignaturesOrganisations(login2);
+
+		expect(initiativeLogin1.signatures).toHaveLength(1);
+		expect(initiativeLogin2.signatures).toHaveLength(0);
+
+		initiativeLogin1.addSignature(person2);
+		initiativeLogin2.addSignature(person3);
+
+		await initiativeLogin1.resolveSignaturesOrganisations(login1);
+		await initiativeLogin2.resolveSignaturesOrganisations(login2);
+
+		expect(initiativeLogin1.signatures).toHaveLength(2);
+		expect(initiativeLogin2.signatures).toHaveLength(1);
+
+		initiativeLogin1.removeSignature(person2);
+		initiativeLogin2.removeSignature(person3);
+		initiativeLogin2.addSignature(person4);
+
+		expect(initiativeLogin1.signatures).toHaveLength(1);
+		expect(initiativeLogin2.signatures).toHaveLength(1);
+
+		await initiativeLogin1.resolveSignaturesOrganisations(login1);
+		await initiativeLogin2.resolveSignaturesOrganisations(login2);
+
+		expect(initiativeLogin1.signatures).toHaveLength(1);
+		expect(initiativeLogin2.signatures).toHaveLength(1);
+	},
+);
