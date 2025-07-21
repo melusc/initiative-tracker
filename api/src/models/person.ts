@@ -80,7 +80,7 @@ export class Person extends InjectableApi {
 			return;
 		}
 
-		const owner = this.Login.fromUserId(row.id);
+		const owner = this.Login.fromUserId(row.owner);
 		if (!owner) {
 			return;
 		}
@@ -109,7 +109,7 @@ export class Person extends InjectableApi {
 				WHERE id = :id AND owner = :owner`,
 			)
 			.get({
-				name: id,
+				id: id,
 				owner: owner.id,
 			}) as SqlPersonRow | undefined;
 
@@ -231,16 +231,19 @@ export class Person extends InjectableApi {
 			this.database
 				.prepare(
 					`INSERT INTO signatures
-					(initiativeId, personId)
-					VALUES (:initiativeId, :personId)`,
+					(initiativeId, personId, ownerId)
+					VALUES (:initiativeId, :personId, :ownerId)`,
 				)
 				.run({
 					initiativeId: initiative.id,
 					personId: this.id,
+					ownerId: this.owner.id,
 				});
 
 			this._signatures = sortInitiatives([...this.signatures, initiative]);
-		} catch {}
+		} catch (error: unknown) {
+			console.error(error);
+		}
 	}
 
 	removeSignature(initiative: Initiative) {

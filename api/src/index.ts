@@ -76,9 +76,10 @@ function initDatabase(database: DatabaseSync) {
 
 		CREATE TABLE IF NOT EXISTS signatures (
 				personId TEXT NOT NULL,
+				ownerId TEXT NOT NULL,
 				initiativeId TEXT NOT NULL,
-				PRIMARY KEY (personId, initiativeId),
-				FOREIGN KEY(personId) REFERENCES people(id) ON DELETE CASCADE,
+				PRIMARY KEY (personId, ownerId, initiativeId),
+				FOREIGN KEY(personId, ownerId) REFERENCES people(id, owner) ON DELETE CASCADE,
 				FOREIGN KEY(initiativeId) REFERENCES initiatives(id) ON DELETE CASCADE
 		);
 

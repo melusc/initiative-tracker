@@ -345,10 +345,12 @@ export class Initiative extends InjectableApi {
 		const signatureRows = this.database
 			.prepare(
 				`SELECT personId FROM signatures
-			WHERE initiativeId = :initiativeId`,
+				WHERE initiativeId = :initiativeId
+				AND ownerId = :ownerId`,
 			)
 			.all({
 				initiativeId: this.id,
+				ownerId: owner.id,
 			}) as Array<{personId: string}>;
 
 		const signatures = signatureRows
@@ -360,7 +362,7 @@ export class Initiative extends InjectableApi {
 		const organisationRows = this.database
 			.prepare(
 				`SELECT organisationId FROM initiativeOrganisations
-			WHERE initiativeId = :initiativeId`,
+				WHERE initiativeId = :initiativeId`,
 			)
 			.all({
 				initiativeId: this.id,
@@ -424,16 +426,19 @@ export class Initiative extends InjectableApi {
 			this.database
 				.prepare(
 					`INSERT INTO signatures
-					(initiativeId, personId)
-					VALUES (:initiativeId, :personId)`,
+					(initiativeId, personId, ownerId)
+					VALUES (:initiativeId, :personId, :ownerId)`,
 				)
 				.run({
 					initiativeId: this.id,
 					personId: person.id,
+					ownerId: person.owner.id,
 				});
 
 			this._signatures = sortPeople([...this.signatures, person]);
-		} catch {}
+		} catch (error: unknown) {
+			console.error(error);
+		}
 	}
 
 	removeSignature(person: Person) {
@@ -476,7 +481,9 @@ export class Initiative extends InjectableApi {
 				...this.organisations,
 				organisation,
 			]);
-		} catch {}
+		} catch (error: unknown) {
+			console.error(error);
+		}
 	}
 
 	removeOrganisation(organisation: Organisation) {
