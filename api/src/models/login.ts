@@ -198,8 +198,8 @@ export class Login extends InjectableApi {
 		this._username = newUsername;
 	}
 
-	updateIsAdmin(isAdmin: boolean) {
-		if (isAdmin === this.isAdmin) {
+	updateIsAdmin(newIsAdmin: boolean) {
+		if (newIsAdmin === this.isAdmin) {
 			return;
 		}
 
@@ -211,7 +211,9 @@ export class Login extends InjectableApi {
 			)
 			.run({
 				userId: this.id,
-				isAdmin: isAdmin ? 1 : 0,
+				isAdmin: newIsAdmin ? 1 : 0,
 			});
+
+		this._isAdmin = newIsAdmin;
 	}
 }
