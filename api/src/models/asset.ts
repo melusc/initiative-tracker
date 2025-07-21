@@ -209,10 +209,10 @@ export class Asset extends InjectableApi {
 
 	static async createFromUrl(url: string | URL) {
 		const buffer = await this._safeFetch(url);
-		return this.createFromFile(buffer);
+		return this.createFromBuffer(buffer);
 	}
 
-	static async createFromFile(buffer: Buffer): Promise<Asset> {
+	static async createFromBuffer(buffer: Buffer): Promise<Asset> {
 		const extension = await this._validateAndGetExtension(buffer);
 		const optimised = this.optimise(extension, buffer);
 

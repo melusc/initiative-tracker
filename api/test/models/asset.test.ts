@@ -27,7 +27,7 @@ describe('Pdf', () => {
 		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		const pdfBuffer = await readFile(sampleAssetPaths.pdf);
 
-		const asset = await PdfAsset.createFromFile(pdfBuffer);
+		const asset = await PdfAsset.createFromBuffer(pdfBuffer);
 
 		await expect(
 			compareFile(await asset.read(), pdfBuffer),
@@ -63,7 +63,7 @@ describe('Image', () => {
 		async ([extension, path], {api: {Asset, ImageAsset}}) => {
 			// eslint-disable-next-line security/detect-non-literal-fs-filename
 			const fileBuffer = await readFile(path);
-			const asset = await ImageAsset.createFromFile(fileBuffer);
+			const asset = await ImageAsset.createFromBuffer(fileBuffer);
 
 			// eslint-disable-next-line security/detect-non-literal-regexp
 			expect(asset.name).toMatch(new RegExp(`\\.${extension}`));
@@ -76,7 +76,7 @@ describe('Image', () => {
 	apiTest('Optimising svg', async ({api: {ImageAsset}}) => {
 		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		const fileBuffer = await readFile(sampleAssetPaths.svg);
-		const asset = await ImageAsset.createFromFile(fileBuffer);
+		const asset = await ImageAsset.createFromBuffer(fileBuffer);
 		const optimisedBuffer = await asset.read();
 
 		expect(optimisedBuffer.byteLength).toBeLessThan(fileBuffer.byteLength);
@@ -103,7 +103,7 @@ describe('Asset', () => {
 		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		const fileBuffer = await readFile(sampleAssetPaths.jpg);
 
-		const asset = await ImageAsset.createFromFile(fileBuffer);
+		const asset = await ImageAsset.createFromBuffer(fileBuffer);
 
 		const assetCopy1 = await Asset.fromName(asset.name);
 		expect(assetCopy1).toBeDefined();

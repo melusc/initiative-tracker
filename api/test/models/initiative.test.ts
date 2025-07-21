@@ -30,14 +30,14 @@ apiTest.for([
 	async ([_, withOptionals], {api: {Initiative, PdfAsset, ImageAsset}}) => {
 		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		const pdfBuffer = await readFile(sampleAssetPaths.pdf);
-		const pdfAsset = await PdfAsset.createFromFile(pdfBuffer);
+		const pdfAsset = await PdfAsset.createFromBuffer(pdfBuffer);
 
 		let imageAsset: Asset | undefined;
 
 		if (withOptionals) {
 			// eslint-disable-next-line security/detect-non-literal-fs-filename
 			const imageBuffer = await readFile(sampleAssetPaths.jpg);
-			imageAsset = await ImageAsset.createFromFile(imageBuffer);
+			imageAsset = await ImageAsset.createFromBuffer(imageBuffer);
 		}
 
 		const initiative = Initiative.create(
@@ -70,16 +70,16 @@ apiTest(
 	async ({api: {Initiative, PdfAsset, ImageAsset, Asset}}) => {
 		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		const pdfBuffer = await readFile(sampleAssetPaths.pdf);
-		const pdfAsset1 = await PdfAsset.createFromFile(pdfBuffer);
-		const pdfAsset2 = await PdfAsset.createFromFile(pdfBuffer);
+		const pdfAsset1 = await PdfAsset.createFromBuffer(pdfBuffer);
+		const pdfAsset2 = await PdfAsset.createFromBuffer(pdfBuffer);
 
 		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		const imageBuffer1 = await readFile(sampleAssetPaths.svg);
-		const imageAsset1 = await ImageAsset.createFromFile(imageBuffer1);
+		const imageAsset1 = await ImageAsset.createFromBuffer(imageBuffer1);
 
 		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		const imageBuffer2 = await readFile(sampleAssetPaths.jpg);
-		const imageAsset2 = await ImageAsset.createFromFile(imageBuffer2);
+		const imageAsset2 = await ImageAsset.createFromBuffer(imageBuffer2);
 
 		const initiative = Initiative.create(
 			'Initiative',
@@ -126,7 +126,7 @@ apiTest(
 
 		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		const pdfBuffer = await readFile(sampleAssetPaths.pdf);
-		const pdfAsset = await PdfAsset.createFromFile(pdfBuffer);
+		const pdfAsset = await PdfAsset.createFromBuffer(pdfBuffer);
 
 		const organisation1 = Organisation.create(
 			'B organisation1',
