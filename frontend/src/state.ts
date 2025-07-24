@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import type {LoginInfo} from '@lusc/initiative-tracker-util/types.js';
+import type {LoginJson} from '@lusc/initiative-tracker-api';
 
 declare const state: unknown;
 
@@ -25,9 +25,9 @@ export function getState<T>(): T | undefined {
 	return typeof state === 'undefined' ? undefined : (state as T);
 }
 
-declare const login: LoginInfo | undefined;
+declare const login: LoginJson | undefined;
 
-export function getLogin(): LoginInfo | undefined {
+export function getLogin(): LoginJson | undefined {
 	// eslint-disable-next-line unicorn/no-typeof-undefined
 	return typeof login === 'undefined' ? undefined : login;
 }

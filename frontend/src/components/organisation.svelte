@@ -16,9 +16,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
 <script lang="ts">
-	import type {Organisation} from '@lusc/initiative-tracker-util/types.js';
+	import type {OrganisationJson} from '@lusc/initiative-tracker-api';
 
 	import {getLogin} from '../state.ts';
+	import {createHandleSlugChange} from '../url.ts';
 
 	import Card from './card.svelte';
 	import DeleteButton from './delete-button.svelte';
@@ -32,7 +33,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		allowEdit,
 		standalone,
 	}: {
-		organisation: Organisation;
+		organisation: OrganisationJson;
 		allowEdit: boolean;
 		standalone: boolean;
 	} = $props();
@@ -67,6 +68,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			label="Name"
 			type="text"
 			bind:value={organisation.name}
+			onSuccess={createHandleSlugChange(organisation)}
 			apiEndpoint="/api/organisation/{organisation.id}"
 		/>
 		<PatchInputFile
@@ -93,20 +95,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			apiEndpoint="/api/organisation/{organisation.id}"
 		/>
 		{#if organisation.image}
-			<img class="image-url" src={organisation.image} alt="" />
+			<img class="image-url" src="/assets/{organisation.image}" alt="" />
 		{/if}
 	{:else}
 		{#if organisation.image}
 			<a
 				href={standalone
 					? organisation.website
-					: `/organisation/${organisation.id}`}
+					: `/organisation/${organisation.slug}`}
 			>
-				<img class="image-url" src={organisation.image} alt="" />
+				<img class="image-url" src="/assets/{organisation.image}" alt="" />
 			</a>
 		{/if}
 		<a
-			href={standalone ? undefined : `/organisation/${organisation.id}`}
+			href={standalone ? undefined : `/organisation/${organisation.slug}`}
 			class="short-name">{organisation.name}</a
 		>
 		{#if organisation.website}

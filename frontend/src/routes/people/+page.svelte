@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
 <script lang="ts">
-	import type {EnrichedPerson} from '@lusc/initiative-tracker-util/types.js';
+	import type {PersonJson} from '@lusc/initiative-tracker-api';
 
 	import CreateButton from '../../components/create-button.svelte';
 	import Loading from '../../components/loading.svelte';
@@ -24,7 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	import UserIcon from '../../components/user-icon.svelte';
 	import {getState} from '../../state.ts';
 
-	const people = getState<EnrichedPerson[]>();
+	const people = getState<PersonJson[]>();
 </script>
 
 <PageTitle title="People" />
@@ -40,13 +40,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 				<div class="cell">No. signed initiatives</div>
 			</div>
 			{#each people as person (person.id)}
-				<a href="/person/{person.id}" class="href">
+				<a href="/person/{person.slug}" class="href">
 					<div class="cell">
 						<UserIcon name={person.name} iconKey={person.id} />
 					</div>
 					<div class="cell">{person.name}</div>
 				</a>
-				<div class="cell">{person.initiatives.length}</div>
+				<div class="cell">{person.signatures.length}</div>
 			{/each}
 		</div>
 	{:else if !people}

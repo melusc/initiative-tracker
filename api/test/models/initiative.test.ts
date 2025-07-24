@@ -45,7 +45,7 @@ apiTest.for([
 
 		const initiativeCopy = (await Initiative.fromId(initiative.id))!;
 
-		expect(initiativeCopy.toJson()).toEqual({
+		expect(initiativeCopy.toJSON()).toEqual({
 			id: initiative.id,
 			slug: 'initiative-1',
 			shortName: 'Initiative 1',
@@ -146,7 +146,7 @@ apiTest(
 
 		const initiativeCopy = await Initiative.fromId(initiative.id);
 
-		expect(initiativeCopy!.toJson()).toStrictEqual(initiative.toJson());
+		expect(initiativeCopy!.toJSON()).toStrictEqual(initiative.toJSON());
 	},
 );
 

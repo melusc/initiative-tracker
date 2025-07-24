@@ -29,7 +29,7 @@ apiTest('Creating person', async ({api: {Person, Login}}) => {
 	expect(person.slug).toStrictEqual('person-name');
 	expect(person.owner.id).toStrictEqual(login.id);
 
-	expect(person.toJson()).toStrictEqual({
+	expect(person.toJSON()).toStrictEqual({
 		id: person.id,
 		name: 'Person Name',
 		slug: 'person-name',
@@ -39,7 +39,7 @@ apiTest('Creating person', async ({api: {Person, Login}}) => {
 
 	const personCopy = Person.fromId(person.id, login);
 	expect(personCopy).toBeDefined();
-	expect(personCopy!.toJson()).toStrictEqual(person.toJson());
+	expect(personCopy!.toJSON()).toStrictEqual(person.toJSON());
 });
 
 apiTest('Updating values', async ({api: {Person, Login}}) => {

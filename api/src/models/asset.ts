@@ -78,7 +78,7 @@ export class Asset extends InjectableApi {
 	}
 
 	private static generateName(extension: string) {
-		return [randomBytes(40).toString('base64url'), extension].join('.');
+		return [randomBytes(20).toString('base64url'), extension].join('.');
 	}
 
 	/** @internal */
@@ -226,7 +226,7 @@ export class Asset extends InjectableApi {
 		return this.createFromBuffer(buffer);
 	}
 
-	toJson() {
+	toJSON() {
 		return this.name;
 	}
 }

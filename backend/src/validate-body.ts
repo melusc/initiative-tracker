@@ -15,101 +15,35 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import {lookup} from 'node:dns/promises';
-
 import {typeOf} from '@lusc/initiative-tracker-util/type-of.js';
 import type {
 	ApiResponse,
 	ApiResponseError,
 	ApiResponseSuccess,
 } from '@lusc/initiative-tracker-util/types.js';
-import ip from 'ip';
 
-async function isInternal(url: URL) {
-	const {hostname} = url;
-
-	// No libraries can handle ipv6 well, I found
-	// so I must treat all as private
-	// Should be fine, because hostnames that resolve to ipv6
-	// still work
-	if (
-		hostname.includes('[') ||
-		hostname.includes(']') ||
-		ip.isV6Format(hostname)
-	) {
-		return true;
-	}
-
-	try {
-		if (ip.isPrivate(hostname)) {
-			return true;
-		}
-	} catch {}
-
-	try {
-		const resolvedIp = await lookup(hostname);
-		if (ip.isPrivate(resolvedIp.address)) {
-			return true;
-		}
-	} catch {
-		// Non-existant hosts are out of scope for this function
-		// They aren't internal after all
-	}
-
-	return false;
-}
-
-function isValidUrl(url: string) {
-	if (!URL.canParse(url)) {
+export function isValidUrl(url: unknown) {
+	if (typeof url !== 'string') {
 		return false;
 	}
 
-	const parsed = new URL(url);
+	const urlTrimmed = url.trim();
+
+	if (!URL.canParse(urlTrimmed)) {
+		return false;
+	}
+
+	const parsed = new URL(urlTrimmed);
 	return parsed.protocol === 'http:' || parsed.protocol === 'https:';
 }
 
-export async function validateUrl(
-	name: string,
-	url: unknown,
-): Promise<ApiResponse<string>> {
-	if (typeof url !== 'string') {
-		return {
-			type: 'error',
-			readableError: `Invalid type for ${name}. Expected string, got ${typeOf(url)}.`,
-			error: 'invalid-type',
-		};
-	}
+export function sanitiseUrl(url: string) {
+	const urlParsed = new URL(url.trim());
+	urlParsed.hash = '';
+	urlParsed.username = '';
+	urlParsed.password = '';
 
-	const trimmedUrl = url.trim();
-
-	if (!trimmedUrl) {
-		return {
-			type: 'error',
-			readableError: `Missing url for ${name}.`,
-			error: 'invalid-url',
-		};
-	}
-
-	if (!isValidUrl(trimmedUrl)) {
-		return {
-			type: 'error',
-			readableError: `${trimmedUrl} is not a valid URL.`,
-			error: 'invalid-url',
-		};
-	}
-
-	if (await isInternal(new URL(trimmedUrl))) {
-		return {
-			type: 'error',
-			readableError: `${trimmedUrl} is not a valid URL.`,
-			error: 'unresolvable-url',
-		};
-	}
-
-	return {
-		type: 'success',
-		data: trimmedUrl,
-	};
+	return urlParsed.href;
 }
 
 type GenericValidator = Record<

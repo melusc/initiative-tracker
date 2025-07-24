@@ -44,7 +44,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		<input
 			type="text"
 			name="username"
-			value={state?.values?.['username'] ?? login?.name}
+			value={state?.values?.['username'] ?? login?.username}
 			required
 			minlength="4"
 		/>

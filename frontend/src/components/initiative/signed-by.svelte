@@ -16,11 +16,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
 <script lang="ts">
-	import {type EnrichedInitiative} from '@lusc/initiative-tracker-util/types.js';
+	import type {InitiativeJson} from '@lusc/initiative-tracker-api';
 
 	import Signature from '../signature.svelte';
 
-	const {initiative = $bindable()}: {initiative: EnrichedInitiative} = $props();
+	const {initiative = $bindable()}: {initiative: InitiativeJson} = $props();
 
 	async function removeById(id: string): Promise<void> {
 		const response = await fetch(
@@ -39,7 +39,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	{@const people = initiative.signatures}
 	<div class="signed-by">
 		{#each people as person (person.id)}
-			<Signature name={person.name} id={person.id} onRemove={removeById} />
+			<Signature
+				name={person.name}
+				id={person.id}
+				slug={person.slug}
+				onRemove={removeById}
+			/>
 		{/each}
 	</div>
 {/if}

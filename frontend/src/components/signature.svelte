@@ -21,8 +21,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	const {
 		name,
 		id,
+		slug,
 		onRemove,
-	}: {name: string; id: string; onRemove: (id: string) => void} = $props();
+	}: {name: string; id: string; slug: string; onRemove: (id: string) => void} =
+		$props();
 
 	function handleKeyboardRemove(event: KeyboardEvent) {
 		if (event.key === 'Enter' || event.key === ' ') {
@@ -35,8 +37,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	}
 </script>
 
-<div class="signer" data-user-id={id} data-user-name={name}>
-	<a class="signature" href="/person/{id}">{name}</a>
+<div
+	class="signer"
+	data-user-id={id}
+	data-user-slug={slug}
+	data-user-name={name}
+>
+	<a class="signature" href="/person/{slug}">{name}</a>
 	<div
 		class="trash"
 		onclick={handleClickRemove}

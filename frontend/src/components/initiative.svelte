@@ -16,9 +16,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
 <script lang="ts">
-	import type {Initiative} from '@lusc/initiative-tracker-util/types.js';
+	import type {InitiativeJson} from '@lusc/initiative-tracker-api';
 
 	import {getLogin} from '../state.ts';
+	import {createHandleSlugChange} from '../url.ts';
 
 	import Card from './card.svelte';
 	import DeleteButton from './delete-button.svelte';
@@ -33,7 +34,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		allowEdit,
 		standalone,
 	}: {
-		initiative: Initiative;
+		initiative: InitiativeJson;
 		allowEdit: boolean;
 		standalone: boolean;
 	} = $props();
@@ -68,6 +69,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			label="Short name"
 			type="text"
 			bind:value={initiative.shortName}
+			onSuccess={createHandleSlugChange(initiative)}
 			apiEndpoint="/api/initiative/{initiative.id}"
 		/>
 		<PatchInput
@@ -116,17 +118,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 				'image/svg+xml',
 			]}
 		/>
-		<img class="image-url" src={initiative.image} alt="" />
+		<img class="image-url" src="/assets/{initiative.image}" alt="" />
 	{:else}
 		{#if initiative.image}
 			<a
-				href={standalone ? initiative.website : `/initiative/${initiative.id}`}
+				href={standalone
+					? initiative.website
+					: `/initiative/${initiative.slug}`}
 			>
-				<img class="image-url" src={initiative.image} alt="" />
+				<img class="image-url" src="/assets/{initiative.image}" alt="" />
 			</a>
 		{/if}
 		<a
-			href={standalone ? undefined : `/initiative/${initiative.id}`}
+			href={standalone ? undefined : `/initiative/${initiative.slug}`}
 			class="short-name">{initiative.shortName}</a
 		>
 		<div class="full-name">{initiative.fullName}</div>
@@ -143,7 +147,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 				Initiative website <ExternalLinkIcon />
 			</a>
 		{/if}
-		<a class="pdf-url" href={initiative.pdf}>Download initiative as PDF</a>
+		<a class="pdf-url" href="/assets/{initiative.pdf}"
+			>Download initiative as PDF</a
+		>
 	{/if}
 
 	{#if standalone}

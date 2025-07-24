@@ -74,7 +74,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			onclick={toggleMenu}
 			onkeydown={toggleMenu}
 		>
-			<UserIcon name={loginInfo.name} iconKey={loginInfo.id} />
+			<UserIcon name={loginInfo.username} iconKey={loginInfo.id} />
 		</div>
 	{:else}
 		<a href={loginLink.href} class="login">Login</a>
@@ -86,8 +86,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		{#snippet userIcon()}
 			<div class="user-info">
 				{#if loginInfo}
-					<UserIcon name={loginInfo.name} iconKey={loginInfo.id} />
-					<span>{loginInfo.name}</span>
+					<UserIcon name={loginInfo.username} iconKey={loginInfo.id} />
+					<span>{loginInfo.username}</span>
 				{/if}
 			</div>
 		{/snippet}

@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import {randomBytes} from 'node:crypto';
 
 import {
+	sortInitiatives,
 	sortOrganisations,
 	sortPeople,
 } from '@lusc/initiative-tracker-util/sort.js';
@@ -131,7 +132,7 @@ export class Initiative extends InjectableApi {
 		return this._organisations;
 	}
 
-	toJson(): InitiativeJson {
+	toJSON(): InitiativeJson {
 		return {
 			id: this.id,
 			slug: this.slug,
@@ -141,9 +142,9 @@ export class Initiative extends InjectableApi {
 			pdf: this.pdf.name,
 			image: this.image?.name ?? null,
 			deadline: this.deadline ?? null,
-			signatures: this.signatures.map(signature => signature.toJson()),
+			signatures: this.signatures.map(signature => signature.toJSON()),
 			organisations: this.organisations.map(organisation =>
-				organisation.toJson(),
+				organisation.toJSON(),
 			),
 		};
 	}
@@ -175,7 +176,7 @@ export class Initiative extends InjectableApi {
 		website ||= undefined;
 		deadline ||= undefined;
 
-		const id = 'i-' + randomBytes(40).toString('base64url');
+		const id = 'i-' + randomBytes(20).toString('base64url');
 		const slug = this.getInitiativeSlug(shortName);
 
 		const row: SqlInitiativeRow = {
@@ -242,10 +243,13 @@ export class Initiative extends InjectableApi {
 
 	static async all(): Promise<Initiative[]> {
 		const result = this.database
-			.prepare('SELECT * from initaitives')
+			.prepare('SELECT * from initiatives')
 			.all() as SqlInitiativeRow[];
 
-		return Promise.all(result.map(row => this._fromRow(row)));
+		const initiatives = await Promise.all(
+			result.map(row => this._fromRow(row)),
+		);
+		return sortInitiatives(initiatives);
 	}
 
 	static async fromId(id: string): Promise<Initiative | undefined> {

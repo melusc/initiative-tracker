@@ -17,7 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import {randomBytes} from 'node:crypto';
 
-import {sortInitiatives} from '@lusc/initiative-tracker-util/sort.js';
+import {
+	sortInitiatives,
+	sortOrganisations,
+} from '@lusc/initiative-tracker-util/sort.js';
 import {makeSlug} from '@lusc/util/slug';
 
 import {ApiError} from '../error.js';
@@ -93,14 +96,14 @@ export class Organisation extends InjectableApi {
 		return this._initiatives;
 	}
 
-	toJson(): OrganisationJson {
+	toJSON(): OrganisationJson {
 		return {
 			id: this.id,
 			slug: this.slug,
 			name: this.name,
 			image: this.image?.name ?? null,
 			website: this.website ?? null,
-			initiatives: this.initiatives.map(initiative => initiative.toJson()),
+			initiatives: this.initiatives.map(initiative => initiative.toJSON()),
 		};
 	}
 
@@ -125,7 +128,7 @@ export class Organisation extends InjectableApi {
 		image: Asset | undefined,
 		website: string | undefined,
 	) {
-		const id = 'o-' + randomBytes(40).toString('base64url');
+		const id = 'o-' + randomBytes(20).toString('base64url');
 		const slug = this.getOrganisationSlug(name);
 		website ||= undefined;
 
@@ -176,12 +179,15 @@ export class Organisation extends InjectableApi {
 		);
 	}
 
-	static all(): Promise<Organisation[]> {
+	static async all(): Promise<Organisation[]> {
 		const result = this.database
 			.prepare('SELECT * from organisations')
 			.all() as SqlOrganisationRow[];
 
-		return Promise.all(result.map(row => this._fromRow(row)));
+		const organisations = await Promise.all(
+			result.map(row => this._fromRow(row)),
+		);
+		return sortOrganisations(organisations);
 	}
 
 	static fromId(id: string): Promise<Organisation | undefined> {

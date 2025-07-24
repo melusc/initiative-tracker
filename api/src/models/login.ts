@@ -29,6 +29,12 @@ type SqlLoginRow = {
 	passwordHash: string;
 };
 
+export type LoginJson = {
+	id: string;
+	username: string;
+	isAdmin: boolean;
+};
+
 const privateConstructorKey = Symbol();
 
 export class Login extends InjectableApi {
@@ -111,7 +117,7 @@ export class Login extends InjectableApi {
 
 		const passwordHash = await bcrypt.hash(password, this._HASH_ROUNDS);
 
-		const id = 'l-' + randomBytes(40).toString('base64url');
+		const id = 'l-' + randomBytes(20).toString('base64url');
 
 		this.database
 			.prepare(
@@ -149,6 +155,14 @@ export class Login extends InjectableApi {
 		}
 
 		return this._fromRow(row);
+	}
+
+	toJSON(): LoginJson {
+		return {
+			id: this.id,
+			username: this.username,
+			isAdmin: this.isAdmin,
+		};
 	}
 
 	async verifyPassword(password: string) {

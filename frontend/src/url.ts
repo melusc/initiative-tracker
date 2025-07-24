@@ -15,27 +15,22 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import {type Buffer} from 'node:buffer';
-import {scrypt as scryptCallback} from 'node:crypto';
+export function redirectSlugUrl(oldSlug: string, newSlug: string) {
+	if (oldSlug === newSlug) {
+		return;
+	}
 
-export async function scrypt(
-	password: string | Buffer,
-	salt: string | Buffer,
-	keylen: number,
-	options?: {
-		cost?: number;
-		blockSize?: number;
-		parallelization?: number;
-		maxmem?: number;
-	},
-): Promise<Buffer> {
-	return new Promise<Buffer>((resolve, reject) => {
-		scryptCallback(password, salt, keylen, options ?? {}, (error, value) => {
-			if (error) {
-				reject(error);
-			} else {
-				resolve(value);
-			}
-		});
-	});
+	const newUrl = new URL(location.href);
+	const pathSegments = newUrl.pathname
+		.split('/')
+		.map(segment => (segment === oldSlug ? newSlug : segment));
+	newUrl.pathname = pathSegments.join('/');
+	history.pushState({}, '', newUrl.href);
+}
+
+export function createHandleSlugChange(oldData: {slug: string}) {
+	return (newData: {slug: string}) => {
+		redirectSlugUrl(oldData.slug, newData.slug);
+		oldData.slug = newData.slug;
+	};
 }

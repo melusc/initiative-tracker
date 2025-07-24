@@ -17,7 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import {randomBytes} from 'node:crypto';
 
-import {sortInitiatives} from '@lusc/initiative-tracker-util/sort.js';
+import {
+	sortInitiatives,
+	sortPeople,
+} from '@lusc/initiative-tracker-util/sort.js';
 import {makeSlug} from '@lusc/util/slug';
 
 import {ApiError} from '../error.js';
@@ -163,7 +166,8 @@ export class Person extends InjectableApi {
 				owner: owner.id,
 			}) as SqlPersonRow[];
 
-		return rows.map(row => this._fromRow(row, owner));
+		const people = rows.map(row => this._fromRow(row, owner));
+		return sortPeople(people);
 	}
 
 	static create(name: string, owner: Login) {
@@ -174,7 +178,7 @@ export class Person extends InjectableApi {
 			throw new ApiError('Person with the same name exists already.');
 		}
 
-		const id = 'p-' + randomBytes(40).toString('base64url');
+		const id = 'p-' + randomBytes(20).toString('base64url');
 
 		try {
 			this.database
@@ -218,13 +222,13 @@ export class Person extends InjectableApi {
 		this._signaturesResolved = true;
 	}
 
-	toJson(): PersonJson {
+	toJSON(): PersonJson {
 		return {
 			id: this.id,
 			slug: this.slug,
 			name: this.name,
 			owner: this.owner.id,
-			signatures: this.signatures.map(signature => signature.toJson()),
+			signatures: this.signatures.map(signature => signature.toJSON()),
 		};
 	}
 

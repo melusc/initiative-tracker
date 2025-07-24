@@ -16,20 +16,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
 <script lang="ts">
+	import type {
+		InitiativeJson,
+		OrganisationJson,
+	} from '@lusc/initiative-tracker-api';
 	import {sortOrganisations} from '@lusc/initiative-tracker-util/sort.js';
 	import type {
 		ApiResponse,
 		ApiResponseSuccess,
-		EnrichedInitiative,
-		Organisation,
 	} from '@lusc/initiative-tracker-util/types.js';
 
 	import {createSuccessState} from '../../success-state.ts';
 
 	import {browser} from '$app/environment';
 
-	const {initiative = $bindable()}: {initiative: EnrichedInitiative} = $props();
-	let organisations = $state<Organisation[] | false>();
+	const {initiative = $bindable()}: {initiative: InitiativeJson} = $props();
+	let organisations = $state<OrganisationJson[] | false>();
 
 	let organisationId = $state<string>();
 
@@ -64,7 +66,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 				successState.setSuccess();
 				initiative.organisations = sortOrganisations([
 					...initiative.organisations,
-					(organisations as Organisation[]).find(s => s.id === organisationId)!,
+					(organisations as OrganisationJson[]).find(
+						s => s.id === organisationId,
+					)!,
 				]);
 
 				organisationId = 'add-organisation';
@@ -93,7 +97,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			}
 
 			const body = (await response.json()) as ApiResponseSuccess<
-				Organisation[]
+				OrganisationJson[]
 			>;
 
 			organisations = body.data;

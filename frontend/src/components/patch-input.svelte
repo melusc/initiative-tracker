@@ -30,6 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		apiEndpoint,
 		value = $bindable(),
 		allowEmpty = false,
+		onSuccess,
 		transform = (s): string => s,
 		initialValue = value,
 	}: {
@@ -39,6 +40,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		apiEndpoint: string;
 		value: string | null;
 		allowEmpty?: boolean;
+		onSuccess?(data: Record<string, unknown>): void;
 		transform?: (s: string) => string;
 		initialValue?: string | null;
 	} = $props();
@@ -70,6 +72,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		} else {
 			value = body.data[name]!;
 			successState.setSuccess();
+			onSuccess?.(body.data);
 		}
 	}
 </script>

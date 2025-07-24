@@ -16,20 +16,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
 <script lang="ts">
+	import type {InitiativeJson, PersonJson} from '@lusc/initiative-tracker-api';
 	import {sortPeople} from '@lusc/initiative-tracker-util/sort.js';
 	import type {
 		ApiResponse,
 		ApiResponseSuccess,
-		EnrichedInitiative,
-		Person,
 	} from '@lusc/initiative-tracker-util/types.js';
 
 	import {createSuccessState} from '../../success-state.ts';
 
 	import {browser} from '$app/environment';
 
-	const {initiative = $bindable()}: {initiative: EnrichedInitiative} = $props();
-	let people = $state<Person[] | false>();
+	const {initiative = $bindable()}: {initiative: InitiativeJson} = $props();
+	let people = $state<PersonJson[] | false>();
 
 	let personId = $state<string>();
 
@@ -61,7 +60,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 				successState.setSuccess();
 				initiative.signatures = sortPeople([
 					...(initiative.signatures ?? []),
-					(people as Person[]).find(s => s.id === personId)!,
+					(people as PersonJson[]).find(s => s.id === personId)!,
 				]);
 
 				personId = 'add-signature';
@@ -89,7 +88,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 				return;
 			}
 
-			const body = (await response.json()) as ApiResponseSuccess<Person[]>;
+			const body = (await response.json()) as ApiResponseSuccess<PersonJson[]>;
 
 			people = body.data;
 		} catch {

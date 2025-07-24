@@ -38,7 +38,7 @@ apiTest.for([
 			includeOptionals ? 'https://bing.com/' : undefined,
 		);
 
-		expect(organisation.toJson()).toStrictEqual({
+		expect(organisation.toJSON()).toStrictEqual({
 			id: organisation.id,
 			slug: 'organisation-org',
 			name: 'Organisation Org',
@@ -94,7 +94,7 @@ apiTest('Updating values', async ({api: {Organisation, ImageAsset}}) => {
 
 	let organisationCopy = await Organisation.fromId(organisation.id);
 
-	expect(organisation.toJson()).toStrictEqual({
+	expect(organisation.toJSON()).toStrictEqual({
 		id: organisation.id,
 		slug: 'organisation-xyz',
 		name: 'Organisation XYZ',
@@ -103,7 +103,7 @@ apiTest('Updating values', async ({api: {Organisation, ImageAsset}}) => {
 		initiatives: [],
 	});
 
-	expect(organisationCopy!.toJson()).toStrictEqual(organisation.toJson());
+	expect(organisationCopy!.toJSON()).toStrictEqual(organisation.toJSON());
 
 	await organisation.updateImage(imageAsset2);
 	organisation.updateWebsite('https://duck.com/');
@@ -113,7 +113,7 @@ apiTest('Updating values', async ({api: {Organisation, ImageAsset}}) => {
 
 	organisationCopy = await Organisation.fromId(organisation.id);
 
-	expect(organisationCopy!.toJson()).toStrictEqual(organisation.toJson());
+	expect(organisationCopy!.toJSON()).toStrictEqual(organisation.toJSON());
 
 	await expect(
 		Organisation.fromSlug('organisation-xyz'),

@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
 <script lang="ts">
-	import type {EnrichedInitiative} from '@lusc/initiative-tracker-util/types.js';
+	import type {InitiativeJson} from '@lusc/initiative-tracker-api';
 
 	import CreateButton from '../components/create-button.svelte';
 	import Initiative from '../components/initiative.svelte';
@@ -24,7 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	import PageTitle from '../components/page-title.svelte';
 	import {getState} from '../state.ts';
 
-	const initiatives = getState<EnrichedInitiative[]>();
+	const initiatives = getState<InitiativeJson[]>();
 </script>
 
 <PageTitle />

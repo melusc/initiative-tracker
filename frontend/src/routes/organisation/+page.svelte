@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
 <script lang="ts">
-	import type {EnrichedOrganisation} from '@lusc/initiative-tracker-util/types.js';
+	import type {OrganisationJson} from '@lusc/initiative-tracker-api';
 
 	import Initiative from '../../components/initiative.svelte';
 	import Loading from '../../components/loading.svelte';
@@ -24,7 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	import PageTitle from '../../components/page-title.svelte';
 	import {getState} from '../../state.ts';
 
-	let organisation = $state(getState<EnrichedOrganisation>());
+	let organisation = $state(getState<OrganisationJson>());
 </script>
 
 <PageTitle title={organisation?.name} />

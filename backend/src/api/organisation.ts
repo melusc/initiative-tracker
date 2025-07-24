@@ -16,54 +16,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import {Buffer} from 'node:buffer';
-import {unlink, writeFile} from 'node:fs/promises';
 
 import {
-	sortInitiatives,
-	sortOrganisations,
-} from '@lusc/initiative-tracker-util/sort.js';
+	ApiError,
+	type Asset,
+	type Organisation,
+} from '@lusc/initiative-tracker-api';
 import {typeOf} from '@lusc/initiative-tracker-util/type-of.js';
-import type {
-	Initiative,
-	Organisation,
-	EnrichedOrganisation,
-	ApiResponse,
-} from '@lusc/initiative-tracker-util/types.js';
-import {makeSlug} from '@lusc/util/slug';
+import type {ApiResponse} from '@lusc/initiative-tracker-util/types.js';
 import {Router, type Request, type RequestHandler} from 'express';
 
-import {database} from '../database.ts';
+import {api} from '../database.ts';
 import {requireAdmin} from '../middleware/login-protect.ts';
+import {mergeExpressBodyFile, multerUpload} from '../uploads.ts';
 import {
-	fetchImage,
-	imageOutDirectory,
-	mergeExpressBodyFile,
-	multerUpload,
-	transformInitiativeUrls,
-	transformOrganisationUrls,
-	type FetchedFile,
-} from '../uploads.ts';
-import {isEmpty, makeValidator, validateUrl} from '../validate-body.ts';
-
-function enrichOrganisation(organisation: Organisation): EnrichedOrganisation {
-	const id = organisation.id;
-
-	const initiatives = database
-		.prepare(
-			`SELECT initiatives.* FROM initiatives
-			INNER JOIN initiativeOrganisations
-			ON initiativeOrganisations.initiativeId = initiatives.id
-			WHERE initiativeOrganisations.organisationId = :organisationId`,
-		)
-		.all({organisationId: id}) as Initiative[];
-
-	return {
-		...organisation,
-		initiatives: sortInitiatives(initiatives).map(initiative =>
-			transformInitiativeUrls(initiative),
-		),
-	};
-}
+	isEmpty,
+	isValidUrl,
+	makeValidator,
+	sanitiseUrl,
+} from '../validate-body.ts';
 
 const organisationKeyValidators = {
 	name(nameRaw: unknown): ApiResponse<string> {
@@ -98,91 +69,84 @@ const organisationKeyValidators = {
 			data: name,
 		};
 	},
-	async image(image: unknown): Promise<ApiResponse<null | FetchedFile>> {
+	async image(image: unknown): Promise<ApiResponse<undefined | Asset>> {
 		if (isEmpty(image)) {
 			return {
 				type: 'success',
-				data: null,
+				data: undefined,
 			};
 		}
 
-		try {
-			if (Buffer.isBuffer(image)) {
-				const localImage = await fetchImage(image);
-
+		if (Buffer.isBuffer(image)) {
+			try {
+				const imageAsset = await api.ImageAsset.createFromBuffer(image);
 				return {
 					type: 'success',
-					data: localImage,
+					data: imageAsset,
 				};
+			} catch (error: unknown) {
+				if (error instanceof ApiError) {
+					return {
+						type: 'error',
+						readableError: error.message,
+						error: 'fetch-error',
+					};
+				}
 			}
-
-			const isValidUrl = await validateUrl('Image URL', image);
-			if (isValidUrl.type === 'error') {
-				return isValidUrl;
-			}
-
-			const localImage = await fetchImage(new URL(isValidUrl.data));
-
-			return {
-				type: 'success',
-				data: localImage,
-			};
-		} catch {
-			return {
-				type: 'error',
-				readableError:
-					'Could not fetch image. Either it was an invalid URL or the file was not an image.',
-				error: 'fetch-error',
-			};
 		}
-	},
 
-	async website(website: unknown): Promise<ApiResponse<string | null>> {
+		if (typeof image === 'string') {
+			try {
+				const imageAsset = await api.ImageAsset.createFromUrl(image);
+				return {
+					type: 'success',
+					data: imageAsset,
+				};
+			} catch (error: unknown) {
+				if (error instanceof ApiError) {
+					return {
+						type: 'error',
+						readableError: error.message,
+						error: 'fetch-error',
+					};
+				}
+			}
+		}
+
+		return {
+			type: 'error',
+			readableError: 'Invalid image.',
+			error: 'fetch-error',
+		};
+	},
+	website(website: unknown): ApiResponse<string | undefined> {
 		if (isEmpty(website)) {
 			return {
 				type: 'success',
-				data: null,
+				data: undefined,
 			};
 		}
 
-		const isValidUrl = await validateUrl('website', website);
-		if (isValidUrl.type === 'error') {
-			return isValidUrl;
+		if (!isValidUrl(website)) {
+			return {
+				type: 'error',
+				readableError: 'Not a valid url.',
+				error: 'invalid-url',
+			};
 		}
-
-		const websiteUrl = new URL(isValidUrl.data);
-		websiteUrl.hash = '';
-		websiteUrl.username = '';
-		websiteUrl.password = '';
 
 		return {
 			type: 'success',
-			data: websiteUrl.href,
+			data: sanitiseUrl(website as string),
 		};
 	},
 };
 
 const organisationValidator = makeValidator(organisationKeyValidators);
 
-function findAvailableOrganisationSlug(name: string): string {
-	const baseSlug = makeSlug(name, {appendRandomHex: false});
-
-	for (let counter = 0; ; ++counter) {
-		const slug = counter === 0 ? baseSlug : `${baseSlug}-${counter}`;
-
-		const organisation = database
-			.prepare('SELECT id from organisations where id = :slug')
-			.get({slug}) as {id: string} | undefined;
-
-		if (!organisation) {
-			return slug;
-		}
-	}
-}
-
 export async function createOrganisation(
 	request: Request,
-): Promise<ApiResponse<EnrichedOrganisation>> {
+): Promise<ApiResponse<Organisation>> {
 	const body = mergeExpressBodyFile(request, ['image']);
 
 	const result = await organisationValidator(body, [
@@ -196,35 +160,16 @@ export async function createOrganisation(
 	}
 
 	const {name, image, website} = result.data;
-	if (image) {
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
-		await writeFile(image.suggestedFilePath, image.body);
-	}
 
-	const id = findAvailableOrganisationSlug(name);
-	const organisation: Organisation = {
-		id,
-		name,
-		image: image ? image.id : image,
-		website,
-	};
-
-	database
-		.prepare(
-			`
-		INSERT INTO organisations (id, name, image, website)
-		values (:id, :name, :image, :website)
-	`,
-		)
-		.run(organisation);
+	const organisation = api.Organisation.create(name, image, website);
 
 	return {
 		type: 'success',
-		data: enrichOrganisation(transformOrganisationUrls(organisation)),
+		data: organisation,
 	};
 }
 
-export const createOrganisationEndpoint: RequestHandler = async (
+const createOrganisationEndpoint: RequestHandler = async (
 	request,
 	response,
 ) => {
@@ -238,48 +183,49 @@ export const createOrganisationEndpoint: RequestHandler = async (
 	response.status(201).json(result);
 };
 
-export function getAllOrganisations() {
-	const rows = database
-		.prepare('SELECT id, name, image, website FROM organisations')
-		.all() as Organisation[];
+const getAllOrganisations: RequestHandler = async (_request, response) => {
+	const organisations = await api.Organisation.all();
 
-	return sortOrganisations(rows).map(organisation =>
-		enrichOrganisation(transformOrganisationUrls(organisation)),
-	);
-}
+	for (const organisation of organisations) {
+		await organisation.resolveInitiatives();
+	}
 
-export const getAllOrganisationsEndpoint: RequestHandler = (
-	_request,
-	response,
-) => {
 	response.status(200).json({
 		type: 'success',
-		data: getAllOrganisations(),
+		data: organisations,
 	});
 };
 
-export function getOrganisation(id: string) {
-	const organisation = database
-		.prepare(
-			'SELECT id, name, website, image FROM organisations WHERE id = :id',
-		)
-		.get({
-			id,
-		}) as Organisation | undefined;
+const getOrganisation: RequestHandler<{id: string}> = async (
+	request,
+	response,
+) => {
+	const organisation = await api.Organisation.fromId(request.params.id);
+	if (!organisation) {
+		response.status(404).json({
+			type: 'error',
+			readableError: 'Organisation does not exist.',
+			error: 'not-found',
+		});
+		return;
+	}
+
+	await organisation.resolveInitiatives();
+
+	response.status(200).json({
+		type: 'success',
+		data: organisation,
+	});
+};
+
+const deleteOrganisation: RequestHandler<{id: string}> = async (
+	request,
+	response,
+) => {
+	const {id} = request.params;
+	const organisation = await api.Organisation.fromId(id);
 
 	if (!organisation) {
-		return false;
-	}
-
-	return enrichOrganisation(transformOrganisationUrls(organisation));
-}
-
-export const getOrganisationEndpoint: RequestHandler<{id: string}> = (
-	request,
-	response,
-) => {
-	const result = getOrganisation(request.params.id);
-	if (!result) {
 		response.status(404).json({
 			type: 'error',
 			readableError: 'Organisation does not exist.',
@@ -288,49 +234,22 @@ export const getOrganisationEndpoint: RequestHandler<{id: string}> = (
 		return;
 	}
 
-	response.status(200).json({
-		type: 'success',
-		data: result,
-	});
-};
-
-export const deleteOrganisation: RequestHandler<{id: string}> = (
-	request,
-	response,
-) => {
-	const {id} = request.params;
-
-	const result = database
-		.prepare('DELETE FROM organisations WHERE id = :id')
-		.run({id});
-
-	if (result.changes === 0) {
-		response.status(404).json({
-			type: 'error',
-			readableError: 'Organisation does not exist.',
-			error: 'not-found',
-		});
-		return;
-	}
+	await organisation.rm();
 
 	response.status(200).json({
 		type: 'success',
 	});
 };
 
-export const patchOrganisation: RequestHandler<{id: string}> = async (
+const patchOrganisation: RequestHandler<{id: string}> = async (
 	request,
 	response,
 ) => {
 	const {id} = request.params;
 
-	const oldRow = database
-		.prepare(
-			'SELECT id, name, image, website FROM organisations WHERE id = :id',
-		)
-		.get({id}) as Organisation | undefined;
+	const organisation = await api.Organisation.fromId(id);
 
-	if (!oldRow) {
+	if (!organisation) {
 		response.status(404).json({
 			type: 'error',
 			readableError: 'Organisation does not exist.',
@@ -352,60 +271,33 @@ export const patchOrganisation: RequestHandler<{id: string}> = async (
 	}
 
 	const newData = validateResult.data;
-
-	if ('image' in newData && oldRow.image !== null) {
-		try {
-			// eslint-disable-next-line security/detect-non-literal-fs-filename
-			await unlink(new URL(oldRow.image, imageOutDirectory));
-		} catch {}
-	}
-
-	if (newData.image) {
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
-		await writeFile(newData.image.suggestedFilePath, newData.image.body);
-	}
-
-	if (Object.keys(newData).length === 0) {
-		response.status(200).json({
-			type: 'success',
-			data: enrichOrganisation(transformOrganisationUrls(oldRow)),
-		});
-		return;
-	}
-
-	const query = [];
-	const parameters: Record<string, string | null> = {};
-
-	for (const [key, value] of Object.entries(newData)) {
-		query.push(`${key} = :${key}`);
-
-		if (key === 'image') {
-			parameters['image'] = newData.image?.id ?? null;
-		} else {
-			parameters[key] = value as string | null;
+	for (const key of Object.keys(newData)) {
+		switch (key) {
+			case 'name': {
+				organisation.updateName(newData.name);
+				break;
+			}
+			case 'website': {
+				organisation.updateWebsite(newData.website);
+				break;
+			}
+			case 'image': {
+				await organisation.updateImage(newData.image);
+			}
 		}
 	}
 
-	database
-		.prepare(`UPDATE organisations SET ${query.join(', ')} WHERE id = :id`)
-		.run({
-			...parameters,
-			id,
-		});
+	await organisation.resolveInitiatives();
 
 	response.status(200).send({
 		type: 'success',
-		data: transformOrganisationUrls({
-			...oldRow,
-			...newData,
-			image: newData.image ? newData.image.id : null,
-		}),
+		data: organisation,
 	});
 };
 
 export const organisationRouter = Router();
 
-organisationRouter.get('/organisations', getAllOrganisationsEndpoint);
+organisationRouter.get('/organisations', getAllOrganisations);
 organisationRouter.post(
 	'/organisation/create',
 	requireAdmin(),
@@ -417,7 +309,7 @@ organisationRouter.post(
 	]),
 	createOrganisationEndpoint,
 );
-organisationRouter.get('/organisation/:id', getOrganisationEndpoint);
+organisationRouter.get('/organisation/:id', getOrganisation);
 organisationRouter.delete(
 	'/organisation/:id',
 	requireAdmin(),

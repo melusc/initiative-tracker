@@ -15,36 +15,29 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import {ApiError} from '@lusc/initiative-tracker-api';
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
 import {apiRouter} from './api/index.ts';
-import {
-	createInitiative,
-	getAllInitiatives,
-	getInitiative,
-} from './api/initiative.ts';
-import {
-	createOrganisation,
-	getAllOrganisations,
-	getOrganisation,
-} from './api/organisation.ts';
-import {createPerson, getAllPeople, getPerson} from './api/person.ts';
-import {database} from './database.ts';
+import {createInitiative} from './api/initiative.ts';
+import {createOrganisation} from './api/organisation.ts';
+import {createPerson} from './api/person.ts';
+import {api} from './database.ts';
 import env from './env.ts';
 import {
 	requireAdmin,
 	identifyUser,
 	requireLogin,
 } from './middleware/login-protect.ts';
-import {changePassword, changeUsername} from './routes/account.ts';
+import {validatePassword, validateUsername} from './routes/account.ts';
 import {assetRouter} from './routes/assets.ts';
 import {loginPost} from './routes/login.ts';
 import {logout} from './routes/logout.ts';
 import {svelteKitEngine} from './svelte-kit-engine.ts';
-import {mergeExpressBodyFile, multerUpload, staticRoot} from './uploads.ts';
+import {multerUpload, staticRoot} from './uploads.ts';
 
 const app = express();
 
@@ -90,7 +83,7 @@ Disallow: /`,
 		);
 });
 
-app.use(identifyUser(database));
+app.use(identifyUser());
 
 app.use('/api', apiRouter);
 app.use(
@@ -114,10 +107,12 @@ app.get('/logout', (request, response) => {
 	logout(request, response, '/');
 });
 
-app.get('/', (_, response) => {
+app.get('/', async (_, response) => {
+	const initiatives = await api.Initiative.all();
+
 	response.render('index', {
 		login: response.locals.login,
-		state: getAllInitiatives(response.locals.login?.id),
+		state: initiatives,
 	});
 });
 
@@ -142,44 +137,48 @@ app.post(
 		},
 	]),
 	async (request, response) => {
-		const body = mergeExpressBodyFile(request, ['pdf', 'image']);
-
-		const initiative = await createInitiative(response.locals.login!.id, body);
+		const body = request.body as Record<string, unknown>;
+		const initiative = await createInitiative(request);
 
 		if (initiative.type === 'error') {
 			response.status(400).render('create-initiative', {
 				login: response.locals.login,
 				state: {
 					error: initiative.readableError,
-					values: request.body as Record<string, unknown>,
+					values: body,
 				},
 			});
 			return;
 		}
 
-		response.redirect(303, `/initiative/${initiative.data.id}`);
+		response.redirect(303, `/initiative/${initiative.data.slug}`);
 	},
 );
 
-app.get('/initiative/:id', (request, response) => {
-	const initiative = getInitiative(
-		request.params.id,
-		response.locals.login?.id,
-	);
-	if (initiative) {
-		response.status(200).render('initiative', {
-			login: response.locals.login,
-			state: initiative,
-		});
-	} else {
-		response
-			.status(404)
-			.render('404', {login: response.locals.login, state: undefined});
+app.get('/initiative/:slug', async (request, response) => {
+	const login = response.locals.login;
+	const initiative = await api.Initiative.fromSlug(request.params.slug);
+	if (!initiative) {
+		response.status(404).render('404', {login, state: undefined});
+		return;
 	}
+
+	if (login) {
+		await initiative.resolveSignaturesOrganisations(login);
+	}
+
+	response.status(200).render('initiative', {
+		login,
+		state: initiative,
+	});
 });
 
-app.get('/people', requireLogin(), (_request, response) => {
-	const people = getAllPeople(response.locals.login!.id);
+app.get('/people', requireLogin(), async (_request, response) => {
+	const login = response.locals.login!;
+	const people = api.Person.all(login);
+	for (const person of people) {
+		await person.resolveSignatures();
+	}
 
 	response.render('people', {
 		state: people,
@@ -201,40 +200,43 @@ app.post(
 	async (request, response) => {
 		const body = request.body as Record<string, unknown>;
 
-		const person = await createPerson(body, response.locals.login!.id);
+		const person = await createPerson(body, response.locals.login!);
 
 		if (person.type === 'error') {
 			response.status(400).render('create-person', {
 				login: response.locals.login,
 				state: {
 					error: person.readableError,
-					values: request.body as Record<string, unknown>,
+					values: body,
 				},
 			});
 			return;
 		}
 
-		response.redirect(303, `/person/${person.data.id}`);
+		response.redirect(303, `/person/${person.data.slug}`);
 	},
 );
 
-app.get('/person/:id', requireLogin(), (request, response) => {
-	const id = request.params['id']!;
-	const person = getPerson(id, response.locals.login!.id);
+app.get('/person/:slug', requireLogin(), async (request, response) => {
+	const slug = request.params['slug']!;
+	const login = response.locals.login!;
+	const person = api.Person.fromSlug(slug, login);
 	if (person) {
+		await person.resolveSignatures();
+
 		response.status(200).render('person', {
-			login: response.locals.login,
+			login,
 			state: person,
 		});
-	} else {
-		response
-			.status(404)
-			.render('404', {login: response.locals.login, state: undefined});
+
+		return;
 	}
+
+	response.status(404).render('404', {login, state: undefined});
 });
 
-app.get('/organisations', (_request, response) => {
-	const organisations = getAllOrganisations();
+app.get('/organisations', async (_request, response) => {
+	const organisations = await api.Organisation.all();
 
 	response.status(200).render('organisations', {
 		login: response.locals.login,
@@ -259,8 +261,7 @@ app.post(
 		},
 	]),
 	async (request, response) => {
-		const body = mergeExpressBodyFile(request, ['image']);
-
+		const body = request.body as Record<string, unknown>;
 		const organisation = await createOrganisation(request);
 
 		if (organisation.type === 'error') {
@@ -274,21 +275,24 @@ app.post(
 			return;
 		}
 
-		response.redirect(303, `/organisation/${organisation.data.id}`);
+		response.redirect(303, `/organisation/${organisation.data.slug}`);
 	},
 );
 
-app.get('/organisation/:id', (request, response) => {
-	const organisation = getOrganisation(request.params.id);
+app.get('/organisation/:slug', async (request, response) => {
+	const slug = request.params.slug;
+	const organisation = await api.Organisation.fromSlug(slug);
+	await organisation?.resolveInitiatives();
+
+	const login = response.locals.login;
+
 	if (organisation) {
 		response.status(200).render('organisation', {
-			login: response.locals.login,
+			login,
 			state: organisation,
 		});
 	} else {
-		response
-			.status(404)
-			.render('404', {login: response.locals.login, state: undefined});
+		response.status(404).render('404', {login, state: undefined});
 	}
 });
 
@@ -307,14 +311,18 @@ app.post(
 	multerUpload.none(),
 	async (request, response) => {
 		const body = request.body as Record<string, string>;
+		const login = response.locals.login!;
+
 		if ('username' in body) {
 			const username = body['username'];
-			if (typeof username !== 'string') {
+			const usernameValidity = validateUsername(username);
+
+			if (usernameValidity !== true) {
 				response.status(400).render('account', {
-					login: response.locals.login,
+					login,
 					state: {
 						error: {
-							username: 'Username was not a string.',
+							username: usernameValidity,
 						},
 					},
 				});
@@ -322,12 +330,10 @@ app.post(
 			}
 
 			try {
-				changeUsername(username, response.locals.login!.id);
+				login.updateUsername(username);
+
 				response.status(200).render('account', {
-					login: {
-						...response.locals.login,
-						name: username.trim(),
-					},
+					login,
 					state: {
 						success: {
 							username: 'Username changed successfully.',
@@ -336,9 +342,9 @@ app.post(
 				});
 			} catch (error: unknown) {
 				const message =
-					error instanceof Error ? error.message : 'Something went wrong.';
+					error instanceof ApiError ? error.message : 'Something went wrong.';
 				response.status(400).render('account', {
-					login: response.locals.login,
+					login,
 					state: {
 						values: {username},
 						error: {
@@ -361,7 +367,7 @@ app.post(
 			typeof newPasswordRepeat !== 'string'
 		) {
 			response.status(400).render('account', {
-				login: response.locals.login,
+				login,
 				state: {
 					error: {
 						password: 'Please fill in all inputs.',
@@ -371,26 +377,37 @@ app.post(
 			return;
 		}
 
-		try {
-			await changePassword(
-				response.locals.login!.id,
-				currentPassword,
-				newPassword,
-				newPasswordRepeat,
-			);
-			logout(request, response, '/account');
-		} catch (error: unknown) {
-			const message =
-				error instanceof Error ? error.message : 'Something went wrong.';
+		const newPasswordsValidity = validatePassword(
+			newPassword,
+			newPasswordRepeat,
+		);
+
+		if (newPasswordsValidity !== true) {
 			response.status(400).render('account', {
-				login: response.locals.login,
+				login,
 				state: {
 					error: {
-						password: message,
+						password: newPasswordsValidity,
+					},
+				},
+			});
+			return;
+		}
+
+		const currentPasswordIsValid = await login.verifyPassword(currentPassword);
+		if (!currentPasswordIsValid) {
+			response.status(400).render('account', {
+				login,
+				state: {
+					error: {
+						password: 'Current password is incorrect.',
 					},
 				},
 			});
 		}
+
+		await login.updatePassword(newPassword);
+		logout(request, response, '/account');
 	},
 );
 

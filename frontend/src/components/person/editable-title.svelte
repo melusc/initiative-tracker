@@ -15,11 +15,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
-<script lang="ts" generics="T extends {name: string}">
+<script lang="ts" generics="T extends {name: string; slug: string}">
 	import type {ApiResponse} from '@lusc/initiative-tracker-util/types.js';
 	import {slide} from 'svelte/transition';
 
 	import {createSuccessState} from '../../success-state.ts';
+	import {redirectSlugUrl} from '../../url.ts';
 	import CreateIcon from '../icons/create.svelte';
 	import Save from '../icons/save.svelte';
 
@@ -78,11 +79,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			successState.setError(body.readableError);
 		} else {
 			successState.setSuccess();
+			const oldSlug = subject.slug;
 			subject = body.data;
 			editEnabled = false;
 
 			// If name is normalised or otherwise modified on server
 			titleNode!.textContent = subject.name;
+
+			redirectSlugUrl(oldSlug, subject.slug);
 		}
 	}
 </script>

@@ -33,14 +33,17 @@ import {Session} from './models/session.js';
 
 export type {Api, ApiOptions} from './injectable-api.js';
 export type {Asset, ImageAsset, PdfAsset} from './models/asset.js';
-export type {Initiative} from './models/initiative.js';
-export type {Login} from './models/login.js';
-export type {Organisation} from './models/organisation.js';
-export type {Person} from './models/person.js';
+export type {Initiative, InitiativeJson} from './models/initiative.js';
+export type {Login, LoginJson} from './models/login.js';
+export type {Organisation, OrganisationJson} from './models/organisation.js';
+export type {Person, PersonJson} from './models/person.js';
 export type {Session} from './models/session.js';
+export * as utilities from './utilities.js';
+export * from './error.js';
 
 function initDatabase(database: DatabaseSync) {
 	database.exec('PRAGMA journal_mode=WAL;');
+	database.exec('PRAGMA foreign_keys=ON;');
 
 	database.exec(`
 		CREATE TABLE IF NOT EXISTS logins (

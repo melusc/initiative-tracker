@@ -17,19 +17,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import type {Request, Response} from 'express';
 
-import {database} from '../database.ts';
+import {api} from '../database.ts';
 
 export function logout(
 	request: Request,
 	response: Response,
 	redirectPath: string,
 ) {
-	const session = request.cookies['session'] as string | undefined;
+	const sessionCookie = request.cookies['session'] as string | undefined;
 
-	if (typeof session === 'string') {
-		database
-			.prepare('DELETE FROM sessions WHERE sessionId = :session')
-			.run({session});
+	if (typeof sessionCookie === 'string') {
+		const session = api.Session.fromSessionId(sessionCookie);
+		session?.invalidate();
 	}
 
 	response
