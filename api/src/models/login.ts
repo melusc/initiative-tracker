@@ -111,7 +111,7 @@ export class Login extends InjectableApi {
 
 		const passwordHash = await bcrypt.hash(password, this._HASH_ROUNDS);
 
-		const id = randomBytes(40).toString('base64url');
+		const id = 'l-' + randomBytes(40).toString('base64url');
 
 		this.database
 			.prepare(

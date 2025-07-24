@@ -125,7 +125,7 @@ export class Organisation extends InjectableApi {
 		image: Asset | undefined,
 		website: string | undefined,
 	) {
-		const id = randomBytes(40).toString('base64url');
+		const id = 'o-' + randomBytes(40).toString('base64url');
 		const slug = this.getOrganisationSlug(name);
 		website ||= undefined;
 

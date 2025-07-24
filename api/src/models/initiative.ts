@@ -175,7 +175,7 @@ export class Initiative extends InjectableApi {
 		website ||= undefined;
 		deadline ||= undefined;
 
-		const id = randomBytes(40).toString('base64url');
+		const id = 'i-' + randomBytes(40).toString('base64url');
 		const slug = this.getInitiativeSlug(shortName);
 
 		const row: SqlInitiativeRow = {

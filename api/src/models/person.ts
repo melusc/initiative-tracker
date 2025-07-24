@@ -174,7 +174,7 @@ export class Person extends InjectableApi {
 			throw new ApiError('Person with the same name exists already.');
 		}
 
-		const id = randomBytes(40).toString('base64url');
+		const id = 'p-' + randomBytes(40).toString('base64url');
 
 		try {
 			this.database

@@ -64,7 +64,7 @@ export class Session extends InjectableApi {
 	static create(user: Login) {
 		const expires = Date.now() + this._SESSION_DURATION_MS;
 
-		const sessionId = randomBytes(128).toString('base64url');
+		const sessionId = 's-' + randomBytes(128).toString('base64url');
 		this.database
 			.prepare(
 				`INSERT INTO sessions
