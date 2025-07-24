@@ -31,6 +31,14 @@ import {Organisation} from './models/organisation.js';
 import {Person} from './models/person.js';
 import {Session} from './models/session.js';
 
+export type {Api, ApiOptions} from './injectable-api.js';
+export type {Asset, ImageAsset, PdfAsset} from './models/asset.js';
+export type {Initiative} from './models/initiative.js';
+export type {Login} from './models/login.js';
+export type {Organisation} from './models/organisation.js';
+export type {Person} from './models/person.js';
+export type {Session} from './models/session.js';
+
 function initDatabase(database: DatabaseSync) {
 	database.exec('PRAGMA journal_mode=WAL;');
 

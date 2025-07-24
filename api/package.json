@@ -13,7 +13,7 @@
 		"vitest": "^3.2.4"
 	},
 	"exports": {
-		".": "./dist/index.js"
+		".": "./dist/src/index.js"
 	},
 	"dependencies": {
 		"@lusc/initiative-tracker-util": "workspace:^",
