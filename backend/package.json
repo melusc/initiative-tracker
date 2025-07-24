@@ -17,6 +17,7 @@
 		"typescript": "^5.8.3"
 	},
 	"dependencies": {
+		"@lusc/initiative-tracker-api": "workspace:^",
 		"@lusc/initiative-tracker-frontend": "workspace:^",
 		"@lusc/initiative-tracker-util": "workspace:^",
 		"@lusc/util": "^2.0.0",
