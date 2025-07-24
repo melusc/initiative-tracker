@@ -53,7 +53,7 @@ export function identifyUser(): RequestHandler {
 	};
 }
 
-export function loginRedirect(request: Request, response: Response) {
+function loginRedirect(request: Request, response: Response) {
 	const searchParameters = new URLSearchParams({
 		redirect: request.url,
 	});
