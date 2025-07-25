@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	import type {InitiativeJson} from '@lusc/initiative-tracker-api';
 
 	import {getLogin} from '../state.ts';
-	import {createHandleSlugChange} from '../url.ts';
+	import {syncUrlSlug} from '../url.ts';
 
 	import Card from './card.svelte';
 	import DeleteButton from './delete-button.svelte';
@@ -29,7 +29,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	import PatchInputFile from './patch-input-file.svelte';
 	import PatchInput from './patch-input.svelte';
 
-	const {
+	let {
 		initiative = $bindable(),
 		allowEdit,
 		standalone,
@@ -42,6 +42,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	const login = getLogin();
 
 	let showEdit = $state(false);
+
+	$effect(() => {
+		if (standalone) {
+			syncUrlSlug('initiative', initiative);
+		}
+	});
 
 	function handleEditToggle(): void {
 		showEdit = !showEdit;
@@ -68,22 +74,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			name="shortName"
 			label="Short name"
 			type="text"
-			bind:value={initiative.shortName}
-			onSuccess={createHandleSlugChange(initiative)}
+			bind:body={initiative}
 			apiEndpoint="/api/initiative/{initiative.id}"
 		/>
 		<PatchInput
 			name="fullName"
 			label="Full name"
 			type="text"
-			bind:value={initiative.fullName}
+			bind:body={initiative}
 			apiEndpoint="/api/initiative/{initiative.id}"
 		/>
 		<PatchInput
 			name="deadline"
 			label="Deadline"
 			type="date"
-			bind:value={initiative.deadline}
+			bind:body={initiative}
 			allowEmpty
 			apiEndpoint="/api/initiative/{initiative.id}"
 			transform={transformOptional}
@@ -92,7 +97,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			name="website"
 			label="Website"
 			type="text"
-			bind:value={initiative.website}
+			bind:body={initiative}
 			allowEmpty
 			apiEndpoint="/api/initiative/{initiative.id}"
 			transform={transformOptional}
@@ -100,14 +105,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		<PatchInputFile
 			name="pdf"
 			label="PDF Url"
-			bind:value={initiative.pdf}
+			bind:body={initiative}
 			apiEndpoint="/api/initiative/{initiative.id}"
 			accept={['application/pdf']}
 		/>
 		<PatchInputFile
 			name="image"
 			label="Image Url"
-			bind:value={initiative.image}
+			bind:body={initiative}
 			apiEndpoint="/api/initiative/{initiative.id}"
 			allowEmpty
 			accept={[

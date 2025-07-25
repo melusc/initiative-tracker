@@ -15,22 +15,30 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-export function redirectSlugUrl(oldSlug: string, newSlug: string) {
-	if (oldSlug === newSlug) {
-		return;
+import {RelativeUrl} from '@lusc/util/relative-url';
+
+type SlugObject = {
+	slug: string;
+};
+
+const templates = {
+	organisation(organisation: SlugObject) {
+		return `/organisation/${organisation.slug}`;
+	},
+	initiative(initiative: SlugObject) {
+		return `/initiative/${initiative.slug}`;
+	},
+	person(person: SlugObject) {
+		return `/initiative/${person.slug}`;
+	},
+} as const;
+
+export function syncUrlSlug(type: keyof typeof templates, body: SlugObject) {
+	const newPath = templates[type](body);
+
+	const currentUrl = new RelativeUrl(location.href);
+	if (currentUrl.path !== newPath) {
+		currentUrl.path = newPath;
+		history.replaceState({}, '', currentUrl.href);
 	}
-
-	const newUrl = new URL(location.href);
-	const pathSegments = newUrl.pathname
-		.split('/')
-		.map(segment => (segment === oldSlug ? newSlug : segment));
-	newUrl.pathname = pathSegments.join('/');
-	history.pushState({}, '', newUrl.href);
-}
-
-export function createHandleSlugChange(oldData: {slug: string}) {
-	return (newData: {slug: string}) => {
-		redirectSlugUrl(oldData.slug, newData.slug);
-		oldData.slug = newData.slug;
-	};
 }

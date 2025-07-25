@@ -15,7 +15,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
-<script lang="ts">
+<script
+	lang="ts"
+	generics="Body extends Record<string, unknown>, Key extends (keyof Body & string)"
+>
 	import type {ApiResponse} from '@lusc/initiative-tracker-util/types.js';
 	import {slide} from 'svelte/transition';
 
@@ -32,14 +35,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		apiEndpoint,
 		allowEmpty = false,
 		accept,
-		value = $bindable(),
+		body = $bindable(),
 	}: {
-		name: string;
+		name: Key;
 		label: string;
 		apiEndpoint: string;
 		allowEmpty?: boolean;
 		accept?: readonly string[];
-		value: string | null;
+		body: Body;
 	} = $props();
 
 	let file = $state<File>();
@@ -77,13 +80,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			method: 'PATCH',
 			body: patchBody,
 		});
-		const body = (await response.json()) as ApiResponse<Record<string, string>>;
+		const newBody = (await response.json()) as ApiResponse<Body>;
 
-		if (body.type === 'error') {
-			successState.setError(body.readableError);
+		if (newBody.type === 'error') {
+			successState.setError(newBody.readableError);
 		} else {
 			file = undefined;
-			value = body.data[name]!;
+			body = newBody.data;
 			successState.setSuccess();
 		}
 	}
@@ -121,7 +124,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 				class:success={$successState?.type === 'success'}
 				type="url"
 				{name}
-				{value}
+				value={body[name]}
 				bind:this={node}
 			/>
 			<input

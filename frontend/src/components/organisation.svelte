@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	import type {OrganisationJson} from '@lusc/initiative-tracker-api';
 
 	import {getLogin} from '../state.ts';
-	import {createHandleSlugChange} from '../url.ts';
+	import {syncUrlSlug} from '../url.ts';
 
 	import Card from './card.svelte';
 	import DeleteButton from './delete-button.svelte';
@@ -28,7 +28,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	import PatchInputFile from './patch-input-file.svelte';
 	import PatchInput from './patch-input.svelte';
 
-	const {
+	let {
 		organisation = $bindable(),
 		allowEdit,
 		standalone,
@@ -37,6 +37,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		allowEdit: boolean;
 		standalone: boolean;
 	} = $props();
+
+	$effect(() => {
+		if (standalone) {
+			syncUrlSlug('organisation', organisation);
+		}
+	});
 
 	const login = getLogin();
 
@@ -67,15 +73,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			name="name"
 			label="Name"
 			type="text"
-			bind:value={organisation.name}
-			onSuccess={createHandleSlugChange(organisation)}
+			bind:body={organisation}
 			apiEndpoint="/api/organisation/{organisation.id}"
 		/>
 		<PatchInputFile
 			name="image"
 			label="Image URL"
 			allowEmpty
-			bind:value={organisation.image}
+			bind:body={organisation}
 			apiEndpoint="/api/organisation/{organisation.id}"
 			accept={[
 				'image/jpeg',
@@ -90,7 +95,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			label="Website"
 			type="text"
 			transform={transformOptional}
-			bind:value={organisation.website}
+			bind:body={organisation}
 			allowEmpty
 			apiEndpoint="/api/organisation/{organisation.id}"
 		/>

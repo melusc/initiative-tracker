@@ -24,15 +24,26 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	import PageTitle from '../../components/page-title.svelte';
 	import EditableTitle from '../../components/person/editable-title.svelte';
 	import {getState} from '../../state.ts';
+	import {syncUrlSlug} from '../../url.ts';
 
 	let person = $state(getState<PersonJson>());
+
+	$effect(() => {
+		if (person) {
+			syncUrlSlug('person', person);
+		}
+	});
 </script>
 
 <PageTitle title={person?.name} />
 
 <div class="person" data-person={person?.id}>
 	{#if person}
-		<EditableTitle bind:subject={person} patchApi="/api/person/{person.id}" />
+		<EditableTitle
+			key="name"
+			bind:body={person}
+			patchApi="/api/person/{person.id}"
+		/>
 
 		{#if person?.signatures.length > 0}
 			<h1>Signed Initiatives</h1>
