@@ -39,6 +39,7 @@ export const api = createApi({
 });
 
 await utilities.removeUnusedAssets(assetDirectory, api);
+api.Session.removeExpired();
 
 const {
 	values: {'create-login': shouldCreateLogin},
