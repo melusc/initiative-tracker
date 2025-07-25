@@ -16,12 +16,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
 <script lang="ts">
-	import {type EnrichedInitiative} from '@lusc/initiative-tracker-util/types.js';
+	import type {InitiativeJson} from '@lusc/initiative-tracker-api';
 
 	import {getLogin} from '../../state.ts';
 	import Trash from '../icons/trash.svelte';
 
-	const {initiative = $bindable()}: {initiative: EnrichedInitiative} = $props();
+	const {initiative = $bindable()}: {initiative: InitiativeJson} = $props();
 
 	const login = getLogin();
 
@@ -60,12 +60,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			<div class="organisation">
 				<a
 					class="organisation-image-href"
-					href="/organisation/{organisation.id}"
+					href="/organisation/{organisation.slug}"
 				>
 					{#if organisation.image}
 						<img
 							class="organisation-image"
-							src={organisation.image}
+							src="/assets/{organisation.image}"
 							title={organisation.name}
 							alt={organisation.name}
 						/>

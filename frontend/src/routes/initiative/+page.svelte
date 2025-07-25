@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
 <script lang="ts">
-	import type {EnrichedInitiative} from '@lusc/initiative-tracker-util/types.js';
+	import type {InitiativeJson} from '@lusc/initiative-tracker-api';
 
 	import AddOrganisation from '../../components/initiative/add-organisation.svelte';
 	import AddSignature from '../../components/initiative/add-signature.svelte';
@@ -27,7 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	import PageTitle from '../../components/page-title.svelte';
 	import {getLogin, getState} from '../../state.ts';
 
-	let initiative = $state(getState<EnrichedInitiative>());
+	let initiative = $state(getState<InitiativeJson>());
 
 	const login = getLogin();
 </script>
@@ -39,7 +39,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		<h1 class="name">{initiative.shortName}</h1>
 		<Initiative bind:initiative allowEdit standalone />
 
-		{#if initiative.signatures}
+		{#if login}
 			<h1>Signatures</h1>
 			<SignedBy bind:initiative />
 			<AddSignature bind:initiative />

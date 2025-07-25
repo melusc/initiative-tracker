@@ -17,44 +17,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import {fileURLToPath} from 'node:url';
 
-import {Router} from 'express';
+import express, {Router} from 'express';
 
-import {imageOutDirectory, pdfOutDirectory} from '../uploads.ts';
+import {assetDirectory} from '../uploads.ts';
 
 const router = Router();
 
-router.get('/:id', (request, response, next) => {
-	response.sendFile(
-		request.params.id,
-		{
-			root: fileURLToPath(imageOutDirectory),
-			maxAge: '7d',
-			immutable: true,
-		},
-		(error: Error | undefined) => {
-			if (error) {
-				// 404
-				next();
-			}
-		},
-	);
-});
-
-router.get('/:id', (request, response, next) => {
-	response.sendFile(
-		request.params.id,
-		{
-			root: fileURLToPath(pdfOutDirectory),
-			maxAge: '7d',
-			immutable: true,
-		},
-		(error: Error | undefined) => {
-			if (error) {
-				// 404
-				next();
-			}
-		},
-	);
-});
+router.use(
+	express.static(fileURLToPath(assetDirectory), {
+		maxAge: '7d',
+		immutable: true,
+	}),
+);
 
 export {router as assetRouter};

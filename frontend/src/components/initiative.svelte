@@ -16,9 +16,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
 <script lang="ts">
-	import type {Initiative} from '@lusc/initiative-tracker-util/types.js';
+	import type {InitiativeJson} from '@lusc/initiative-tracker-api';
 
 	import {getLogin} from '../state.ts';
+	import {syncUrlSlug} from '../url.ts';
 
 	import Card from './card.svelte';
 	import DeleteButton from './delete-button.svelte';
@@ -28,12 +29,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	import PatchInputFile from './patch-input-file.svelte';
 	import PatchInput from './patch-input.svelte';
 
-	const {
+	let {
 		initiative = $bindable(),
 		allowEdit,
 		standalone,
 	}: {
-		initiative: Initiative;
+		initiative: InitiativeJson;
 		allowEdit: boolean;
 		standalone: boolean;
 	} = $props();
@@ -41,6 +42,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	const login = getLogin();
 
 	let showEdit = $state(false);
+
+	$effect(() => {
+		if (standalone) {
+			syncUrlSlug('initiative', initiative);
+		}
+	});
 
 	function handleEditToggle(): void {
 		showEdit = !showEdit;
@@ -67,21 +74,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			name="shortName"
 			label="Short name"
 			type="text"
-			bind:value={initiative.shortName}
+			bind:body={initiative}
 			apiEndpoint="/api/initiative/{initiative.id}"
 		/>
 		<PatchInput
 			name="fullName"
 			label="Full name"
 			type="text"
-			bind:value={initiative.fullName}
+			bind:body={initiative}
 			apiEndpoint="/api/initiative/{initiative.id}"
 		/>
 		<PatchInput
 			name="deadline"
 			label="Deadline"
 			type="date"
-			bind:value={initiative.deadline}
+			bind:body={initiative}
 			allowEmpty
 			apiEndpoint="/api/initiative/{initiative.id}"
 			transform={transformOptional}
@@ -90,7 +97,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			name="website"
 			label="Website"
 			type="text"
-			bind:value={initiative.website}
+			bind:body={initiative}
 			allowEmpty
 			apiEndpoint="/api/initiative/{initiative.id}"
 			transform={transformOptional}
@@ -98,14 +105,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		<PatchInputFile
 			name="pdf"
 			label="PDF Url"
-			bind:value={initiative.pdf}
+			bind:body={initiative}
 			apiEndpoint="/api/initiative/{initiative.id}"
 			accept={['application/pdf']}
 		/>
 		<PatchInputFile
 			name="image"
 			label="Image Url"
-			bind:value={initiative.image}
+			bind:body={initiative}
 			apiEndpoint="/api/initiative/{initiative.id}"
 			allowEmpty
 			accept={[
@@ -116,17 +123,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 				'image/svg+xml',
 			]}
 		/>
-		<img class="image-url" src={initiative.image} alt="" />
+		<img class="image-url" src="/assets/{initiative.image}" alt="" />
 	{:else}
 		{#if initiative.image}
 			<a
-				href={standalone ? initiative.website : `/initiative/${initiative.id}`}
+				href={standalone
+					? initiative.website
+					: `/initiative/${initiative.slug}`}
 			>
-				<img class="image-url" src={initiative.image} alt="" />
+				<img class="image-url" src="/assets/{initiative.image}" alt="" />
 			</a>
 		{/if}
 		<a
-			href={standalone ? undefined : `/initiative/${initiative.id}`}
+			href={standalone ? undefined : `/initiative/${initiative.slug}`}
 			class="short-name">{initiative.shortName}</a
 		>
 		<div class="full-name">{initiative.fullName}</div>
@@ -143,7 +152,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 				Initiative website <ExternalLinkIcon />
 			</a>
 		{/if}
-		<a class="pdf-url" href={initiative.pdf}>Download initiative as PDF</a>
+		<a class="pdf-url" href="/assets/{initiative.pdf}"
+			>Download initiative as PDF</a
+		>
 	{/if}
 
 	{#if standalone}

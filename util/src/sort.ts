@@ -15,20 +15,34 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import type {Initiative, Organisation, Person} from './types.js';
+// Reminder:
+//	Return -1 for a before b
+//  Return 1 for b before a
+//	Return 0 for equal
 
-type KeysMatching<T, V> = {
-	[K in keyof T]-?: T[K] extends V ? K : never;
-}[keyof T];
+function isNullish(value: unknown): value is null | undefined {
+	return value === null || value === undefined;
+}
 
-function makeSorter<R extends Record<string, unknown>>(
-	keys: Array<{key: KeysMatching<R, string | null>; reverse: boolean}>,
+export function makeSorter<R extends Record<string, unknown>>(
+	keys: Array<{key: keyof R; reverse: boolean}>,
 ) {
-	return (array: R[]) =>
+	return <T extends R>(array: T[]): T[] =>
 		array.toSorted((a, b) => {
 			for (const {key, reverse} of keys) {
-				if (a[key] === null || b[key] === null) {
-					return a[key] === null ? (b[key] === null ? 0 : 1) : -1;
+				// A before B
+				if (!isNullish(a[key]) && isNullish(b[key])) {
+					return reverse ? 1 : -1;
+				}
+
+				// B before A
+				if (isNullish(a[key]) && !isNullish(b[key])) {
+					return reverse ? -1 : 1;
+				}
+
+				// Go to next comparison
+				if (isNullish(a[key]) && isNullish(b[key])) {
+					continue;
 				}
 
 				const result = (a[key] as string).localeCompare(
@@ -50,16 +64,26 @@ function makeSorter<R extends Record<string, unknown>>(
 		});
 }
 
-export const sortInitiatives = makeSorter<Initiative>([
+export const sortInitiatives = makeSorter<{
+	deadline: string | null | undefined;
+	shortName: string | null | undefined;
+	id: string;
+}>([
 	{key: 'deadline', reverse: true},
 	{key: 'shortName', reverse: false},
 	{key: 'id', reverse: false},
 ]);
-export const sortPeople = makeSorter<Person>([
+export const sortPeople = makeSorter<{
+	name: string | null | undefined;
+	id: string;
+}>([
 	{key: 'name', reverse: false},
 	{key: 'id', reverse: false},
 ]);
-export const sortOrganisations = makeSorter<Organisation>([
+export const sortOrganisations = makeSorter<{
+	name: string | null | undefined;
+	id: string;
+}>([
 	{key: 'name', reverse: false},
 	{key: 'id', reverse: false},
 ]);

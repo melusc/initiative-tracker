@@ -15,25 +15,22 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import type {Buffer} from 'node:buffer';
-import {randomBytes, timingSafeEqual} from 'node:crypto';
-
 import {RelativeUrl} from '@lusc/util/relative-url';
 import type {Request, Response} from 'express';
-import z from 'zod';
 
-import {database} from '../database.ts';
-import {scrypt} from '../promisified.ts';
+import {api} from '../database.ts';
 
 export async function loginPost(request: Request, response: Response) {
-	const body = z
-		.object({
-			username: z.string().trim().toLowerCase().min(1),
-			password: z.string().min(1),
-		})
-		.safeParse(request.body);
+	const body = request.body as Record<string, unknown>;
+	const username = body['username'];
+	const password = body['password'];
 
-	if (!body.success) {
+	if (
+		typeof username !== 'string' ||
+		!username.trim() ||
+		typeof password !== 'string' ||
+		!password
+	) {
 		response.render('login', {
 			login: undefined,
 			state: {
@@ -43,15 +40,9 @@ export async function loginPost(request: Request, response: Response) {
 		return;
 	}
 
-	const databaseResult = database
-		.prepare(
-			'SELECT userId, passwordHash, passwordSalt from logins where LOWER(username) = :username',
-		)
-		.get({username: body.data.username}) as
-		| {userId: string; passwordHash: Buffer; passwordSalt: Buffer}
-		| undefined;
+	const login = await api.Login.fromCredentials(username, password);
 
-	if (!databaseResult) {
+	if (!login) {
 		response.render('login', {
 			login: undefined,
 			state: {
@@ -61,40 +52,9 @@ export async function loginPost(request: Request, response: Response) {
 		return;
 	}
 
-	const {userId, passwordSalt, passwordHash} = databaseResult;
-	const requestHash = await scrypt(body.data.password, passwordSalt, 64);
-
-	if (!timingSafeEqual(passwordHash, requestHash)) {
-		response.render('login', {
-			login: undefined,
-			state: {
-				error: 'incorrect-credentials',
-			},
-		});
-		return;
-	}
-
-	const sessionId = randomBytes(64).toString('base64url');
-
-	const expires = new Date();
-	expires.setDate(expires.getDate() + 2);
-	// Cookie should expire a bit earlier
-	// so cookie will never be valid while actual session id is not
-	const cookieExpires = new Date(expires);
-	cookieExpires.setMinutes(cookieExpires.getMinutes() - 5);
-
-	database
-		.prepare(
-			'INSERT INTO sessions (userId, sessionId, expires) values (:userId, :sessionId, :expires)',
-		)
-		.run({
-			userId,
-			sessionId,
-			expires: expires.getTime(),
-		});
-
-	response.cookie('session', sessionId, {
-		expires: cookieExpires,
+	const session = api.Session.create(login);
+	response.cookie('session', session.id, {
+		expires: session.expiryDate,
 		httpOnly: true,
 		secure: true,
 	});

@@ -1,0 +1,79 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Sorting logic 1`] = `
+[
+  {
+    "a": "a",
+    "b": "c",
+  },
+  {
+    "a": "x",
+    "b": "z",
+  },
+]
+`;
+
+exports[`Sorting logic 2`] = `
+[
+  {
+    "a": "a",
+    "b": "c",
+  },
+  {
+    "a": "x",
+    "b": "z",
+  },
+]
+`;
+
+exports[`Sorting logic 3`] = `
+[
+  {
+    "a": null,
+    "b": "c",
+  },
+  {
+    "a": null,
+    "b": "d",
+  },
+]
+`;
+
+exports[`Sorting logic 4`] = `
+[
+  {
+    "a": "z",
+    "b": "c",
+  },
+  {
+    "a": null,
+    "b": "c",
+  },
+]
+`;
+
+exports[`Sorting logic 5`] = `
+[
+  {
+    "a": null,
+    "b": "a",
+  },
+  {
+    "a": null,
+    "b": null,
+  },
+]
+`;
+
+exports[`Sorting logic 6`] = `
+[
+  {
+    "a": null,
+    "b": "a",
+  },
+  {
+    "a": undefined,
+    "b": undefined,
+  },
+]
+`;

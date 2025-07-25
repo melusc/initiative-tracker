@@ -16,38 +16,26 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import {Buffer} from 'node:buffer';
-import {unlink, writeFile} from 'node:fs/promises';
 
 import {
-	sortInitiatives,
-	sortOrganisations,
-	sortPeople,
-} from '@lusc/initiative-tracker-util/sort.js';
+	ApiError,
+	type Asset,
+	type ImageAsset,
+	type Initiative,
+} from '@lusc/initiative-tracker-api';
 import {typeOf} from '@lusc/initiative-tracker-util/type-of.js';
-import type {
-	Initiative,
-	EnrichedInitiative,
-	Organisation,
-	Person,
-	ApiResponse,
-} from '@lusc/initiative-tracker-util/types.js';
-import {makeSlug} from '@lusc/util/slug';
-import {Router, type RequestHandler} from 'express';
+import type {ApiResponse} from '@lusc/initiative-tracker-util/types.js';
+import {Router, type Request, type RequestHandler} from 'express';
 
-import {database} from '../database.ts';
+import {api} from '../database.ts';
 import {requireAdmin, requireLogin} from '../middleware/login-protect.ts';
+import {mergeExpressBodyFile, multerUpload} from '../uploads.ts';
 import {
-	fetchImage,
-	fetchPdf,
-	imageOutDirectory,
-	mergeExpressBodyFile,
-	multerUpload,
-	pdfOutDirectory,
-	transformInitiativeUrls,
-	transformOrganisationUrls,
-	type FetchedFile,
-} from '../uploads.ts';
-import {isEmpty, makeValidator, validateUrl} from '../validate-body.ts';
+	isEmpty,
+	isValidUrl,
+	makeValidator,
+	sanitiseUrl,
+} from '../validate-body.ts';
 
 const initativeKeyValidators = {
 	shortName(shortName: unknown): ApiResponse<string> {
@@ -96,34 +84,32 @@ const initativeKeyValidators = {
 			data: fullName,
 		};
 	},
-	async website(website: unknown): Promise<ApiResponse<string | null>> {
+	website(website: unknown): ApiResponse<string | undefined> {
 		if (isEmpty(website)) {
 			return {
 				type: 'success',
-				data: null,
+				data: undefined,
 			};
 		}
 
-		const isValidUrl = await validateUrl('website', website);
-		if (isValidUrl.type === 'error') {
-			return isValidUrl;
+		if (!isValidUrl(website)) {
+			return {
+				type: 'error',
+				readableError: 'Not a valid url.',
+				error: 'invalid-url',
+			};
 		}
-
-		const websiteUrl = new URL(isValidUrl.data);
-		websiteUrl.hash = '';
-		websiteUrl.username = '';
-		websiteUrl.password = '';
 
 		return {
 			type: 'success',
-			data: websiteUrl.href,
+			data: sanitiseUrl(website as string),
 		};
 	},
-	deadline(input: unknown): ApiResponse<string | null> {
+	deadline(input: unknown): ApiResponse<string | undefined> {
 		if (isEmpty(input)) {
 			return {
 				type: 'success',
-				data: null,
+				data: undefined,
 			};
 		}
 
@@ -160,96 +146,108 @@ const initativeKeyValidators = {
 			data: deadline,
 		};
 	},
-	async pdf(pdf: unknown): Promise<ApiResponse<FetchedFile>> {
-		try {
-			if (Buffer.isBuffer(pdf)) {
-				const localPdf = await fetchPdf(pdf);
+	async pdf(pdf: unknown): Promise<ApiResponse<Asset>> {
+		if (Buffer.isBuffer(pdf)) {
+			try {
+				const pdfAsset = await api.PdfAsset.createFromBuffer(pdf);
 				return {
 					type: 'success',
-					data: localPdf,
+					data: pdfAsset,
 				};
+			} catch (error: unknown) {
+				if (error instanceof ApiError) {
+					return {
+						type: 'error',
+						readableError: error.message,
+						error: 'fetch-error',
+					};
+				}
 			}
-
-			const isValidUrl = await validateUrl('PDF URL', pdf);
-			if (isValidUrl.type === 'error') {
-				return isValidUrl;
-			}
-
-			const localPdf = await fetchPdf(new URL(isValidUrl.data));
-
-			return {
-				type: 'success',
-				data: localPdf,
-			};
-		} catch {
-			return {
-				type: 'error',
-				readableError: 'Could not fetch PDF. Either invalid URL or not a PDF.',
-				error: 'fetch-error',
-			};
 		}
+
+		if (typeof pdf === 'string') {
+			try {
+				const pdfAsset = await api.PdfAsset.createFromUrl(pdf);
+				return {
+					type: 'success',
+					data: pdfAsset,
+				};
+			} catch (error: unknown) {
+				if (error instanceof ApiError) {
+					return {
+						type: 'error',
+						readableError: error.message,
+						error: 'fetch-error',
+					};
+				}
+			}
+		}
+
+		return {
+			type: 'error',
+			readableError: 'Invalid pdf.',
+			error: 'fetch-error',
+		};
 	},
-	async image(image: unknown): Promise<ApiResponse<FetchedFile | null>> {
+	async image(image: unknown): Promise<ApiResponse<ImageAsset | undefined>> {
 		if (isEmpty(image)) {
 			return {
 				type: 'success',
-				data: null,
+				data: undefined,
 			};
 		}
 
-		try {
-			if (Buffer.isBuffer(image)) {
-				const localImage = await fetchImage(image);
+		if (Buffer.isBuffer(image)) {
+			try {
+				const imageAsset = await api.ImageAsset.createFromBuffer(image);
 				return {
 					type: 'success',
-					data: localImage,
+					data: imageAsset,
 				};
+			} catch (error: unknown) {
+				if (error instanceof ApiError) {
+					return {
+						type: 'error',
+						readableError: error.message,
+						error: 'fetch-error',
+					};
+				}
 			}
-
-			const isValidUrl = await validateUrl('image URL', image);
-			if (isValidUrl.type === 'error') {
-				return isValidUrl;
-			}
-
-			const localImage = await fetchImage(new URL(isValidUrl.data));
-
-			return {
-				type: 'success',
-				data: localImage,
-			};
-		} catch {
-			return {
-				type: 'error',
-				readableError:
-					'Could not fetch image. Either it was an invalid URL or the file was not an image.',
-				error: 'fetch-error',
-			};
 		}
+
+		if (typeof image === 'string') {
+			try {
+				const imageAsset = await api.ImageAsset.createFromUrl(image);
+				return {
+					type: 'success',
+					data: imageAsset,
+				};
+			} catch (error: unknown) {
+				if (error instanceof ApiError) {
+					return {
+						type: 'error',
+						readableError: error.message,
+						error: 'fetch-error',
+					};
+				}
+			}
+		}
+
+		return {
+			type: 'error',
+			readableError: 'Invalid image.',
+			error: 'fetch-error',
+		};
 	},
 };
 
 const initiativeValidator = makeValidator(initativeKeyValidators);
 
-function findAvailableInitiativeSlug(name: string): string {
-	const baseSlug = makeSlug(name, {appendRandomHex: false});
-
-	for (let counter = 0; ; ++counter) {
-		const slug = counter === 0 ? baseSlug : `${baseSlug}-${counter}`;
-
-		const initiative = database
-			.prepare('SELECT id from initiatives where id = :slug')
-			.get({slug}) as {id: string} | undefined;
-
-		if (!initiative) {
-			return slug;
-		}
-	}
-}
-
 export async function createInitiative(
-	loginUserId: string,
-	body: Record<string, unknown>,
-): Promise<ApiResponse<EnrichedInitiative>> {
+	request: Request,
+): Promise<ApiResponse<Initiative>> {
+	const body = mergeExpressBodyFile(request, ['pdf', 'image']);
+
 	const validateResult = await initiativeValidator(body, [
 		'shortName',
 		'fullName',
@@ -266,79 +264,42 @@ export async function createInitiative(
 	const {website, fullName, shortName, pdf, image, deadline} =
 		validateResult.data;
 
-	// eslint-disable-next-line security/detect-non-literal-fs-filename
-	await writeFile(pdf.suggestedFilePath, pdf.body);
-
-	if (image) {
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
-		await writeFile(image.suggestedFilePath, image.body);
-	}
-
-	const id = findAvailableInitiativeSlug(shortName);
-
-	const result: Initiative = {
-		id,
+	const initiative = api.Initiative.create(
 		shortName,
 		fullName,
 		website,
-		pdf: pdf.id,
-		image: image?.id ?? null,
+		pdf,
+		image,
 		deadline,
-	};
-
-	database
-		.prepare(
-			`INSERT INTO initiatives
-			(id, shortName, fullName, website, pdf, image, deadline)
-			VALUES (:id, :shortName, :fullName, :website, :pdf, :image, :deadline)`,
-		)
-		.run(result);
+	);
 
 	return {
 		type: 'success',
-		data: enrichInitiative(transformInitiativeUrls(result), loginUserId),
+		data: initiative,
 	};
 }
 
-export const createInitiativeEndpoint: RequestHandler = async (
-	request,
-	response,
-) => {
-	const body = mergeExpressBodyFile(request, ['pdf', 'image']);
-
-	const result = await createInitiative(response.locals.login!.id, body);
+const createInitiativeEndpoint: RequestHandler = async (request, response) => {
+	const result = await createInitiative(request);
 
 	if (result.type === 'error') {
 		response.status(400).json(result);
 		return;
 	}
 
-	response.status(201).json(result);
+	response.status(201).json({
+		type: 'success',
+		data: result.data,
+	});
 };
 
-export function getInitiative(
-	id: string,
-	loginUserId: string | undefined,
-): EnrichedInitiative | Initiative | false {
-	const initiative = database
-		.prepare('SELECT initiatives.* from initiatives where id = :id')
-		.get({id}) as Initiative | undefined;
-
-	if (!initiative) {
-		return false;
-	}
-
-	return enrichInitiative(transformInitiativeUrls(initiative), loginUserId);
-}
-
-export const getInitiativeEndpoint: RequestHandler<{id: string}> = (
+const getInitiative: RequestHandler<{id: string}> = async (
 	request,
 	response,
 ) => {
-	const initiative = getInitiative(
-		request.params.id,
-		response.locals.login?.id,
-	);
+	const id = request.params.id;
+	const login = response.locals.login;
+	const initiative = await api.Initiative.fromId(id);
 
 	if (!initiative) {
 		response.status(404).json({
@@ -349,78 +310,39 @@ export const getInitiativeEndpoint: RequestHandler<{id: string}> = (
 		return;
 	}
 
+	if (login) {
+		await initiative.resolveSignaturesOrganisations(login);
+	}
+
 	response.status(200).json({
 		type: 'success',
 		data: initiative,
 	});
 };
 
-function enrichInitiative(
-	initiative: Initiative,
-	loginUserId: string | undefined,
-): EnrichedInitiative {
-	const people =
-		loginUserId === undefined
-			? null
-			: (database
-					.prepare(
-						`SELECT people.* FROM people
-			INNER JOIN signatures on signatures.personId = people.id
-			WHERE signatures.initiativeId = :initiativeId
-			AND people.owner = :loginUserId`,
-					)
-					.all({initiativeId: initiative.id, loginUserId}) as Person[]);
+const getAllInitiatives: RequestHandler = async (_request, response) => {
+	const initiatives = await api.Initiative.all();
+	const login = response.locals.login;
+	if (login) {
+		for (const initiative of initiatives) {
+			await initiative.resolveSignaturesOrganisations(login);
+		}
+	}
 
-	const organisations = database
-		.prepare(
-			`SELECT organisations.* FROM organisations
-				INNER JOIN initiativeOrganisations ON organisations.id = initiativeOrganisations.organisationId
-				WHERE initiativeOrganisations.initiativeId = :initiativeId`,
-		)
-		.all({initiativeId: initiative.id}) as Organisation[];
-
-	return {
-		...initiative,
-		signatures: people && sortPeople(people),
-		organisations: sortOrganisations(organisations).map(organisation =>
-			transformOrganisationUrls(organisation),
-		),
-	};
-}
-
-export function getAllInitiatives(
-	loginUserId: string | undefined,
-): EnrichedInitiative[] {
-	const rows = database
-		.prepare('SELECT initiatives.* FROM initiatives')
-		.all() as Initiative[];
-
-	return sortInitiatives(rows).map(initiative =>
-		enrichInitiative(transformInitiativeUrls(initiative), loginUserId),
-	);
-}
-
-export const getAllInitiativesEndpoint: RequestHandler = (
-	_request,
-	response,
-) => {
 	response.status(200).json({
 		type: 'success',
-		data: getAllInitiatives(response.locals.login?.id),
+		data: initiatives,
 	});
 };
 
-export const patchInitiativeEndpoint: RequestHandler<{id: string}> = async (
+const patchInitiative: RequestHandler<{id: string}> = async (
 	request,
 	response,
 ) => {
 	const {id} = request.params;
+	const initiative = await api.Initiative.fromId(id);
 
-	const oldRow = database
-		.prepare('SELECT initiatives.* FROM initiatives WHERE id = :id')
-		.get({id}) as Initiative | undefined;
-
-	if (!oldRow) {
+	if (!initiative) {
 		response.status(404).json({
 			type: 'error',
 			readableError: 'Initiative does not exist.',
@@ -442,83 +364,54 @@ export const patchInitiativeEndpoint: RequestHandler<{id: string}> = async (
 	}
 
 	const newData = validateResult.data;
-	const newPdf = newData.pdf as FetchedFile | undefined;
 
-	if (newPdf) {
-		try {
-			// eslint-disable-next-line security/detect-non-literal-fs-filename
-			await unlink(new URL(oldRow.pdf, pdfOutDirectory));
-		} catch {}
-
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
-		await writeFile(newPdf.suggestedFilePath, newPdf.body);
-	}
-
-	// .image may be `null`
-	// in that case remove old image, no new image
-	if ('image' in newData) {
-		try {
-			if (oldRow.image) {
-				// eslint-disable-next-line security/detect-non-literal-fs-filename
-				await unlink(new URL(oldRow.image, imageOutDirectory));
+	for (const key of Object.keys(newData)) {
+		switch (key) {
+			case 'shortName': {
+				initiative.updateShortName(newData.shortName);
+				break;
 			}
-		} catch {}
-
-		if (newData.image) {
-			// eslint-disable-next-line security/detect-non-literal-fs-filename
-			await writeFile(newData.image.suggestedFilePath, newData.image.body);
+			case 'fullName': {
+				initiative.updateFullName(newData.fullName);
+				break;
+			}
+			case 'deadline': {
+				initiative.updateDeadline(newData.deadline);
+				break;
+			}
+			case 'website': {
+				initiative.updateWebsite(newData.website);
+				break;
+			}
+			case 'pdf': {
+				await initiative.updatePdf(newData.pdf);
+				break;
+			}
+			case 'image': {
+				await initiative.updateImage(newData.image);
+			}
 		}
 	}
 
-	if (Object.keys(newData).length === 0) {
-		response.status(200).json({
-			type: 'success',
-			data: enrichInitiative(
-				transformInitiativeUrls(oldRow),
-				response.locals.login!.id,
-			),
-		});
-		return;
+	const login = response.locals.login;
+	if (login) {
+		await initiative.resolveSignaturesOrganisations(login);
 	}
-
-	const query = [];
-	const parameters: Record<string, string | null> = {
-		id,
-	};
-
-	for (const [key, value] of Object.entries(newData)) {
-		query.push(`${key} = :${key}`);
-
-		if (key === 'pdf') {
-			parameters['pdf'] = newData.pdf.id;
-		} else if (key === 'image') {
-			parameters['image'] = newData.image?.id ?? null;
-		} else {
-			parameters[key] = value as string | null;
-		}
-	}
-
-	database
-		.prepare(`UPDATE initiatives SET ${query.join(', ')} WHERE id = :id`)
-		.run(parameters);
 
 	response.status(200).send({
 		type: 'success',
-		data: getInitiative(id, response.locals.login!.id),
+		data: initiative,
 	});
 };
 
-export const deleteInitiative: RequestHandler<{id: string}> = async (
+const deleteInitiative: RequestHandler<{id: string}> = async (
 	request,
 	response,
 ) => {
 	const {id} = request.params;
 
-	const oldRow = database
-		.prepare('SELECT pdf, image FROM initiatives WHERE id = :id')
-		.get({id}) as {pdf: string; image: string} | undefined;
-
-	if (!oldRow) {
+	const initiative = await api.Initiative.fromId(id);
+	if (!initiative) {
 		response.status(404).json({
 			type: 'error',
 			readableError: 'Initiative does not exist.',
@@ -527,107 +420,81 @@ export const deleteInitiative: RequestHandler<{id: string}> = async (
 		return;
 	}
 
-	try {
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
-		await unlink(new URL(oldRow.pdf, pdfOutDirectory));
-	} catch {}
-
-	try {
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
-		await unlink(new URL(oldRow.image, imageOutDirectory));
-	} catch {}
-
-	database.prepare('DELETE FROM initiatives WHERE id = :id').run({id});
+	await initiative.rm();
 
 	response.status(200).json({
 		type: 'success',
 	});
 };
 
-export const initiativeAddSignature: RequestHandler<{
-	initiativeId: string;
-	personId: string;
-}> = (request, response) => {
-	try {
-		database
-			.prepare(
-				'INSERT INTO signatures (initiativeId, personId) values (:initiativeId, :personId);',
-			)
-			.run(request.params);
-		response.status(201).json({
+const createModifyInitiativeSignature =
+	(
+		remove: boolean,
+	): RequestHandler<{
+		initiativeId: string;
+		personId: string;
+	}> =>
+	async (request, response) => {
+		const initiative = await api.Initiative.fromId(request.params.initiativeId);
+		const login = response.locals.login!;
+		const person = api.Person.fromId(request.params.personId, login);
+
+		if (!initiative || !person) {
+			response.status(404).json({
+				type: 'error',
+				error: 'not-found',
+				readableError: 'Initiative or person not found',
+			});
+			return;
+		}
+
+		await person.resolveSignatures();
+
+		if (remove) {
+			person.removeSignature(initiative);
+		} else {
+			person.addSignature(initiative);
+		}
+
+		return response.status(201).json({
 			type: 'success',
 		});
-	} catch {
-		response.status(404).json({
-			type: 'error',
-			error: 'not-found',
-			readableError: 'Initiative or person not found',
+	};
+
+const createModifyInitiativeOrganisation =
+	(
+		remove: boolean,
+	): RequestHandler<{
+		initiativeId: string;
+		organisationId: string;
+	}> =>
+	async (request, response) => {
+		const initiative = await api.Initiative.fromId(request.params.initiativeId);
+		const organisation = await api.Organisation.fromId(
+			request.params.organisationId,
+		);
+
+		if (!initiative || !organisation) {
+			response.status(404).json({
+				type: 'error',
+				error: 'not-found',
+				readableError: 'Initiative or organisation not found',
+			});
+			return;
+		}
+
+		await organisation.resolveInitiatives();
+
+		if (remove) {
+			organisation.removeInitiative(initiative);
+		} else {
+			organisation.addInitiative(initiative);
+		}
+
+		return response.status(201).json({
+			type: 'success',
 		});
-	}
-};
-
-export const initiativeRemoveSignature: RequestHandler<{
-	initiativeId: string;
-	personId: string;
-}> = (request, response) => {
-	const result = database
-		.prepare(
-			'DELETE FROM signatures where initiativeId = :initiativeId AND personId = :personId;',
-		)
-		.run(request.params);
-
-	if (result.changes === 0) {
-		response.status(404).json({
-			type: 'error',
-			readableError: 'Signature does not exist.',
-			error: 'not-found',
-		});
-		return;
-	}
-
-	response.status(200).json({
-		type: 'success',
-	});
-};
-
-export const initiativeAddOrganisation: RequestHandler<{
-	initiativeId: string;
-	organisationId: string;
-}> = (request, response) => {
-	database
-		.prepare(
-			'INSERT INTO initiativeOrganisations (initiativeId, organisationId) values (:initiativeId, :organisationId);',
-		)
-		.run(request.params);
-
-	response.status(201).json({
-		type: 'success',
-	});
-};
-
-export const initiativeRemoveOrganisation: RequestHandler<{
-	initiativeId: string;
-	organisationId: string;
-}> = (request, response) => {
-	const result = database
-		.prepare(
-			'DELETE FROM initiativeOrganisations where initiativeId = :initiativeId AND organisationId = :organisationId;',
-		)
-		.run(request.params);
-
-	if (result.changes === 0) {
-		response.status(404).json({
-			type: 'error',
-			readableError: "Organisation wasn't associated with initiative.",
-			error: 'not-found',
-		});
-		return;
-	}
-
-	response.status(200).json({
-		type: 'success',
-	});
-};
+	};
 
 export const initiativeRouter = Router();
 
@@ -635,16 +502,16 @@ export const initiativeRouter = Router();
 initiativeRouter.put(
 	'/initiative/:initiativeId/sign/:personId',
 	requireLogin(),
-	initiativeAddSignature,
+	createModifyInitiativeSignature(false),
 );
 initiativeRouter.delete(
 	'/initiative/:initiativeId/sign/:personId',
 	requireLogin(),
-	initiativeRemoveSignature,
+	createModifyInitiativeSignature(true),
 );
 
 /* ADMIN (except GET) */
-initiativeRouter.get('/initiatives', getAllInitiativesEndpoint);
+initiativeRouter.get('/initiatives', getAllInitiatives);
 initiativeRouter.post(
 	'/initiative/create',
 	requireAdmin(),
@@ -660,7 +527,7 @@ initiativeRouter.post(
 	]),
 	createInitiativeEndpoint,
 );
-initiativeRouter.get('/initiative/:id', getInitiativeEndpoint);
+initiativeRouter.get('/initiative/:id', getInitiative);
 initiativeRouter.delete('/initiative/:id', requireAdmin(), deleteInitiative);
 initiativeRouter.patch(
 	'/initiative/:id',
@@ -675,16 +542,16 @@ initiativeRouter.patch(
 			maxCount: 1,
 		},
 	]),
-	patchInitiativeEndpoint,
+	patchInitiative,
 );
 
 initiativeRouter.put(
 	'/initiative/:initiativeId/organisation/:organisationId',
 	requireAdmin(),
-	initiativeAddOrganisation,
+	createModifyInitiativeOrganisation(false),
 );
 initiativeRouter.delete(
 	'/initiative/:initiativeId/organisation/:organisationId',
 	requireAdmin(),
-	initiativeRemoveOrganisation,
+	createModifyInitiativeOrganisation(true),
 );

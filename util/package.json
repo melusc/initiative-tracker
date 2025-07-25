@@ -2,11 +2,11 @@
 	"name": "@lusc/initiative-tracker-util",
 	"private": true,
 	"exports": {
-		"./color-hash.js": "./dist/color-hash.js",
-		"./type-of.js": "./dist/type-of.js",
-		"./types.js": "./dist/types.js",
-		"./sort.js": "./dist/sort.js",
-		"./pw.js": "./dist/pw.js"
+		"./color-hash.js": "./dist/src/color-hash.js",
+		"./type-of.js": "./dist/src/type-of.js",
+		"./types.js": "./dist/src/types.js",
+		"./sort.js": "./dist/src/sort.js",
+		"./pw.js": "./dist/src/pw.js"
 	},
 	"type": "module",
 	"devDependencies": {
@@ -14,11 +14,13 @@
 		"@lusc/tsconfig": "^7.0.0",
 		"@types/node": "^24.0.15",
 		"eslint": "^9.31.0",
-		"typescript": "^5.8.3"
+		"typescript": "^5.8.3",
+		"vitest": "^3.2.4"
 	},
 	"scripts": {
 		"fmt": "eslint --fix",
-		"build": "tsc"
+		"build": "tsc",
+		"test": "vitest run"
 	},
 	"author": {
 		"email": "oss@lusc.ch",

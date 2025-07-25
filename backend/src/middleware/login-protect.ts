@@ -15,65 +15,35 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-// eslint-disable-next-line n/no-unsupported-features/node-builtins
-import type {DatabaseSync} from 'node:sqlite';
-
-import type {LoginInfo} from '@lusc/initiative-tracker-util/types.js';
+import type {Session} from '@lusc/initiative-tracker-api';
 import type {Request, RequestHandler, Response} from 'express';
-import {z} from 'zod';
 
-export function identifyUser(database: DatabaseSync): RequestHandler {
+import {api} from '../database.ts';
+
+export function identifyUser(): RequestHandler {
 	return (request, response, next) => {
-		let loginInfo: LoginInfo | undefined;
+		let session: Session | undefined;
 
-		const cookies = z
-			.object({
-				session: z.string(),
-			})
-			.safeParse(request.cookies);
+		const cookies = request.cookies as Record<string, unknown>;
+		const sessionCookie = cookies['session'];
 
-		if (cookies.success) {
-			const sessionCookie = cookies.data.session;
+		if (typeof sessionCookie === 'string') {
+			session = api.Session.fromSessionId(sessionCookie);
+		}
 
-			const session = database
-				.prepare(
-					`SELECT userId, expires, username, isAdmin
-					 FROM sessions INNER JOIN logins USING (userId)
-					 WHERE sessionId = :sessionId`,
-				)
-				.get({
-					sessionId: sessionCookie,
-				}) as
-				| {userId: string; expires: number; username: string; isAdmin: 0 | 1}
-				| undefined;
-
-			if (session && session.expires > Date.now()) {
-				const delta = session.expires - Date.now();
-
-				if (delta < 1.5 * 24 * 60 * 60 * 1000) {
-					const expires = new Date();
-					expires.setDate(expires.getDate() + 2);
-
-					database
-						.prepare(
-							'UPDATE sessions SET expires = :expires WHERE sessionId = :sessionId',
-						)
-						.run({
-							sessionId: sessionCookie,
-							expires: expires.getTime(),
-						});
-				}
-
-				loginInfo = {
-					name: session.username,
-					id: session.userId,
-					isAdmin: session.isAdmin === 1,
-				};
+		if (session?.shouldRenew()) {
+			session = session.renew();
+			if (session) {
+				response.cookie('session', session.id, {
+					expires: session.expiryDate,
+					httpOnly: true,
+					secure: true,
+				});
 			}
 		}
 
 		Object.defineProperty(response.locals, 'login', {
-			value: loginInfo,
+			value: session?.user,
 			writable: false,
 			configurable: false,
 		});
@@ -83,7 +53,7 @@ export function identifyUser(database: DatabaseSync): RequestHandler {
 	};
 }
 
-export function loginRedirect(request: Request, response: Response) {
+function loginRedirect(request: Request, response: Response) {
 	const searchParameters = new URLSearchParams({
 		redirect: request.url,
 	});

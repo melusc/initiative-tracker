@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
 <script lang="ts">
-	import type {EnrichedPerson} from '@lusc/initiative-tracker-util/types.js';
+	import type {PersonJson} from '@lusc/initiative-tracker-api';
 
 	import DeleteButton from '../../components/delete-button.svelte';
 	import Initiative from '../../components/initiative.svelte';
@@ -24,20 +24,31 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	import PageTitle from '../../components/page-title.svelte';
 	import EditableTitle from '../../components/person/editable-title.svelte';
 	import {getState} from '../../state.ts';
+	import {syncUrlSlug} from '../../url.ts';
 
-	let person = $state(getState<EnrichedPerson>());
+	let person = $state(getState<PersonJson>());
+
+	$effect(() => {
+		if (person) {
+			syncUrlSlug('person', person);
+		}
+	});
 </script>
 
 <PageTitle title={person?.name} />
 
 <div class="person" data-person={person?.id}>
 	{#if person}
-		<EditableTitle bind:subject={person} patchApi="/api/person/{person.id}" />
+		<EditableTitle
+			key="name"
+			bind:body={person}
+			patchApi="/api/person/{person.id}"
+		/>
 
-		{#if person?.initiatives.length > 0}
+		{#if person?.signatures.length > 0}
 			<h1>Signed Initiatives</h1>
 			<div class="signed-initiatives">
-				{#each person.initiatives as initiative (initiative.id)}
+				{#each person.signatures as initiative (initiative.id)}
 					<Initiative {initiative} allowEdit={false} standalone={false} />
 				{/each}
 			</div>

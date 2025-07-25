@@ -15,27 +15,30 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import {type Buffer} from 'node:buffer';
-import {scrypt as scryptCallback} from 'node:crypto';
+import {RelativeUrl} from '@lusc/util/relative-url';
 
-export async function scrypt(
-	password: string | Buffer,
-	salt: string | Buffer,
-	keylen: number,
-	options?: {
-		cost?: number;
-		blockSize?: number;
-		parallelization?: number;
-		maxmem?: number;
+type SlugObject = {
+	slug: string;
+};
+
+const templates = {
+	organisation(organisation: SlugObject) {
+		return `/organisation/${organisation.slug}`;
 	},
-): Promise<Buffer> {
-	return new Promise<Buffer>((resolve, reject) => {
-		scryptCallback(password, salt, keylen, options ?? {}, (error, value) => {
-			if (error) {
-				reject(error);
-			} else {
-				resolve(value);
-			}
-		});
-	});
+	initiative(initiative: SlugObject) {
+		return `/initiative/${initiative.slug}`;
+	},
+	person(person: SlugObject) {
+		return `/initiative/${person.slug}`;
+	},
+} as const;
+
+export function syncUrlSlug(type: keyof typeof templates, body: SlugObject) {
+	const newPath = templates[type](body);
+
+	const currentUrl = new RelativeUrl(location.href);
+	if (currentUrl.path !== newPath) {
+		currentUrl.path = newPath;
+		history.replaceState({}, '', currentUrl.href);
+	}
 }

@@ -15,41 +15,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import {
-	sortInitiatives,
-	sortPeople,
-} from '@lusc/initiative-tracker-util/sort.js';
+import {ApiError, type Login, type Person} from '@lusc/initiative-tracker-api';
 import {typeOf} from '@lusc/initiative-tracker-util/type-of.js';
-import type {
-	EnrichedPerson,
-	Initiative,
-	Person,
-	ApiResponse,
-} from '@lusc/initiative-tracker-util/types.js';
-import {makeSlug} from '@lusc/util/slug';
+import type {ApiResponse} from '@lusc/initiative-tracker-util/types.js';
 import {Router, type RequestHandler} from 'express';
 
-import {database} from '../database.ts';
+import {api} from '../database.ts';
 import {requireLogin} from '../middleware/login-protect.ts';
-import {multerUpload, transformInitiativeUrls} from '../uploads.ts';
+import {multerUpload} from '../uploads.ts';
 import {makeValidator} from '../validate-body.ts';
-
-function enrichPerson(person: Person): EnrichedPerson {
-	const initiatives = database
-		.prepare(
-			`SELECT initiatives.* FROM initiatives
-			INNER JOIN signatures on signatures.initiativeId = initiatives.id
-			WHERE signatures.personId = :personId`,
-		)
-		.all({personId: person.id}) as Initiative[];
-
-	return {
-		...person,
-		initiatives: sortInitiatives(initiatives).map(initiative =>
-			transformInitiativeUrls(initiative),
-		),
-	};
-}
 
 const personKeyValidators = {
 	name(nameRaw: unknown): ApiResponse<string> {
@@ -90,101 +64,52 @@ const personValidator = makeValidator(personKeyValidators);
 
 export async function createPerson(
 	body: Record<string, unknown>,
-	owner: string,
-): Promise<ApiResponse<EnrichedPerson>> {
+	owner: Login,
+): Promise<ApiResponse<Person>> {
 	const result = await personValidator(body, ['name']);
-
 	if (result.type === 'error') {
 		return result;
 	}
 
-	const {name} = result.data;
-
-	const sameName = database
-		.prepare(
-			'SELECT id, name, owner FROM people WHERE name = :name AND owner = :owner',
-		)
-		.get({name, owner}) as Person | undefined;
-	if (sameName) {
-		return {
-			type: 'error',
-			error: 'duplicate-person',
-			readableError: 'Person with that name already exists.',
-		};
-	}
-
-	const id = makeSlug(name, {appendRandomHex: false});
 	try {
-		database
-			.prepare(
-				'INSERT INTO people (id, name, owner) values (:id, :name, :owner)',
-			)
-			.run({
-				id,
-				name,
-				owner,
-			});
-	} catch {
+		const {name} = result.data;
+		const person = api.Person.create(name, owner);
+		return {type: 'success', data: person};
+	} catch (error: unknown) {
+		if (error instanceof ApiError) {
+			return {
+				type: 'error',
+				readableError: error.message,
+				error: 'duplicate-person',
+			};
+		}
+
 		return {
 			type: 'error',
-			readableError: 'Person with that name already exists',
-			error: 'person-already-exists',
+			readableError: 'Unknown error.',
+			error: 'unknown-error',
 		};
 	}
-
-	return {
-		type: 'success',
-		data: enrichPerson({
-			id,
-			name,
-			owner,
-		}),
-	};
 }
 
-export const createPersonEndpoint: RequestHandler = async (
-	request,
-	response,
-) => {
+const createPersonEndpoint: RequestHandler = async (request, response) => {
 	const result = await createPerson(
 		request.body as Record<string, unknown>,
-		response.locals.login!.id,
+		response.locals.login!,
 	);
-
-	if (result.type === 'error') {
-		response
-			.status(result.error === 'person-already-exists' ? 409 : 400)
-			.json(result);
+	if (result.type === 'success') {
+		response.status(201).json(result);
 		return;
 	}
 
-	response.status(201).json(result);
+	response.status(400).json(result);
 };
 
-export function getPerson(id: string, owner: string): EnrichedPerson | false {
-	const person = database
-		.prepare(
-			'SELECT id, name, owner FROM people WHERE id = :id AND owner = :owner',
-		)
-		.get({
-			id,
-			owner,
-		}) as Person | undefined;
+const getPerson: RequestHandler<{id: string}> = async (request, response) => {
+	const owner = response.locals.login!;
+	const person = api.Person.fromId(request.params.id, owner);
 
 	if (!person) {
-		return false;
-	}
-
-	return enrichPerson(person);
-}
-
-export const getPersonEndpoint: RequestHandler<{id: string}> = (
-	request,
-	response,
-) => {
-	const result = getPerson(request.params.id, response.locals.login!.id);
-
-	if (!result) {
 		response.status(404).json({
 			type: 'error',
 			readableError: 'Person does not exist.',
@@ -193,25 +118,21 @@ export const getPersonEndpoint: RequestHandler<{id: string}> = (
 		return;
 	}
 
+	await person.resolveSignatures();
+
 	response.status(200).json({
 		type: 'success',
-		data: result,
+		data: person,
 	});
 };
 
-export const patchPerson: RequestHandler<{id: string}> = async (
-	request,
-	response,
-) => {
+const patchPerson: RequestHandler<{id: string}> = async (request, response) => {
 	const {id} = request.params;
+	const owner = response.locals.login!;
 
-	const oldRow = database
-		.prepare(
-			'SELECT id, name, owner FROM people WHERE id = :id AND owner = :owner',
-		)
-		.get({id, owner: response.locals.login!.id}) as Person | undefined;
+	const person = api.Person.fromId(id, owner);
 
-	if (!oldRow) {
+	if (!person) {
 		response.status(404).json({
 			type: 'error',
 			readableError: 'Person does not exist.',
@@ -232,82 +153,40 @@ export const patchPerson: RequestHandler<{id: string}> = async (
 		return;
 	}
 
-	if (
-		'name' in validateResult.data &&
-		validateResult.data.name !== oldRow.name
-	) {
-		const sameName = database
-			.prepare(
-				'SELECT id, name, owner FROM people WHERE name = :name AND owner = :owner',
-			)
-			.get({
-				name: validateResult.data.name,
-				owner: response.locals.login!.id,
-			}) as Person | undefined;
-		if (sameName) {
-			response.status(400).json({
+	if ('name' in validateResult.data) {
+		try {
+			person.updateName(validateResult.data.name);
+		} catch (error: unknown) {
+			if (error instanceof ApiError) {
+				response.status(409).json({
+					type: 'error',
+					error: 'duplicate-person',
+					readableError: error.message,
+				});
+			}
+
+			response.status(500).json({
 				type: 'error',
-				error: 'duplicate-person',
-				readableError: 'Person with that name already exists.',
+				error: 'unknown-error',
+				readableError: 'Unknown error.',
 			});
-			return;
 		}
 	}
 
-	const newData = validateResult.data;
+	await person.resolveSignatures();
 
-	if (Object.keys(newData).length === 0) {
-		response.status(200).json({
-			type: 'success',
-			data: enrichPerson(oldRow),
-		});
-		return;
-	}
-
-	const query = [];
-
-	for (const key of Object.keys(newData)) {
-		query.push(`${key} = :${key}`);
-	}
-
-	try {
-		database
-			.prepare(
-				`UPDATE people SET ${query.join(', ')} WHERE id = :id AND owner = :owner`,
-			)
-			.run({
-				...newData,
-				id,
-				owner: response.locals.login!.id,
-			});
-
-		response.status(200).send({
-			type: 'success',
-			data: enrichPerson({
-				...oldRow,
-				...newData,
-			}),
-		});
-	} catch {
-		response.status(409).json({
-			type: 'error',
-			error: 'unique-name',
-			readableError: 'Person with that name already exists.',
-		});
-	}
+	response.status(200).json({
+		type: 'success',
+		data: person,
+	});
 };
 
-export const deletePerson: RequestHandler<{id: string}> = (
-	request,
-	response,
-) => {
+const deletePerson: RequestHandler<{id: string}> = (request, response) => {
 	const {id} = request.params;
+	const owner = response.locals.login!;
+	const person = api.Person.fromId(id, owner);
 
-	const result = database
-		.prepare('DELETE FROM people WHERE id = :id AND owner = :owner')
-		.run({id, owner: response.locals.login!.id});
-
-	if (result.changes === 0) {
+	if (!person) {
 		response.status(404).json({
 			type: 'error',
 			readableError: 'Person does not exist.',
@@ -316,34 +195,28 @@ export const deletePerson: RequestHandler<{id: string}> = (
 		return;
 	}
 
+	person.rm();
+
 	response.status(200).json({
 		type: 'success',
 	});
 };
 
-export function getAllPeople(owner: string) {
-	const rows = database
-		.prepare('SELECT id, name, owner FROM people WHERE owner = :owner')
-		.all({
-			owner,
-		}) as Person[];
-
-	return sortPeople(rows).map(person => enrichPerson(person));
-}
-
-export const getAllPeopleEndpoint: RequestHandler = (_request, response) => {
+const getAllPeople: RequestHandler = (_request, response) => {
+	const login = response.locals.login!;
+	const people = api.Person.all(login);
 	response.status(200).json({
 		type: 'success',
-		data: getAllPeople(response.locals.login!.id),
+		data: people,
 	});
 };
 
 export const personRouter = Router();
 
-personRouter.get('/people', requireLogin(), getAllPeopleEndpoint);
+personRouter.get('/people', requireLogin(), getAllPeople);
 
 personRouter.use('/person', requireLogin());
 personRouter.post('/person/create', multerUpload.none(), createPersonEndpoint);
-personRouter.get('/person/:id', getPersonEndpoint);
+personRouter.get('/person/:id', getPerson);
 personRouter.delete('/person/:id', deletePerson);
 personRouter.patch('/person/:id', multerUpload.none(), patchPerson);

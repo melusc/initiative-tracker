@@ -15,7 +15,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
-<script lang="ts" generics="T extends {name: string}">
+<script
+	lang="ts"
+	generics="Body extends Record<string, unknown>, Key extends (keyof Body & string)"
+>
 	import type {ApiResponse} from '@lusc/initiative-tracker-util/types.js';
 	import {slide} from 'svelte/transition';
 
@@ -23,8 +26,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	import CreateIcon from '../icons/create.svelte';
 	import Save from '../icons/save.svelte';
 
-	let {subject = $bindable(), patchApi}: {subject: T; patchApi: string} =
-		$props();
+	let {
+		key,
+		body = $bindable(),
+		patchApi,
+	}: {key: Key; body: Body; patchApi: string} = $props();
 
 	const successState = createSuccessState();
 
@@ -72,17 +78,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			method: 'PATCH',
 			body: requestBody,
 		});
-		const body = (await response.json()) as ApiResponse<T>;
+		const newBody = (await response.json()) as ApiResponse<Body>;
 
-		if (body.type === 'error') {
-			successState.setError(body.readableError);
+		if (newBody.type === 'error') {
+			successState.setError(newBody.readableError);
 		} else {
 			successState.setSuccess();
-			subject = body.data;
+
+			body = newBody.data;
 			editEnabled = false;
 
 			// If name is normalised or otherwise modified on server
-			titleNode!.textContent = subject.name;
+			titleNode!.textContent = body[key] as string;
 		}
 	}
 </script>
@@ -96,7 +103,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		onkeydown={handleKeydown}
 		onfocusout={handleFocusOut}
 	>
-		{subject.name}
+		{body[key]}
 	</h1>
 
 	{#if editEnabled}

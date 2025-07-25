@@ -15,75 +15,44 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-import {type Buffer} from 'node:buffer';
-import {randomBytes, timingSafeEqual} from 'node:crypto';
+export function validateUsername(username_: unknown) {
+	if (typeof username_ !== 'string') {
+		return 'Username must be a string.';
+	}
 
-import {database} from '../database.ts';
-import {scrypt} from '../promisified.ts';
-
-export function changeUsername(username: string, userId: string) {
-	username = username.trim();
+	const username = username_.trim();
 
 	if (username.length < 4) {
-		throw new Error('Username must contain at least 4 characters.');
+		return 'Username must contain at least 4 characters.';
 	}
 
 	if (!/^[a-z\d]+$/i.test(username)) {
-		throw new Error('Username must only contain letters and numbers.');
+		return 'Username must only contain letters and numbers.';
 	}
 
-	database
-		.prepare('UPDATE logins SET username = :username WHERE userId = :userId')
-		.run({username, userId});
+	return true;
 }
 
-export async function changePassword(
-	userId: string,
-	currentPassword: string,
-	newPassword: string,
-	newPasswordRepeat: string,
+export function validatePassword(
+	newPassword: unknown,
+	newPasswordRepeat: unknown,
 ) {
+	if (
+		typeof newPasswordRepeat !== 'string' ||
+		typeof newPassword !== 'string'
+	) {
+		return 'New passwords must be strings.';
+	}
+
 	if (newPassword !== newPasswordRepeat) {
-		throw new Error('Passwords did not match.');
+		return 'Passwords did not match.';
 	}
 
 	if (
 		!/(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\da-zA-Z]).{10,}/.test(newPassword)
 	) {
-		throw new Error('Password did not match criteria.');
+		return 'Password did not match criteria.';
 	}
 
-	const row = database
-		.prepare(
-			'SELECT passwordHash, passwordSalt FROM logins WHERE userId = :userId',
-		)
-		.get({userId}) as
-		| {
-				passwordHash: Buffer;
-				passwordSalt: Buffer;
-		  }
-		| undefined;
-
-	if (!row) {
-		throw new Error('Could not find account.');
-	}
-
-	const calculatedHash = await scrypt(currentPassword, row.passwordSalt, 64);
-
-	if (!timingSafeEqual(calculatedHash, row.passwordHash)) {
-		throw new Error('Current password was incorrect.');
-	}
-
-	const newSalt = randomBytes(64);
-	const newHash = await scrypt(newPassword, newSalt, 64);
-
-	database
-		.prepare(
-			'UPDATE logins SET passwordHash = :passwordHash, passwordSalt = :passwordSalt WHERE userId = :userId',
-		)
-		.run({
-			userId,
-			passwordHash: newHash,
-			passwordSalt: newSalt,
-		});
+	return true;
 }

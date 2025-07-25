@@ -15,42 +15,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-export type Initiative = {
-	id: string;
-	shortName: string;
-	fullName: string;
-	website: string | null;
-	pdf: string;
-	image: string | null;
-	deadline: string | null;
-};
-
-export type EnrichedInitiative = Initiative & {
-	signatures: Person[] | null;
-	organisations: Organisation[];
-};
-
-export type Organisation = {
-	id: string;
-	name: string;
-	image: string | null;
-	website: string | null;
-};
-
-export type EnrichedOrganisation = Organisation & {
-	initiatives: Initiative[];
-};
-
-export type Person = {
-	name: string;
-	id: string;
-	owner: string;
-};
-
-export type EnrichedPerson = Person & {
-	initiatives: Initiative[];
-};
-
 export type ApiResponseError = {
 	type: 'error';
 	readableError: string;
@@ -63,9 +27,3 @@ export type ApiResponseSuccess<R> = {
 };
 
 export type ApiResponse<R> = ApiResponseError | ApiResponseSuccess<R>;
-
-export type LoginInfo = {
-	name: string;
-	id: string;
-	isAdmin: boolean;
-};
