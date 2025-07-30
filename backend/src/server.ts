@@ -63,14 +63,6 @@ app.use(
 				'font-src': ['https://fonts.gstatic.com'],
 			},
 		},
-
-		// Nginx is configured to set these
-		xContentTypeOptions: false,
-		strictTransportSecurity: false,
-		xFrameOptions: false,
-		xXssProtection: false,
-		crossOriginOpenerPolicy: false,
-		crossOriginResourcePolicy: false,
 	}),
 );
 app.use(morgan('dev'));
