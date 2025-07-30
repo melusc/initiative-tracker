@@ -57,6 +57,7 @@ export async function loginPost(request: Request, response: Response) {
 		expires: session.expiryDate,
 		httpOnly: true,
 		secure: true,
+		sameSite: 'lax',
 	});
 
 	const search = new RelativeUrl(request.originalUrl).searchParams;

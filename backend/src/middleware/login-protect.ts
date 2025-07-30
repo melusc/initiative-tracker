@@ -38,6 +38,7 @@ export function identifyUser(): RequestHandler {
 					expires: session.expiryDate,
 					httpOnly: true,
 					secure: true,
+					sameSite: 'lax',
 				});
 			}
 		}
