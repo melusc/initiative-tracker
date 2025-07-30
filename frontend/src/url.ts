@@ -29,7 +29,7 @@ const templates = {
 		return `/initiative/${initiative.slug}`;
 	},
 	person(person: SlugObject) {
-		return `/initiative/${person.slug}`;
+		return `/person/${person.slug}`;
 	},
 } as const;
 
