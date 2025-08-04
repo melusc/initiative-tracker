@@ -42,11 +42,13 @@ export class Login extends InjectableApi {
 
 	private _username: string;
 	private _isAdmin: boolean;
+	private _passwordHash: string;
 
 	constructor(
 		readonly id: string,
 		username: string,
 		isAdmin: boolean,
+		passwordHash: string,
 		contructorKey: symbol,
 	) {
 		if (contructorKey !== privateConstructorKey) {
@@ -57,6 +59,7 @@ export class Login extends InjectableApi {
 
 		this._username = username;
 		this._isAdmin = isAdmin;
+		this._passwordHash = passwordHash;
 	}
 
 	get username() {
@@ -78,6 +81,7 @@ export class Login extends InjectableApi {
 			row.userId,
 			row.username,
 			row.isAdmin === 1,
+			row.passwordHash,
 			privateConstructorKey,
 		);
 	}
@@ -133,29 +137,28 @@ export class Login extends InjectableApi {
 				isAdmin: isAdmin ? 1 : 0,
 			});
 
-		return new this.Login(id, username, isAdmin, privateConstructorKey);
+		return new this.Login(
+			id,
+			username,
+			isAdmin,
+			passwordHash,
+			privateConstructorKey,
+		);
 	}
 
 	static async fromCredentials(username: string, password: string) {
-		const row = this.database
-			.prepare(
-				`SELECT * from logins
-				WHERE username = :username`,
-			)
-			.get({
-				username,
-			}) as SqlLoginRow | undefined;
+		const user = this.fromUsername(username);
 
-		if (!row) {
+		if (!user) {
 			return;
 		}
 
-		const passwordMatches = await bcrypt.compare(password, row.passwordHash);
+		const passwordMatches = await user.verifyPassword(password);
 		if (!passwordMatches) {
 			return;
 		}
 
-		return this._fromRow(row);
+		return user;
 	}
 
 	toJSON(): LoginJson {
@@ -167,16 +170,7 @@ export class Login extends InjectableApi {
 	}
 
 	async verifyPassword(password: string) {
-		const row = this.database
-			.prepare(
-				`SELECT passwordHash from logins
-				WHERE userId = :userId`,
-			)
-			.get({
-				userId: this.id,
-			}) as {passwordHash: string};
-
-		return bcrypt.compare(password, row.passwordHash);
+		return bcrypt.compare(password, this._passwordHash);
 	}
 
 	async updatePassword(newPassword: string) {
@@ -192,6 +186,8 @@ export class Login extends InjectableApi {
 				userId: this.id,
 				hash,
 			});
+
+		this._passwordHash = hash;
 	}
 
 	updateUsername(newUsername: string) {
