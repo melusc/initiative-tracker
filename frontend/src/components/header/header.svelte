@@ -62,7 +62,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 	<div class="header-nav">
 		<a href="/">Initiatives</a>
-		<a href="/people">People</a>
+		{#if loginInfo}
+			<a href="/people">People</a>
+		{/if}
 		<a href="/organisations">Organisations</a>
 	</div>
 
