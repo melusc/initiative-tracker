@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import process from 'node:process';
+
 import {ApiError} from '@lusc/initiative-tracker-api';
 import cookieParser from 'cookie-parser';
 import express from 'express';
@@ -25,6 +27,7 @@ import {apiRouter} from './api/index.ts';
 import {createInitiative} from './api/initiative.ts';
 import {createOrganisation} from './api/organisation.ts';
 import {createPerson} from './api/person.ts';
+import {cleanupBeforeExit} from './cleanup.ts';
 import {api} from './database.ts';
 import env from './env.ts';
 import {
@@ -412,6 +415,11 @@ app.use((_request, response) => {
 		.render('404', {login: response.locals.login, state: undefined});
 });
 
-app.listen(env.port, '127.0.0.1', () => {
+const server = app.listen(env.port, '127.0.0.1', () => {
 	console.log('Listening on http://localhost:%s/', env.port);
+	process.send?.('ready');
+});
+
+cleanupBeforeExit(() => {
+	server.close();
 });

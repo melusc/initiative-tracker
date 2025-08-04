@@ -26,6 +26,7 @@ import {parseArgs} from 'node:util';
 import {createApi, utilities} from '@lusc/initiative-tracker-api';
 import {generatePassword} from '@lusc/util/generate-password';
 
+import {cleanupBeforeExit} from './cleanup.ts';
 import {assetDirectory, dataDirectory, fileSizeLimit} from './uploads.ts';
 
 const database = new DatabaseSync(
@@ -75,3 +76,7 @@ if (shouldCreateLogin) {
 		password,
 	);
 }
+
+cleanupBeforeExit(() => {
+	database.close();
+});
