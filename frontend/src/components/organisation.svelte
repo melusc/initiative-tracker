@@ -78,7 +78,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		/>
 		<PatchInputFile
 			name="image"
-			label="Image URL"
+			label="Image"
 			allowEmpty
 			bind:body={organisation}
 			apiEndpoint="/api/organisation/{organisation.id}"

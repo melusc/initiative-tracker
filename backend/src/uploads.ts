@@ -51,7 +51,7 @@ export function mergeExpressBodyFile(request: Request, keys: string[]) {
 
 	for (const key of keys) {
 		const item = files?.[key]?.[0]?.buffer;
-		if (item) {
+		if (item && item.byteLength > 0) {
 			body[key] = Buffer.from(item);
 		}
 	}

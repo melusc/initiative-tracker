@@ -34,6 +34,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <h2>Change username</h2>
 
 <form method="POST" enctype="multipart/form-data">
+	<input name="virtual-form" value="username" type="hidden" />
+
 	{#if state?.error?.['username']}
 		<div class="error">{state.error['username']}</div>
 	{:else if state?.success?.['username']}
@@ -55,6 +57,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <h2>Change password</h2>
 
 <form method="POST" enctype="multipart/form-data">
+	<input name="virtual-form" value="password" type="hidden" />
+
 	{#if state?.error?.['password']}
 		<div class="error">{state.error['password']}</div>
 	{:else if state?.success?.['password']}

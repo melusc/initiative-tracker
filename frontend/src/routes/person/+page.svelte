@@ -19,10 +19,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	import type {PersonJson} from '@lusc/initiative-tracker-api';
 
 	import DeleteButton from '../../components/delete-button.svelte';
+	import EditableTitle from '../../components/editable-title.svelte';
 	import Initiative from '../../components/initiative.svelte';
 	import Loading from '../../components/loading.svelte';
 	import PageTitle from '../../components/page-title.svelte';
-	import EditableTitle from '../../components/person/editable-title.svelte';
 	import {getState} from '../../state.ts';
 	import {syncUrlSlug} from '../../url.ts';
 

@@ -104,14 +104,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		/>
 		<PatchInputFile
 			name="pdf"
-			label="PDF Url"
+			label="PDF"
 			bind:body={initiative}
 			apiEndpoint="/api/initiative/{initiative.id}"
 			accept={['application/pdf']}
 		/>
 		<PatchInputFile
 			name="image"
-			label="Image Url"
+			label="Image"
 			bind:body={initiative}
 			apiEndpoint="/api/initiative/{initiative.id}"
 			allowEmpty

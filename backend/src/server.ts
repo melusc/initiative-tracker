@@ -32,12 +32,17 @@ import {
 	identifyUser,
 	requireLogin,
 } from './middleware/login-protect.ts';
-import {validatePassword, validateUsername} from './routes/account.ts';
 import {assetRouter} from './routes/assets.ts';
 import {loginPost} from './routes/login.ts';
 import {logout} from './routes/logout.ts';
 import {svelteKitEngine} from './svelte-kit-engine.ts';
 import {multerUpload, staticRoot} from './uploads.ts';
+import {
+	validatePasswordUpdate,
+	validateString,
+	validateUsernameUpdate,
+	ValidationError,
+} from './validators.ts';
 
 const app = express();
 
@@ -141,7 +146,7 @@ app.post(
 			response.status(400).render('create-initiative', {
 				login: response.locals.login,
 				state: {
-					error: initiative.readableError,
+					error: initiative.error,
 					values: body,
 				},
 			});
@@ -194,16 +199,16 @@ app.post(
 	'/person/create',
 	requireLogin(),
 	multerUpload.none(),
-	async (request, response) => {
+	(request, response) => {
 		const body = request.body as Record<string, unknown>;
 
-		const person = await createPerson(body, response.locals.login!);
+		const person = createPerson(body, response.locals.login!);
 
 		if (person.type === 'error') {
 			response.status(400).render('create-person', {
 				login: response.locals.login,
 				state: {
-					error: person.readableError,
+					error: person.error,
 					values: body,
 				},
 			});
@@ -265,7 +270,7 @@ app.post(
 			response.status(400).render('create-organisation', {
 				login: response.locals.login,
 				state: {
-					error: organisation.readableError,
+					error: organisation.error,
 					values: body,
 				},
 			});
@@ -306,20 +311,21 @@ app.post(
 	'/account',
 	requireLogin(),
 	multerUpload.none(),
-	async (request, response) => {
+	async (request, response, next) => {
 		const body = request.body as Record<string, string>;
 		const login = response.locals.login!;
 
-		if ('username' in body) {
-			const username = body['username'];
-			const usernameValidity = validateUsername(username);
+		if (body['virtual-form'] === 'username') {
+			let username: string;
 
-			if (usernameValidity !== true) {
+			try {
+				username = validateUsernameUpdate(body['username']);
+			} catch (error: unknown) {
 				response.status(400).render('account', {
 					login,
 					state: {
 						error: {
-							username: usernameValidity,
+							username: (error as ValidationError).message,
 						},
 					},
 				});
@@ -343,7 +349,9 @@ app.post(
 				response.status(400).render('account', {
 					login,
 					state: {
-						values: {username},
+						values: {
+							username,
+						},
 						error: {
 							username: message,
 						},
@@ -352,59 +360,49 @@ app.post(
 			}
 
 			return;
-		}
+		} else if (body['virtual-form'] === 'password') {
+			let newPassword: string;
+			let currentPassword: string;
 
-		const currentPassword = body['currentPassword'];
-		const newPassword = body['newPassword'];
-		const newPasswordRepeat = body['newPasswordRepeat'];
-
-		if (
-			typeof currentPassword !== 'string' ||
-			typeof newPassword !== 'string' ||
-			typeof newPasswordRepeat !== 'string'
-		) {
-			response.status(400).render('account', {
-				login,
-				state: {
-					error: {
-						password: 'Please fill in all inputs.',
+			try {
+				currentPassword = validateString(
+					body['currentPassword'],
+					'current password',
+				);
+				newPassword = validatePasswordUpdate(
+					body['newPassword'],
+					body['newPasswordRepeat'],
+				);
+			} catch (error: unknown) {
+				response.status(400).render('account', {
+					login,
+					state: {
+						error: {
+							password: (error as ValidationError).message,
+						},
 					},
-				},
-			});
-			return;
-		}
+				});
+				return;
+			}
 
-		const newPasswordsValidity = validatePassword(
-			newPassword,
-			newPasswordRepeat,
-		);
-
-		if (newPasswordsValidity !== true) {
-			response.status(400).render('account', {
-				login,
-				state: {
-					error: {
-						password: newPasswordsValidity,
+			const currentPasswordIsValid =
+				await login.verifyPassword(currentPassword);
+			if (!currentPasswordIsValid) {
+				response.status(400).render('account', {
+					login,
+					state: {
+						error: {
+							password: 'Current password is incorrect.',
+						},
 					},
-				},
-			});
-			return;
-		}
+				});
+			}
 
-		const currentPasswordIsValid = await login.verifyPassword(currentPassword);
-		if (!currentPasswordIsValid) {
-			response.status(400).render('account', {
-				login,
-				state: {
-					error: {
-						password: 'Current password is incorrect.',
-					},
-				},
-			});
+			await login.updatePassword(newPassword);
+			logout(request, response, '/account');
+		} else {
+			next();
 		}
-
-		await login.updatePassword(newPassword);
-		logout(request, response, '/account');
 	},
 );
 

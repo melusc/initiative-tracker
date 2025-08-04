@@ -20,10 +20,8 @@ import {Buffer} from 'node:buffer';
 import {
 	ApiError,
 	type Asset,
-	type ImageAsset,
 	type Initiative,
 } from '@lusc/initiative-tracker-api';
-import {typeOf} from '@lusc/initiative-tracker-util/type-of.js';
 import type {ApiResponse} from '@lusc/initiative-tracker-util/types.js';
 import {Router, type Request, type RequestHandler} from 'express';
 
@@ -31,245 +29,87 @@ import {api} from '../database.ts';
 import {requireAdmin, requireLogin} from '../middleware/login-protect.ts';
 import {mergeExpressBodyFile, multerUpload} from '../uploads.ts';
 import {
-	isEmpty,
-	isValidUrl,
-	makeValidator,
-	sanitiseUrl,
-} from '../validate-body.ts';
-
-const initativeKeyValidators = {
-	shortName(shortName: unknown): ApiResponse<string> {
-		if (typeof shortName !== 'string') {
-			return {
-				type: 'error',
-				readableError: `Invalid type for shortName. Expected string, got ${typeOf(shortName)}`,
-				error: 'invalid-type',
-			};
-		}
-
-		if (shortName.length < 10) {
-			return {
-				type: 'error',
-				readableError:
-					'Short Name is too short. Must be at least 10 characters.',
-				error: 'short-name-too-short',
-			};
-		}
-
-		return {
-			type: 'success',
-			data: shortName,
-		};
-	},
-	fullName(fullName: unknown): ApiResponse<string> {
-		if (typeof fullName !== 'string') {
-			return {
-				type: 'error',
-				readableError: `Invalid type for fullName. Expected string, got ${typeOf(fullName)}`,
-				error: 'invalid-type',
-			};
-		}
-
-		if (fullName.length < 10) {
-			return {
-				type: 'error',
-				readableError:
-					'Full Name is too short. Must be at least 10 characters.',
-				error: 'full-name-too-short',
-			};
-		}
-
-		return {
-			type: 'success',
-			data: fullName,
-		};
-	},
-	website(website: unknown): ApiResponse<string | undefined> {
-		if (isEmpty(website)) {
-			return {
-				type: 'success',
-				data: undefined,
-			};
-		}
-
-		if (!isValidUrl(website)) {
-			return {
-				type: 'error',
-				readableError: 'Not a valid url.',
-				error: 'invalid-url',
-			};
-		}
-
-		return {
-			type: 'success',
-			data: sanitiseUrl(website as string),
-		};
-	},
-	deadline(input: unknown): ApiResponse<string | undefined> {
-		if (isEmpty(input)) {
-			return {
-				type: 'success',
-				data: undefined,
-			};
-		}
-
-		if (typeof input !== 'string') {
-			return {
-				type: 'error',
-				readableError: `Invalid type for deadline. Expected number, got ${typeOf(input)}`,
-				error: 'invalid-type',
-			};
-		}
-
-		const deadline = input.trim();
-
-		const date = new Date(deadline);
-		if (Number.isNaN(date.getTime())) {
-			return {
-				type: 'error',
-				readableError: 'Invalid date.',
-				error: 'invalid-date',
-			};
-		}
-
-		const stringified = date.toISOString().slice(0, 'YYYY-MM-DD'.length);
-		if (stringified !== deadline) {
-			return {
-				type: 'error',
-				readableError: `Invalid date. Normalising input "${deadline}" resulted in "${stringified}". Expected it to stay unchanged`,
-				error: 'invalid-date',
-			};
-		}
-
-		return {
-			type: 'success',
-			data: deadline,
-		};
-	},
-	async pdf(pdf: unknown): Promise<ApiResponse<Asset>> {
-		if (Buffer.isBuffer(pdf)) {
-			try {
-				const pdfAsset = await api.PdfAsset.createFromBuffer(pdf);
-				return {
-					type: 'success',
-					data: pdfAsset,
-				};
-			} catch (error: unknown) {
-				if (error instanceof ApiError) {
-					return {
-						type: 'error',
-						readableError: error.message,
-						error: 'fetch-error',
-					};
-				}
-			}
-		}
-
-		if (typeof pdf === 'string') {
-			try {
-				const pdfAsset = await api.PdfAsset.createFromUrl(pdf);
-				return {
-					type: 'success',
-					data: pdfAsset,
-				};
-			} catch (error: unknown) {
-				if (error instanceof ApiError) {
-					return {
-						type: 'error',
-						readableError: error.message,
-						error: 'fetch-error',
-					};
-				}
-			}
-		}
-
-		return {
-			type: 'error',
-			readableError: 'Invalid pdf.',
-			error: 'fetch-error',
-		};
-	},
-	async image(image: unknown): Promise<ApiResponse<ImageAsset | undefined>> {
-		if (isEmpty(image)) {
-			return {
-				type: 'success',
-				data: undefined,
-			};
-		}
-
-		if (Buffer.isBuffer(image)) {
-			try {
-				const imageAsset = await api.ImageAsset.createFromBuffer(image);
-				return {
-					type: 'success',
-					data: imageAsset,
-				};
-			} catch (error: unknown) {
-				if (error instanceof ApiError) {
-					return {
-						type: 'error',
-						readableError: error.message,
-						error: 'fetch-error',
-					};
-				}
-			}
-		}
-
-		if (typeof image === 'string') {
-			try {
-				const imageAsset = await api.ImageAsset.createFromUrl(image);
-				return {
-					type: 'success',
-					data: imageAsset,
-				};
-			} catch (error: unknown) {
-				if (error instanceof ApiError) {
-					return {
-						type: 'error',
-						readableError: error.message,
-						error: 'fetch-error',
-					};
-				}
-			}
-		}
-
-		return {
-			type: 'error',
-			readableError: 'Invalid image.',
-			error: 'fetch-error',
-		};
-	},
-};
-
-const initiativeValidator = makeValidator(initativeKeyValidators);
+	validateDeadline,
+	validateFile,
+	validateName,
+	validateWebsite,
+	ValidationError,
+} from '../validators.ts';
 
 export async function createInitiative(
 	request: Request,
 ): Promise<ApiResponse<Initiative>> {
 	const body = mergeExpressBodyFile(request, ['pdf', 'image']);
 
-	const validateResult = await initiativeValidator(body, [
-		'shortName',
-		'fullName',
-		'website',
-		'pdf',
-		'image',
-		'deadline',
-	]);
+	let shortName: string;
+	let fullName: string;
+	let website: string | undefined;
+	let pdf: string | Buffer;
+	let image: string | Buffer | undefined;
+	let deadline: string | undefined;
 
-	if (validateResult.type === 'error') {
-		return validateResult;
+	try {
+		shortName = validateName(body['shortName'], 'Short Name', false);
+		fullName = validateName(body['fullName'], 'Full Name', false);
+		website = validateWebsite(body['website'], true);
+		pdf = validateFile(body['pdf'], 'PDF', false);
+		image = validateFile(body['image'], 'Image', true);
+		deadline = validateDeadline(body['deadline'], true);
+	} catch (error: unknown) {
+		let message = 'Unknown error.';
+
+		if (error instanceof ApiError || error instanceof ValidationError) {
+			message = error.message;
+		} else {
+			console.error(error);
+		}
+
+		return {
+			type: 'error',
+			error: message,
+		};
 	}
 
-	const {website, fullName, shortName, pdf, image, deadline} =
-		validateResult.data;
+	let pdfAsset: Asset;
+	let imageAsset: Asset | undefined;
+	try {
+		pdfAsset = await (Buffer.isBuffer(pdf)
+			? api.PdfAsset.createFromBuffer(pdf)
+			: api.PdfAsset.createFromUrl(pdf));
+
+		if (Buffer.isBuffer(image)) {
+			imageAsset = await api.ImageAsset.createFromBuffer(image);
+		} else if (image) {
+			imageAsset = await api.ImageAsset.createFromUrl(image);
+		}
+	} catch (error: unknown) {
+		try {
+			// If image was not valid, delete pdf
+			// to avoid orphaned pdfs
+			// eslint-disable-next-line @typescript-eslint/no-extra-non-null-assertion, @typescript-eslint/no-unnecessary-condition
+			await pdfAsset!?.rm();
+		} catch {}
+
+		let message = 'Unknown error.';
+
+		if (error instanceof ApiError || error instanceof ValidationError) {
+			message = error.message;
+		} else {
+			console.error(error);
+		}
+
+		return {
+			type: 'error',
+			error: message,
+		};
+	}
 
 	const initiative = api.Initiative.create(
 		shortName,
 		fullName,
 		website,
-		pdf,
-		image,
+		pdfAsset,
+		imageAsset,
 		deadline,
 	);
 
@@ -304,8 +144,7 @@ const getInitiative: RequestHandler<{id: string}> = async (
 	if (!initiative) {
 		response.status(404).json({
 			type: 'error',
-			readableError: 'Initiative does not exist.',
-			error: 'not-found',
+			error: 'Initiative does not exist.',
 		});
 		return;
 	}
@@ -345,52 +184,80 @@ const patchInitiative: RequestHandler<{id: string}> = async (
 	if (!initiative) {
 		response.status(404).json({
 			type: 'error',
-			readableError: 'Initiative does not exist.',
-			error: 'not-found',
+			error: 'Initiative does not exist.',
 		});
 		return;
 	}
 
 	const body = mergeExpressBodyFile(request, ['pdf', 'image']);
 
-	const validateResult = await initiativeValidator(
-		body,
-		Object.keys(body) as Array<keyof typeof initativeKeyValidators>,
-	);
+	try {
+		for (const key of Object.keys(body)) {
+			switch (key) {
+				case 'shortName': {
+					const shortName = validateName(
+						body['shortName'],
+						'Short Name',
+						false,
+					);
+					initiative.updateShortName(shortName);
+					break;
+				}
+				case 'fullName': {
+					const fullName = validateName(body['fullName'], 'Full Name', false);
+					initiative.updateFullName(fullName);
+					break;
+				}
+				case 'deadline': {
+					const deadline = validateDeadline(body['deadline'], true);
+					initiative.updateDeadline(deadline);
+					break;
+				}
+				case 'website': {
+					const website = validateWebsite(body['website'], true);
+					initiative.updateWebsite(website);
+					break;
+				}
+				case 'pdf': {
+					const pdf = validateFile(body['pdf'], 'PDF', false);
+					const pdfAsset = await (Buffer.isBuffer(pdf)
+						? api.PdfAsset.createFromBuffer(pdf)
+						: api.PdfAsset.createFromUrl(pdf));
 
-	if (validateResult.type === 'error') {
-		response.status(400).json(validateResult);
-		return;
-	}
+					await initiative.updatePdf(pdfAsset);
+					break;
+				}
+				case 'image': {
+					const image = validateFile(body['image'], 'Image', true);
+					let imageAsset: Asset | undefined;
 
-	const newData = validateResult.data;
+					if (Buffer.isBuffer(image)) {
+						imageAsset = await api.ImageAsset.createFromBuffer(image);
+					} else if (image) {
+						imageAsset = await api.ImageAsset.createFromUrl(image);
+					}
 
-	for (const key of Object.keys(newData)) {
-		switch (key) {
-			case 'shortName': {
-				initiative.updateShortName(newData.shortName);
-				break;
-			}
-			case 'fullName': {
-				initiative.updateFullName(newData.fullName);
-				break;
-			}
-			case 'deadline': {
-				initiative.updateDeadline(newData.deadline);
-				break;
-			}
-			case 'website': {
-				initiative.updateWebsite(newData.website);
-				break;
-			}
-			case 'pdf': {
-				await initiative.updatePdf(newData.pdf);
-				break;
-			}
-			case 'image': {
-				await initiative.updateImage(newData.image);
+					await initiative.updateImage(imageAsset);
+					break;
+				}
 			}
 		}
+	} catch (error: unknown) {
+		let message = 'Unknown error.';
+
+		if (error instanceof ApiError || error instanceof ValidationError) {
+			message = error.message;
+			response.status(400);
+		} else {
+			console.error(error);
+			response.status(500);
+		}
+
+		response.json({
+			type: 'error',
+			error: message,
+		});
+		return;
 	}
 
 	const login = response.locals.login;
@@ -414,8 +281,7 @@ const deleteInitiative: RequestHandler<{id: string}> = async (
 	if (!initiative) {
 		response.status(404).json({
 			type: 'error',
-			readableError: 'Initiative does not exist.',
-			error: 'not-found',
+			error: 'Initiative does not exist.',
 		});
 		return;
 	}
@@ -442,8 +308,7 @@ const createModifyInitiativeSignature =
 		if (!initiative || !person) {
 			response.status(404).json({
 				type: 'error',
-				error: 'not-found',
-				readableError: 'Initiative or person not found',
+				error: 'Initiative or person not found',
 			});
 			return;
 		}
@@ -477,8 +342,7 @@ const createModifyInitiativeOrganisation =
 		if (!initiative || !organisation) {
 			response.status(404).json({
 				type: 'error',
-				error: 'not-found',
-				readableError: 'Initiative or organisation not found',
+				error: 'Initiative or organisation not found',
 			});
 			return;
 		}

@@ -16,84 +16,51 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import {ApiError, type Login, type Person} from '@lusc/initiative-tracker-api';
-import {typeOf} from '@lusc/initiative-tracker-util/type-of.js';
-import type {ApiResponse} from '@lusc/initiative-tracker-util/types.js';
+import type {
+	ApiResponse,
+	ApiResponseError,
+} from '@lusc/initiative-tracker-util/types.js';
 import {Router, type RequestHandler} from 'express';
 
 import {api} from '../database.ts';
 import {requireLogin} from '../middleware/login-protect.ts';
 import {multerUpload} from '../uploads.ts';
-import {makeValidator} from '../validate-body.ts';
+import {validateName, ValidationError} from '../validators.ts';
 
-const personKeyValidators = {
-	name(nameRaw: unknown): ApiResponse<string> {
-		if (typeof nameRaw !== 'string') {
-			return {
-				type: 'error',
-				readableError: `Invalid type for name. Expected string, got ${typeOf(nameRaw)}`,
-				error: 'invalid-type',
-			};
-		}
-
-		const name = nameRaw.trim();
-
-		if (name.length < 4) {
-			return {
-				type: 'error',
-				readableError: 'Name must be at least four characters long',
-				error: 'name-too-short',
-			};
-		}
-
-		if (!/^[a-züöäéèëï][a-züöäéèëï\d\-/()* .]+$/i.test(name)) {
-			return {
-				type: 'error',
-				readableError: 'Name must contain only latin letters.',
-				error: 'name-invalid-characters',
-			};
-		}
-
-		return {
-			type: 'success',
-			data: name,
-		};
-	},
-};
-
-const personValidator = makeValidator(personKeyValidators);
-
-export async function createPerson(
+export function createPerson(
 	body: Record<string, unknown>,
 	owner: Login,
-): Promise<ApiResponse<Person>> {
-	const result = await personValidator(body, ['name']);
-	if (result.type === 'error') {
-		return result;
+): ApiResponse<Person> {
+	let name: string;
+	try {
+		name = validateName(body['name'], 'Name', false);
+	} catch (error: unknown) {
+		return {
+			type: 'error',
+			error: (error as ValidationError).message,
+		};
 	}
 
 	try {
-		const {name} = result.data;
 		const person = api.Person.create(name, owner);
 		return {type: 'success', data: person};
 	} catch (error: unknown) {
 		if (error instanceof ApiError) {
 			return {
 				type: 'error',
-				readableError: error.message,
-				error: 'duplicate-person',
+				error: error.message,
 			};
 		}
 
 		return {
 			type: 'error',
-			readableError: 'Unknown error.',
-			error: 'unknown-error',
+			error: 'Unknown error.',
 		};
 	}
 }
 
-const createPersonEndpoint: RequestHandler = async (request, response) => {
-	const result = await createPerson(
+const createPersonEndpoint: RequestHandler = (request, response) => {
+	const result = createPerson(
 		request.body as Record<string, unknown>,
 		response.locals.login!,
 	);
@@ -112,8 +79,7 @@ const getPerson: RequestHandler<{id: string}> = async (request, response) => {
 	if (!person) {
 		response.status(404).json({
 			type: 'error',
-			readableError: 'Person does not exist.',
-			error: 'not-found',
+			error: 'Person does not exist.',
 		});
 		return;
 	}
@@ -129,47 +95,48 @@ const getPerson: RequestHandler<{id: string}> = async (request, response) => {
 const patchPerson: RequestHandler<{id: string}> = async (request, response) => {
 	const {id} = request.params;
 	const owner = response.locals.login!;
+	const body = request.body as Record<string, unknown>;
 
 	const person = api.Person.fromId(id, owner);
 
 	if (!person) {
 		response.status(404).json({
 			type: 'error',
-			readableError: 'Person does not exist.',
-			error: 'not-found',
+			error: 'Person does not exist.',
 		});
 		return;
 	}
 
-	const body = request.body as Record<string, unknown>;
+	let name: string | undefined;
 
-	const validateResult = await personValidator(
-		body,
-		Object.keys(body) as Array<keyof typeof personKeyValidators>,
-	);
-
-	if (validateResult.type === 'error') {
-		response.status(400).json(validateResult);
+	try {
+		name = validateName(body['name'], 'Name', true);
+	} catch (error: unknown) {
+		response.status(400).json({
+			type: 'error',
+			error: (error as ValidationError).message,
+		} satisfies ApiResponseError);
 		return;
 	}
 
-	if ('name' in validateResult.data) {
+	if (name) {
 		try {
-			person.updateName(validateResult.data.name);
+			person.updateName(name);
 		} catch (error: unknown) {
 			if (error instanceof ApiError) {
 				response.status(409).json({
 					type: 'error',
-					error: 'duplicate-person',
-					readableError: error.message,
+					error: error.message,
+				});
+			} else {
+				console.error(error);
+				response.status(500).json({
+					type: 'error',
+					error: 'Unknown error.',
 				});
 			}
 
-			response.status(500).json({
-				type: 'error',
-				error: 'unknown-error',
-				readableError: 'Unknown error.',
-			});
+			return;
 		}
 	}
 
@@ -189,8 +156,7 @@ const deletePerson: RequestHandler<{id: string}> = (request, response) => {
 	if (!person) {
 		response.status(404).json({
 			type: 'error',
-			readableError: 'Person does not exist.',
-			error: 'not-found',
+			error: 'Person does not exist.',
 		});
 		return;
 	}

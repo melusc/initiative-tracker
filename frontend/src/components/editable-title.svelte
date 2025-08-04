@@ -22,9 +22,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	import type {ApiResponse} from '@lusc/initiative-tracker-util/types.js';
 	import {slide} from 'svelte/transition';
 
-	import {createSuccessState} from '../../success-state.ts';
-	import CreateIcon from '../icons/create.svelte';
-	import Save from '../icons/save.svelte';
+	import {createSuccessState} from '../success-state.ts';
+
+	import CreateIcon from './icons/create.svelte';
+	import Save from './icons/save.svelte';
 
 	let {
 		key,
@@ -36,6 +37,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 	let titleNode = $state<HTMLHeadingElement>();
 	let editEnabled = $state(false);
+	let submitting = $state(false);
 
 	$effect(() => {
 		if (editEnabled) {
@@ -71,25 +73,35 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	}
 
 	async function handleSave(): Promise<void> {
+		if (submitting) {
+			return;
+		}
+
 		const requestBody = new FormData();
 		requestBody.set('name', titleNode!.textContent!);
 
-		const response = await fetch(patchApi, {
-			method: 'PATCH',
-			body: requestBody,
-		});
-		const newBody = (await response.json()) as ApiResponse<Body>;
+		submitting = true;
 
-		if (newBody.type === 'error') {
-			successState.setError(newBody.readableError);
-		} else {
-			successState.setSuccess();
+		try {
+			const response = await fetch(patchApi, {
+				method: 'PATCH',
+				body: requestBody,
+			});
+			const newBody = (await response.json()) as ApiResponse<Body>;
 
-			body = newBody.data;
-			editEnabled = false;
+			if (newBody.type === 'error') {
+				successState.setError(newBody.error);
+			} else {
+				successState.setSuccess();
 
-			// If name is normalised or otherwise modified on server
-			titleNode!.textContent = body[key] as string;
+				body = newBody.data;
+				editEnabled = false;
+
+				// If name is normalised or otherwise modified on server
+				titleNode!.textContent = body[key] as string;
+			}
+		} finally {
+			submitting = false;
 		}
 	}
 </script>

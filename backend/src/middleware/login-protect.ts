@@ -100,8 +100,7 @@ export function requireAdmin(): RequestHandler {
 
 		response.json({
 			type: 'error',
-			readableError: 'Not an admin',
-			error: 'not-an-admin',
+			error: 'Not an admin',
 		});
 	};
 }

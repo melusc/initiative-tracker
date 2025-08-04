@@ -83,7 +83,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		const newBody = (await response.json()) as ApiResponse<Body>;
 
 		if (newBody.type === 'error') {
-			successState.setError(newBody.readableError);
+			successState.setError(newBody.error);
 		} else {
 			file = undefined;
 			body = newBody.data;
