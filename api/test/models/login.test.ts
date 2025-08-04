@@ -60,6 +60,18 @@ apiTest('Login from credentials', async ({api: {Login}}) => {
 	expect(loginFromCredentials).toBeDefined();
 	expect(loginFromCredentials!.id).toStrictEqual(login.id);
 
+	// Username is case-insensitive
+	const loginFromCredentialsLower = await Login.fromCredentials(
+		username.toLowerCase(),
+		password,
+	);
+	const loginFromCredentialsUpper = await Login.fromCredentials(
+		username.toUpperCase(),
+		password,
+	);
+	expect(loginFromCredentialsLower?.id).toStrictEqual(login.id);
+	expect(loginFromCredentialsUpper?.id).toStrictEqual(login.id);
+
 	const loginWrongUsername = await Login.fromCredentials(
 		'wrong-username',
 		password,

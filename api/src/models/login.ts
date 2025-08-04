@@ -96,10 +96,11 @@ export class Login extends InjectableApi {
 	}
 
 	static fromUsername(username: string) {
+		// Search case-insensitively
 		const row = this.database
 			.prepare(
 				`SELECT * from logins
-				WHERE username = :username`,
+				WHERE upper(username) = upper(:username)`,
 			)
 			.get({
 				username,
