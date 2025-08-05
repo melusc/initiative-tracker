@@ -56,7 +56,7 @@ export function identifyUser(): RequestHandler {
 
 function loginRedirect(request: Request, response: Response) {
 	const searchParameters = new URLSearchParams({
-		redirect: request.url,
+		redirect: request.originalUrl,
 	});
 	response.clearCookie('session', {
 		httpOnly: true,
