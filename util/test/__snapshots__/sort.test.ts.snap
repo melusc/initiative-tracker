@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Sorting logic 1`] = `
+exports[`Sorting logic > normal 1`] = `
 [
   {
     "a": "a",
@@ -13,7 +13,7 @@ exports[`Sorting logic 1`] = `
 ]
 `;
 
-exports[`Sorting logic 2`] = `
+exports[`Sorting logic > normal 2`] = `
 [
   {
     "a": "a",
@@ -26,7 +26,7 @@ exports[`Sorting logic 2`] = `
 ]
 `;
 
-exports[`Sorting logic 3`] = `
+exports[`Sorting logic > normal 3`] = `
 [
   {
     "a": null,
@@ -39,7 +39,7 @@ exports[`Sorting logic 3`] = `
 ]
 `;
 
-exports[`Sorting logic 4`] = `
+exports[`Sorting logic > normal 4`] = `
 [
   {
     "a": "z",
@@ -52,7 +52,7 @@ exports[`Sorting logic 4`] = `
 ]
 `;
 
-exports[`Sorting logic 5`] = `
+exports[`Sorting logic > normal 5`] = `
 [
   {
     "a": null,
@@ -65,7 +65,85 @@ exports[`Sorting logic 5`] = `
 ]
 `;
 
-exports[`Sorting logic 6`] = `
+exports[`Sorting logic > normal 6`] = `
+[
+  {
+    "a": null,
+    "b": "a",
+  },
+  {
+    "a": undefined,
+    "b": undefined,
+  },
+]
+`;
+
+exports[`Sorting logic > reverse 1`] = `
+[
+  {
+    "a": "x",
+    "b": "z",
+  },
+  {
+    "a": "a",
+    "b": "c",
+  },
+]
+`;
+
+exports[`Sorting logic > reverse 2`] = `
+[
+  {
+    "a": "x",
+    "b": "z",
+  },
+  {
+    "a": "a",
+    "b": "c",
+  },
+]
+`;
+
+exports[`Sorting logic > reverse 3`] = `
+[
+  {
+    "a": null,
+    "b": "d",
+  },
+  {
+    "a": null,
+    "b": "c",
+  },
+]
+`;
+
+exports[`Sorting logic > reverse 4`] = `
+[
+  {
+    "a": "z",
+    "b": "c",
+  },
+  {
+    "a": null,
+    "b": "c",
+  },
+]
+`;
+
+exports[`Sorting logic > reverse 5`] = `
+[
+  {
+    "a": null,
+    "b": "a",
+  },
+  {
+    "a": null,
+    "b": null,
+  },
+]
+`;
+
+exports[`Sorting logic > reverse 6`] = `
 [
   {
     "a": null,

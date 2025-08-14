@@ -64,6 +64,6 @@ test.for([
 	const sorted = sorter([...testCase]);
 	const sortedReverse = sorterReverse([...testCase]);
 
-	expect(sorted).toMatchSnapshot();
-	expect(sorted.toReversed()).toStrictEqual(sortedReverse);
+	expect(sorted).toMatchSnapshot('normal');
+	expect(sortedReverse).toMatchSnapshot('reverse');
 });

@@ -30,14 +30,15 @@ export function makeSorter<R extends Record<string, unknown>>(
 	return <T extends R>(array: T[]): T[] =>
 		array.toSorted((a, b) => {
 			for (const {key, reverse} of keys) {
+				// Always nullish last
 				// A before B
 				if (!isNullish(a[key]) && isNullish(b[key])) {
-					return reverse ? 1 : -1;
+					return -1;
 				}
 
 				// B before A
 				if (isNullish(a[key]) && !isNullish(b[key])) {
-					return reverse ? -1 : 1;
+					return 1;
 				}
 
 				// Go to next comparison
