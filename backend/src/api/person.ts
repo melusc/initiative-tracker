@@ -22,10 +22,10 @@ import type {
 } from '@lusc/initiative-tracker-util/types.js';
 import {Router, type RequestHandler} from 'express';
 
-import {api} from '../database.ts';
-import {requireLogin} from '../middleware/login-protect.ts';
-import {multerUpload} from '../uploads.ts';
-import {validateName, ValidationError} from '../validators.ts';
+import {api} from '../database.js';
+import {requireLogin} from '../middleware/login-protect.js';
+import {multerUpload} from '../uploads.js';
+import {validateName, ValidationError} from '../validators.js';
 
 export function createPerson(
 	body: Record<string, unknown>,

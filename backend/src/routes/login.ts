@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import {RelativeUrl} from '@lusc/util/relative-url';
 import type {Request, Response} from 'express';
 
-import {api} from '../database.ts';
+import {api} from '../database.js';
 
 export async function loginPost(request: Request, response: Response) {
 	const body = request.body as Record<string, unknown>;

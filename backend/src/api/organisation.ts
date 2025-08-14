@@ -25,15 +25,15 @@ import {
 import type {ApiResponse} from '@lusc/initiative-tracker-util/types.js';
 import {Router, type Request, type RequestHandler} from 'express';
 
-import {api} from '../database.ts';
-import {requireAdmin} from '../middleware/login-protect.ts';
-import {mergeExpressBodyFile, multerUpload} from '../uploads.ts';
+import {api} from '../database.js';
+import {requireAdmin} from '../middleware/login-protect.js';
+import {mergeExpressBodyFile, multerUpload} from '../uploads.js';
 import {
 	validateFile,
 	validateName,
 	validateWebsite,
 	ValidationError,
-} from '../validators.ts';
+} from '../validators.js';
 
 export async function createOrganisation(
 	request: Request,

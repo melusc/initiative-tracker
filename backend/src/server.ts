@@ -23,29 +23,29 @@ import express from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
-import {apiRouter} from './api/index.ts';
-import {createInitiative} from './api/initiative.ts';
-import {createOrganisation} from './api/organisation.ts';
-import {createPerson} from './api/person.ts';
-import {cleanupBeforeExit} from './cleanup.ts';
-import {api} from './database.ts';
-import env from './env.ts';
+import {apiRouter} from './api/index.js';
+import {createInitiative} from './api/initiative.js';
+import {createOrganisation} from './api/organisation.js';
+import {createPerson} from './api/person.js';
+import {cleanupBeforeExit} from './cleanup.js';
+import {api} from './database.js';
+import env from './env.js';
 import {
 	requireAdmin,
 	identifyUser,
 	requireLogin,
-} from './middleware/login-protect.ts';
-import {assetRouter} from './routes/assets.ts';
-import {loginPost} from './routes/login.ts';
-import {logout} from './routes/logout.ts';
-import {svelteKitEngine} from './svelte-kit-engine.ts';
-import {multerUpload, staticRoot} from './uploads.ts';
+} from './middleware/login-protect.js';
+import {assetRouter} from './routes/assets.js';
+import {loginPost} from './routes/login.js';
+import {logout} from './routes/logout.js';
+import {svelteKitEngine} from './svelte-kit-engine.js';
+import {multerUpload, staticRoot} from './uploads.js';
 import {
 	validatePasswordUpdate,
 	validateString,
 	validateUsernameUpdate,
 	ValidationError,
-} from './validators.ts';
+} from './validators.js';
 
 const app = express();
 

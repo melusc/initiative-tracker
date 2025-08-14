@@ -32,7 +32,7 @@
 	"scripts": {
 		"fmt": "eslint --fix",
 		"build": "tsc && node --run esbuild",
-		"esbuild": "esbuild --outdir=dist --format=esm --platform=node --bundle --sourcemap --packages=external src/server.ts",
+		"esbuild": "esbuild --outdir=dist --format=esm --platform=node --sourcemap --packages=external src/**/*.ts",
 		"build:w": "node --run esbuild -- --watch",
 		"start": "node --env-file=.env dist/server.js",
 		"start:w": "node --env-file=.env --watch dist/server.js",

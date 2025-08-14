@@ -19,7 +19,7 @@ import {fileURLToPath} from 'node:url';
 
 import express, {Router} from 'express';
 
-import {assetDirectory} from '../uploads.ts';
+import {assetDirectory} from '../uploads.js';
 
 const router = Router();
 

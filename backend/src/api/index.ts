@@ -17,9 +17,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import {Router} from 'express';
 
-import {initiativeRouter} from './initiative.ts';
-import {organisationRouter} from './organisation.ts';
-import {personRouter} from './person.ts';
+import {initiativeRouter} from './initiative.js';
+import {organisationRouter} from './organisation.js';
+import {personRouter} from './person.js';
 
 const router = Router();
 

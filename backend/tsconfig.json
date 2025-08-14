@@ -1,5 +1,5 @@
 {
-	"extends": "@lusc/tsconfig/bundler",
+	"extends": "@lusc/tsconfig",
 	"compilerOptions": {
 		"types": ["./src/types.d.ts"]
 	}

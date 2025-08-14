@@ -26,8 +26,8 @@ import {parseArgs} from 'node:util';
 import {createApi, utilities} from '@lusc/initiative-tracker-api';
 import {generatePassword} from '@lusc/util/generate-password';
 
-import {cleanupBeforeExit} from './cleanup.ts';
-import {assetDirectory, dataDirectory, fileSizeLimit} from './uploads.ts';
+import {cleanupBeforeExit} from './cleanup.js';
+import {assetDirectory, dataDirectory, fileSizeLimit} from './uploads.js';
 
 const database = new DatabaseSync(
 	fileURLToPath(new URL('initiative-tracker.db', dataDirectory)),

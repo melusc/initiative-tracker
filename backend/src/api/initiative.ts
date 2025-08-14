@@ -25,16 +25,16 @@ import {
 import type {ApiResponse} from '@lusc/initiative-tracker-util/types.js';
 import {Router, type Request, type RequestHandler} from 'express';
 
-import {api} from '../database.ts';
-import {requireAdmin, requireLogin} from '../middleware/login-protect.ts';
-import {mergeExpressBodyFile, multerUpload} from '../uploads.ts';
+import {api} from '../database.js';
+import {requireAdmin, requireLogin} from '../middleware/login-protect.js';
+import {mergeExpressBodyFile, multerUpload} from '../uploads.js';
 import {
 	validateDeadline,
 	validateFile,
 	validateName,
 	validateWebsite,
 	ValidationError,
-} from '../validators.ts';
+} from '../validators.js';
 
 export async function createInitiative(
 	request: Request,

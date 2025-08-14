@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import type {Session} from '@lusc/initiative-tracker-api';
 import type {Request, RequestHandler, Response} from 'express';
 
-import {api} from '../database.ts';
+import {api} from '../database.js';
 
 export function identifyUser(): RequestHandler {
 	return (request, response, next) => {
