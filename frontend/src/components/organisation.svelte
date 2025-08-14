@@ -109,7 +109,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 					? organisation.website
 					: `/organisation/${organisation.slug}`}
 			>
-				<img class="image-url" src="/assets/{organisation.image}" alt="" />
+				<img
+					class="image-url"
+					src="/assets/{organisation.image}"
+					alt=""
+					loading="lazy"
+				/>
 			</a>
 		{/if}
 		<a

@@ -131,7 +131,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 					? initiative.website
 					: `/initiative/${initiative.slug}`}
 			>
-				<img class="image-url" src="/assets/{initiative.image}" alt="" />
+				<img
+					class="image-url"
+					src="/assets/{initiative.image}"
+					alt=""
+					loading="lazy"
+				/>
 			</a>
 		{/if}
 		<a

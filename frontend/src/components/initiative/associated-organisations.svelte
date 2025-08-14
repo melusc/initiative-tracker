@@ -68,6 +68,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 							src="/assets/{organisation.image}"
 							title={organisation.name}
 							alt={organisation.name}
+							loading="lazy"
 						/>
 					{:else}
 						{organisation.name}
