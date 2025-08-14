@@ -24,6 +24,7 @@ import {
 	type ApiOptions,
 	type InternalApiOptions,
 } from './injectable-api.js';
+import {migrate} from './migration.js';
 import {Asset, ImageAsset, PdfAsset} from './models/asset.js';
 import {Initiative} from './models/initiative.js';
 import {Login} from './models/login.js';
@@ -114,13 +115,14 @@ function normaliseDirectoryUrl(directory: URL) {
 	return directory;
 }
 
-export function createApi(options: ApiOptions): Api {
+export async function createApi(options: ApiOptions): Promise<Api> {
 	initDatabase(options.database);
 
-	const {database, assetDirectory, fileSizeLimit} = options;
+	const {database, assetDirectory, dataDirectory, fileSizeLimit} = options;
 
 	const internalApiOptions: InternalApiOptions = {
 		database,
+		dataDirectory: normaliseDirectoryUrl(dataDirectory),
 		assetDirectory: normaliseDirectoryUrl(assetDirectory),
 		fileSizeLimit: fileSizeLimit,
 		// Cyclical dependency
@@ -160,6 +162,8 @@ export function createApi(options: ApiOptions): Api {
 	internalApiOptions.Session = SessionInjected;
 	// @ts-expect-error Same as above
 	internalApiOptions.Person = PersonInjected;
+
+	await migrate(internalApiOptions);
 
 	return {
 		Initiative: InitiativeInjected,

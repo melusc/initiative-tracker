@@ -33,8 +33,9 @@ const database = new DatabaseSync(
 	fileURLToPath(new URL('initiative-tracker.db', dataDirectory)),
 );
 
-export const api = createApi({
+export const api = await createApi({
 	fileSizeLimit,
+	dataDirectory,
 	assetDirectory,
 	database,
 });

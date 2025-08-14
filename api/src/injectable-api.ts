@@ -28,6 +28,7 @@ import type {Session} from './models/session.js';
 
 export type ApiOptions = {
 	readonly database: DatabaseSync;
+	readonly dataDirectory: URL;
 	readonly assetDirectory: URL;
 	readonly fileSizeLimit: number;
 };

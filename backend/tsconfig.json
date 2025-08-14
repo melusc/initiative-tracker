@@ -1,6 +1,7 @@
 {
 	"extends": "@lusc/tsconfig",
 	"compilerOptions": {
+		"noEmit": true,
 		"types": ["./src/types.d.ts"]
 	}
 }

@@ -81,9 +81,10 @@ export const apiTest = test.extend({
 		await mkdir(assetDirectory, {recursive: true});
 
 		const database = new DatabaseSync(':memory:');
-		const api = createApi({
+		const api = await createApi({
 			database,
 			assetDirectory,
+			dataDirectory: assetDirectory,
 			fileSizeLimit: 10 * 1024 * 1024,
 		});
 
