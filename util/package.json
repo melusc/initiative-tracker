@@ -12,7 +12,7 @@
 	"devDependencies": {
 		"@lusc/eslint-config": "^7.4.1",
 		"@lusc/tsconfig": "^7.0.0",
-		"@types/node": "^24.2.1",
+		"@types/node": "^24.3.0",
 		"eslint": "^9.33.0",
 		"typescript": "^5.9.2",
 		"vitest": "^3.2.4"
@@ -28,7 +28,7 @@
 		"url": "https://github.com/melusc"
 	},
 	"engines": {
-		"node": "^24.5.0"
+		"node": "^24.6.0"
 	},
 	"license": "GPL-3.0-only",
 	"repository": {
