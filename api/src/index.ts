@@ -44,10 +44,10 @@ export * from './error.js';
 export {migrate} from './migration.js';
 
 function initDatabase(database: DatabaseSync) {
-	database.exec('PRAGMA journal_mode=WAL;');
-	database.exec('PRAGMA foreign_keys=ON;');
-
 	database.exec(`
+		PRAGMA journal_mode=WAL;
+		PRAGMA foreign_keys=ON;
+
 		CREATE TABLE IF NOT EXISTS logins (
 			userId TEXT PRIMARY KEY,
 			username TEXT NOT NULL UNIQUE,
