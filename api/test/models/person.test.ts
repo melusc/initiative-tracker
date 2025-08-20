@@ -50,13 +50,13 @@ apiTest('Updating values', async ({api: {Person, Login}}) => {
 	const login = await Login.create('login', 'login', true);
 	const person = Person.create('Person Name', login);
 
-	let ud = person.updatedAt.getTime();
+	const ud = person.updatedAt.getTime();
 	await setTimeout(1);
 
 	person.updateName('Person Name 2');
 	expect(person.name).toStrictEqual('Person Name 2');
 	expect(person.slug).toStrictEqual('person-name-2');
-	expect(ud).toBeLessThan((ud = person.updatedAt.getTime()));
+	expect(person.updatedAt.getTime()).toBeGreaterThan(ud);
 
 	const personCopy = Person.fromId(person.id, login)!;
 	expect(personCopy.name).toStrictEqual('Person Name 2');

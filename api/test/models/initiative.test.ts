@@ -173,7 +173,7 @@ apiTest(
 
 		initiative.updateWebsite(undefined);
 		expect(initiative.website).toBeUndefined();
-		expect(ud).toBeLessThan((ud = initiative.updatedAt.getTime()));
+		expect(initiative.updatedAt.getTime()).toBeGreaterThan(ud);
 		await setTimeout(1);
 
 		const initiativeCopy = await Initiative.fromId(initiative.id);

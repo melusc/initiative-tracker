@@ -100,7 +100,7 @@ apiTest('Updating values', async ({api: {Organisation, ImageAsset}}) => {
 	await setTimeout(1);
 
 	organisation.updateWebsite(undefined);
-	expect(ud).toBeLessThan((ud = organisation.updatedAt.getTime()));
+	expect(organisation.updatedAt.getTime()).toBeGreaterThan(ud);
 	await setTimeout(1);
 
 	await expect(ImageAsset.fromName(imageAsset1.name)).resolves.toBeUndefined();
