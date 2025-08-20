@@ -217,7 +217,11 @@ const patchInitiative: RequestHandler<{id: string}> = async (
 					break;
 				}
 				case 'initiatedDate': {
-					const initiated = validateDate(body['initiatedDate'], 'Initiated', true);
+					const initiated = validateDate(
+						body['initiatedDate'],
+						'Initiated',
+						true,
+					);
 					initiative.updateInitiatedDate(initiated);
 					break;
 				}
