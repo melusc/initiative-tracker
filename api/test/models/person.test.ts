@@ -51,7 +51,7 @@ apiTest('Updating values', async ({api: {Person, Login}}) => {
 	const person = Person.create('Person Name', login);
 
 	const ud = person.updatedAt.getTime();
-	await setTimeout(1);
+	await setTimeout(2);
 
 	person.updateName('Person Name 2');
 	expect(person.name).toStrictEqual('Person Name 2');

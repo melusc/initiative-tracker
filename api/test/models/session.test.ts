@@ -28,7 +28,7 @@ apiTest(
 		const login2 = await Login.create('login2', 'login2', true);
 
 		const session1 = Session.create(login1);
-		await setTimeout(1);
+		await setTimeout(2);
 		const session2 = Session.create(login2);
 
 		expect(session2.createdAt.getTime()).toBeGreaterThan(

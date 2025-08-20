@@ -131,50 +131,50 @@ apiTest(
 		);
 
 		let ud = initiative.updatedAt.getTime();
-		await setTimeout(1);
+		await setTimeout(2);
 
 		initiative.updateShortName('Initiative New');
 		expect(initiative.shortName).toStrictEqual('Initiative New');
 		expect(initiative.slug).toStrictEqual('initiative-new');
 		expect(ud).toBeLessThan((ud = initiative.updatedAt.getTime()));
-		await setTimeout(1);
+		await setTimeout(2);
 
 		initiative.updateFullName('Initiative Long New');
 		expect(initiative.fullName).toStrictEqual('Initiative Long New');
 		expect(ud).toBeLessThan((ud = initiative.updatedAt.getTime()));
-		await setTimeout(1);
+		await setTimeout(2);
 
 		await initiative.updateImage(undefined);
 		expect(initiative.image).toBeUndefined();
 		await expect(Asset.fromName(imageAsset1.name)).resolves.toBeUndefined();
 		expect(ud).toBeLessThan((ud = initiative.updatedAt.getTime()));
-		await setTimeout(1);
+		await setTimeout(2);
 
 		await initiative.updateImage(imageAsset2);
 		expect(initiative.image?.name).toStrictEqual(imageAsset2.name);
 		expect(ud).toBeLessThan((ud = initiative.updatedAt.getTime()));
-		await setTimeout(1);
+		await setTimeout(2);
 
 		await initiative.updatePdf(pdfAsset2);
 		expect(initiative.pdf.name).toStrictEqual(pdfAsset2.name);
 		await expect(Asset.fromName(pdfAsset1.name)).resolves.toBeUndefined();
 		expect(ud).toBeLessThan((ud = initiative.updatedAt.getTime()));
-		await setTimeout(1);
+		await setTimeout(2);
 
 		initiative.updateDeadline(undefined);
 		expect(initiative.deadline).toBeUndefined();
 		expect(ud).toBeLessThan((ud = initiative.updatedAt.getTime()));
-		await setTimeout(1);
+		await setTimeout(2);
 
 		initiative.updateInitiatedDate(undefined);
 		expect(initiative.initiatedDate).toBeUndefined();
 		expect(ud).toBeLessThan((ud = initiative.updatedAt.getTime()));
-		await setTimeout(1);
+		await setTimeout(2);
 
 		initiative.updateWebsite(undefined);
 		expect(initiative.website).toBeUndefined();
 		expect(initiative.updatedAt.getTime()).toBeGreaterThan(ud);
-		await setTimeout(1);
+		await setTimeout(2);
 
 		const initiativeCopy = await Initiative.fromId(initiative.id);
 

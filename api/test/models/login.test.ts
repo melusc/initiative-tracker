@@ -40,11 +40,11 @@ apiTest('Update login details', async ({api: {Login}}) => {
 
 	let ud = login.updatedAt.getTime();
 
-	await setTimeout(1);
+	await setTimeout(2);
 
 	login.updateIsAdmin(false);
 	expect(ud).toBeLessThan((ud = login.updatedAt.getTime()));
-	await setTimeout(1);
+	await setTimeout(2);
 
 	login.updateUsername('login-u2');
 	expect(ud).toBeLessThan((ud = login.updatedAt.getTime()));
