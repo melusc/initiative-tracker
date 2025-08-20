@@ -23,7 +23,7 @@ import {DatabaseSync} from 'node:sqlite';
 import {fileURLToPath} from 'node:url';
 import {parseArgs} from 'node:util';
 
-import {createApi, utilities} from '@lusc/initiative-tracker-api';
+import {createApi, utilities, migrate} from '@lusc/initiative-tracker-api';
 import {generatePassword} from '@lusc/util/generate-password';
 
 import {cleanupBeforeExit} from './cleanup.js';
@@ -33,11 +33,17 @@ const database = new DatabaseSync(
 	fileURLToPath(new URL('initiative-tracker.db', dataDirectory)),
 );
 
-export const api = await createApi({
+const apiOptions = {
 	fileSizeLimit,
 	dataDirectory,
 	assetDirectory,
 	database,
+};
+export const api = await createApi(apiOptions);
+
+await migrate({
+	...api,
+	...apiOptions,
 });
 
 await utilities.removeUnusedAssets(assetDirectory, api);

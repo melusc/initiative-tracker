@@ -485,6 +485,7 @@ __metadata:
     "@types/node": "npm:^24.3.0"
     "@vitest/runner": "npm:^3.2.4"
     bcrypt: "npm:^6.0.0"
+    esbuild: "npm:^0.25.9"
     eslint: "npm:^9.33.0"
     file-type: "npm:^21.0.0"
     ip: "npm:^2.0.1"

@@ -29,7 +29,7 @@ import {api} from '../database.js';
 import {requireAdmin, requireLogin} from '../middleware/login-protect.js';
 import {mergeExpressBodyFile, multerUpload} from '../uploads.js';
 import {
-	validateDeadline,
+	validateDate,
 	validateFile,
 	validateName,
 	validateWebsite,
@@ -47,6 +47,7 @@ export async function createInitiative(
 	let pdf: string | Buffer;
 	let image: string | Buffer | undefined;
 	let deadline: string | undefined;
+	let initiated: string | undefined;
 
 	try {
 		shortName = validateName(body['shortName'], 'Short Name', false);
@@ -54,7 +55,8 @@ export async function createInitiative(
 		website = validateWebsite(body['website'], true);
 		pdf = validateFile(body['pdf'], 'PDF', false);
 		image = validateFile(body['image'], 'Image', true);
-		deadline = validateDeadline(body['deadline'], true);
+		deadline = validateDate(body['deadline'], 'Deadline', true);
+		initiated = validateDate(body['initiatedDate'], 'Initiated', true);
 	} catch (error: unknown) {
 		let message = 'Unknown error.';
 
@@ -111,6 +113,7 @@ export async function createInitiative(
 		pdfAsset,
 		imageAsset,
 		deadline,
+		initiated,
 	);
 
 	return {
@@ -209,8 +212,17 @@ const patchInitiative: RequestHandler<{id: string}> = async (
 					break;
 				}
 				case 'deadline': {
-					const deadline = validateDeadline(body['deadline'], true);
+					const deadline = validateDate(body['deadline'], 'Deadline', true);
 					initiative.updateDeadline(deadline);
+					break;
+				}
+				case 'initiatedDate': {
+					const initiated = validateDate(
+						body['initiatedDate'],
+						'Initiated',
+						true,
+					);
+					initiative.updateInitiatedDate(initiated);
 					break;
 				}
 				case 'website': {

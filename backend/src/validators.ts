@@ -108,27 +108,36 @@ export function validateName(
 	return name;
 }
 
-export function validateDeadline(
+export function validateDate(
 	deadline: unknown,
+	label: string,
 	isOptional: true,
 ): string | undefined;
-export function validateDeadline(deadline: unknown, isOptional: false): string;
-export function validateDeadline(deadline_: unknown, isOptional: boolean) {
+export function validateDate(
+	deadline: unknown,
+	label: string,
+	isOptional: false,
+): string;
+export function validateDate(
+	deadline_: unknown,
+	label: string,
+	isOptional: boolean,
+) {
 	if (isOptional && isEmpty(deadline_)) {
 		return;
 	}
 
-	const deadline = validateString(deadline_, 'deadline').trim();
+	const deadline = validateString(deadline_, label).trim();
 
 	const date = new Date(deadline);
 	if (Number.isNaN(date.getTime())) {
-		throw new ValidationError('Invalid date.');
+		throw new ValidationError(`Invalid date for ${deadline}.`);
 	}
 
 	const stringified = date.toISOString().slice(0, 'YYYY-MM-DD'.length);
 	if (stringified !== deadline) {
 		throw new ValidationError(
-			`Normalising "${deadline}" returned "${stringified}". Expected both to be equal.`,
+			`Normalising ${label} "${deadline}" returned "${stringified}". Expected both to be equal.`,
 		);
 	}
 

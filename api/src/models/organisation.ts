@@ -35,6 +35,8 @@ type SqlOrganisationRow = {
 	name: string;
 	image: string | null;
 	website: string | null;
+	createdAt: number;
+	updatedAt: number;
 };
 
 export type OrganisationJson = {
@@ -44,6 +46,8 @@ export type OrganisationJson = {
 	image: string | null;
 	website: string | null;
 	initiatives: InitiativeJson[];
+	updatedAt: number;
+	createdAt: number;
 };
 
 const privateConstructorKey = Symbol();
@@ -55,6 +59,8 @@ export class Organisation extends InjectableApi {
 	private _website: string | undefined;
 	private _initiatives: Initiative[] = [];
 	private _initiativesResolved = false;
+	private _updatedAt: number;
+	private _createdAt: number;
 
 	constructor(
 		readonly id: string,
@@ -62,6 +68,8 @@ export class Organisation extends InjectableApi {
 		name: string,
 		image: Asset | undefined,
 		website: string | undefined,
+		createdAt: number,
+		updatedAt: number,
 		constructorKey: symbol,
 	) {
 		if (constructorKey !== privateConstructorKey) {
@@ -74,6 +82,8 @@ export class Organisation extends InjectableApi {
 		this._name = name;
 		this._image = image;
 		this._website = website;
+		this._updatedAt = updatedAt;
+		this._createdAt = createdAt;
 	}
 
 	get slug() {
@@ -96,6 +106,14 @@ export class Organisation extends InjectableApi {
 		return this._initiatives;
 	}
 
+	get updatedAt() {
+		return new Date(this._updatedAt);
+	}
+
+	get createdAt() {
+		return new Date(this._createdAt);
+	}
+
 	toJSON(): OrganisationJson {
 		return {
 			id: this.id,
@@ -104,6 +122,8 @@ export class Organisation extends InjectableApi {
 			image: this.image?.name ?? null,
 			website: this.website ?? null,
 			initiatives: this.initiatives.map(initiative => initiative.toJSON()),
+			updatedAt: this._updatedAt,
+			createdAt: this._createdAt,
 		};
 	}
 
@@ -131,6 +151,7 @@ export class Organisation extends InjectableApi {
 		const id = 'o-' + randomBytes(20).toString('base64url');
 		const slug = this.getOrganisationSlug(name);
 		website ||= undefined;
+		const now = Date.now();
 
 		const row: SqlOrganisationRow = {
 			id,
@@ -138,13 +159,15 @@ export class Organisation extends InjectableApi {
 			name,
 			image: image?.name ?? null,
 			website: website ?? null,
+			createdAt: now,
+			updatedAt: now,
 		};
 
 		this.database
 			.prepare(
 				`INSERT INTO organisations
-				(id, slug, name, image, website)
-				VALUES (:id, :slug, :name, :image, :website)`,
+				(id, slug, name, image, website, updatedAt, createdAt)
+				VALUES (:id, :slug, :name, :image, :website, :updatedAt, :createdAt)`,
 			)
 			.run(row);
 
@@ -154,6 +177,8 @@ export class Organisation extends InjectableApi {
 			name,
 			image,
 			website,
+			now,
+			now,
 			privateConstructorKey,
 		);
 	}
@@ -175,6 +200,8 @@ export class Organisation extends InjectableApi {
 			row.name,
 			image,
 			row.website ?? undefined,
+			row.createdAt,
+			row.updatedAt,
 			privateConstructorKey,
 		);
 	}
@@ -238,22 +265,26 @@ export class Organisation extends InjectableApi {
 		}
 
 		const newSlug = this.Organisation.getOrganisationSlug(newName, this.id);
+		const now = Date.now();
 
 		this.database
 			.prepare(
 				`UPDATE organisations
 				SET name = :name,
-					slug = :slug
+					slug = :slug,
+					updatedAt = :now
 				WHERE id = :id`,
 			)
 			.run({
 				name: newName,
 				id: this.id,
 				slug: newSlug,
+				now,
 			});
 
 		this._name = newName;
 		this._slug = newSlug;
+		this._updatedAt = now;
 	}
 
 	async updateImage(newImage: Asset | undefined) {
@@ -261,15 +292,19 @@ export class Organisation extends InjectableApi {
 			return;
 		}
 
+		const now = Date.now();
+
 		this.database
 			.prepare(
 				`UPDATE organisations
-				SET image = :image
+				SET image = :image,
+					updatedAt = :now
 				WHERE id = :id`,
 			)
 			.run({
 				image: newImage?.name ?? null,
 				id: this.id,
+				now,
 			});
 
 		try {
@@ -277,6 +312,7 @@ export class Organisation extends InjectableApi {
 		} catch {}
 
 		this._image = newImage;
+		this._updatedAt = now;
 	}
 
 	updateWebsite(newWebsite: string | undefined) {
@@ -284,18 +320,23 @@ export class Organisation extends InjectableApi {
 			return;
 		}
 
+		const now = Date.now();
+
 		this.database
 			.prepare(
 				`UPDATE organisations
-				SET website = :website
+				SET website = :website,
+					updatedAt = :now
 				WHERE id = :id`,
 			)
 			.run({
 				website: newWebsite ?? null,
 				id: this.id,
+				now,
 			});
 
 		this._website = newWebsite;
+		this._updatedAt = now;
 	}
 
 	addInitiative(initiative: Initiative) {
@@ -307,12 +348,13 @@ export class Organisation extends InjectableApi {
 			this.database
 				.prepare(
 					`INSERT INTO initiativeOrganisations
-					(initiativeId, organisationId)
-					VALUES (:initiativeId, :organisationId)`,
+					(initiativeId, organisationId, createdAt)
+					VALUES (:initiativeId, :organisationId, :createdAt)`,
 				)
 				.run({
 					initiativeId: initiative.id,
 					organisationId: this.id,
+					createdAt: Date.now(),
 				});
 
 			this._initiatives = sortInitiatives([...this.initiatives, initiative]);

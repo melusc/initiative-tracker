@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import {setTimeout} from 'node:timers/promises';
+
 import {expect} from 'vitest';
 
 import {ApiError} from '../../src/error.js';
@@ -34,6 +36,8 @@ apiTest('Creating person', async ({api: {Person, Login}}) => {
 		name: 'Person Name',
 		slug: 'person-name',
 		owner: login.id,
+		createdAt: person.createdAt.getTime(),
+		updatedAt: person.updatedAt.getTime(),
 		signatures: [],
 	});
 
@@ -46,9 +50,13 @@ apiTest('Updating values', async ({api: {Person, Login}}) => {
 	const login = await Login.create('login', 'login', true);
 	const person = Person.create('Person Name', login);
 
+	const ud = person.updatedAt.getTime();
+	await setTimeout(2);
+
 	person.updateName('Person Name 2');
 	expect(person.name).toStrictEqual('Person Name 2');
 	expect(person.slug).toStrictEqual('person-name-2');
+	expect(person.updatedAt.getTime()).toBeGreaterThan(ud);
 
 	const personCopy = Person.fromId(person.id, login)!;
 	expect(personCopy.name).toStrictEqual('Person Name 2');
@@ -95,6 +103,7 @@ apiTest('Signatures', async ({api: {Person, Login, Initiative, PdfAsset}}) => {
 		'initiative',
 		undefined,
 		pdfAsset,
+		undefined,
 		undefined,
 		undefined,
 	);

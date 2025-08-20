@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import {setTimeout} from 'node:timers/promises';
+
 import {expect} from 'vitest';
 
 import type {Asset} from '../../src/models/asset.js';
@@ -41,6 +43,7 @@ apiTest.for([
 			pdfAsset,
 			imageAsset,
 			withOptionals ? '2025-05-12' : undefined,
+			withOptionals ? '2024-01-05' : undefined,
 		);
 
 		const initiativeCopy = (await Initiative.fromId(initiative.id))!;
@@ -54,8 +57,11 @@ apiTest.for([
 			pdf: pdfAsset.name,
 			image: imageAsset?.name ?? null,
 			deadline: withOptionals ? '2025-05-12' : null,
+			initiatedDate: withOptionals ? '2024-01-05' : null,
 			organisations: [],
 			signatures: [],
+			createdAt: initiativeCopy.createdAt.getTime(),
+			updatedAt: initiativeCopy.updatedAt.getTime(),
 		});
 	},
 );
@@ -74,12 +80,14 @@ apiTest(
 			pdfAsset1,
 			undefined,
 			undefined,
+			undefined,
 		);
 		const initiative2 = Initiative.create(
 			'Înitiativé',
 			'Înitiativé',
 			undefined,
 			pdfAsset2,
+			undefined,
 			undefined,
 			undefined,
 		);
@@ -92,6 +100,7 @@ apiTest(
 			'abc',
 			undefined,
 			pdfAsset3,
+			undefined,
 			undefined,
 			undefined,
 		);
@@ -118,31 +127,54 @@ apiTest(
 			pdfAsset1,
 			imageAsset1,
 			'deadline',
+			'initiated',
 		);
+
+		let ud = initiative.updatedAt.getTime();
+		await setTimeout(2);
 
 		initiative.updateShortName('Initiative New');
 		expect(initiative.shortName).toStrictEqual('Initiative New');
 		expect(initiative.slug).toStrictEqual('initiative-new');
+		expect(ud).toBeLessThan((ud = initiative.updatedAt.getTime()));
+		await setTimeout(2);
 
 		initiative.updateFullName('Initiative Long New');
 		expect(initiative.fullName).toStrictEqual('Initiative Long New');
+		expect(ud).toBeLessThan((ud = initiative.updatedAt.getTime()));
+		await setTimeout(2);
 
 		await initiative.updateImage(undefined);
 		expect(initiative.image).toBeUndefined();
 		await expect(Asset.fromName(imageAsset1.name)).resolves.toBeUndefined();
+		expect(ud).toBeLessThan((ud = initiative.updatedAt.getTime()));
+		await setTimeout(2);
 
 		await initiative.updateImage(imageAsset2);
 		expect(initiative.image?.name).toStrictEqual(imageAsset2.name);
+		expect(ud).toBeLessThan((ud = initiative.updatedAt.getTime()));
+		await setTimeout(2);
 
 		await initiative.updatePdf(pdfAsset2);
 		expect(initiative.pdf.name).toStrictEqual(pdfAsset2.name);
 		await expect(Asset.fromName(pdfAsset1.name)).resolves.toBeUndefined();
+		expect(ud).toBeLessThan((ud = initiative.updatedAt.getTime()));
+		await setTimeout(2);
 
 		initiative.updateDeadline(undefined);
 		expect(initiative.deadline).toBeUndefined();
+		expect(ud).toBeLessThan((ud = initiative.updatedAt.getTime()));
+		await setTimeout(2);
+
+		initiative.updateInitiatedDate(undefined);
+		expect(initiative.initiatedDate).toBeUndefined();
+		expect(ud).toBeLessThan((ud = initiative.updatedAt.getTime()));
+		await setTimeout(2);
 
 		initiative.updateWebsite(undefined);
 		expect(initiative.website).toBeUndefined();
+		expect(initiative.updatedAt.getTime()).toBeGreaterThan(ud);
+		await setTimeout(2);
 
 		const initiativeCopy = await Initiative.fromId(initiative.id);
 
@@ -173,6 +205,7 @@ apiTest(
 			'initiative',
 			undefined,
 			pdfAsset,
+			undefined,
 			undefined,
 			undefined,
 		);
@@ -226,6 +259,7 @@ apiTest(
 			'Initiative',
 			undefined,
 			pdfAsset,
+			undefined,
 			undefined,
 			undefined,
 		);
@@ -284,6 +318,7 @@ apiTest(
 			undefined,
 			pdfAsset,
 			imageAsset,
+			undefined,
 			undefined,
 		);
 

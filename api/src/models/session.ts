@@ -26,6 +26,7 @@ type SqlSessionRow = {
 	sessionId: string;
 	userId: string;
 	expires: number;
+	createdAt: number;
 };
 
 const privateConstructorKey = Symbol();
@@ -33,11 +34,14 @@ const privateConstructorKey = Symbol();
 export class Session extends InjectableApi {
 	// 7 days
 	private static _SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+	private _createdAt: number;
+	private _expiryDate: number;
 
 	constructor(
 		readonly id: string,
 		readonly user: Login,
-		readonly expiryDate: Date,
+		expiryDate: number,
+		createdAt: number,
 		constructorKey: symbol,
 	) {
 		if (constructorKey !== privateConstructorKey) {
@@ -45,6 +49,17 @@ export class Session extends InjectableApi {
 		}
 
 		super();
+
+		this._expiryDate = expiryDate;
+		this._createdAt = createdAt;
+	}
+
+	get expiryDate() {
+		return new Date(this._expiryDate);
+	}
+
+	get createdAt() {
+		return new Date(this._createdAt);
 	}
 
 	static removeExpired() {
@@ -62,25 +77,28 @@ export class Session extends InjectableApi {
 	}
 
 	static create(user: Login) {
-		const expires = Date.now() + this._SESSION_DURATION_MS;
-
+		const now = Date.now();
+		const expires = now + this._SESSION_DURATION_MS;
 		const sessionId = 's-' + randomBytes(128).toString('base64url');
+
 		this.database
 			.prepare(
 				`INSERT INTO sessions
-				(sessionId, userId, expires)
-				VALUES (:sessionId, :userId, :expires)`,
+				(sessionId, userId, expires, createdAt)
+				VALUES (:sessionId, :userId, :expires, :createdAt)`,
 			)
 			.run({
 				sessionId,
 				userId: user.id,
 				expires,
+				createdAt: now,
 			} satisfies SqlSessionRow);
 
 		return new this.Session(
 			sessionId,
 			user,
-			new Date(expires),
+			expires,
+			now,
 			privateConstructorKey,
 		);
 	}
@@ -99,7 +117,8 @@ export class Session extends InjectableApi {
 		return new this.Session(
 			row.sessionId,
 			user,
-			new Date(row.expires),
+			row.expires,
+			row.createdAt,
 			privateConstructorKey,
 		);
 	}

@@ -34,6 +34,8 @@ type SqlPersonRow = {
 	slug: string;
 	name: string;
 	owner: string;
+	createdAt: number;
+	updatedAt: number;
 };
 
 export type PersonJson = {
@@ -42,6 +44,8 @@ export type PersonJson = {
 	name: string;
 	owner: string;
 	signatures: InitiativeJson[];
+	updatedAt: number;
+	createdAt: number;
 };
 
 const privateConstructorKey = Symbol();
@@ -52,12 +56,16 @@ export class Person extends InjectableApi {
 	private _owner: Login;
 	private _signatures: Initiative[] = [];
 	private _signaturesResolved = false;
+	private _updatedAt: number;
+	private _createdAt: number;
 
 	constructor(
 		readonly id: string,
 		slug: string,
 		name: string,
 		owner: Login,
+		updatedAt: number,
+		createdAt: number,
 		constructorKey: symbol,
 	) {
 		if (constructorKey !== privateConstructorKey) {
@@ -69,6 +77,8 @@ export class Person extends InjectableApi {
 		this._slug = slug;
 		this._name = name;
 		this._owner = owner;
+		this._createdAt = createdAt;
+		this._updatedAt = updatedAt;
 	}
 
 	get slug() {
@@ -85,6 +95,14 @@ export class Person extends InjectableApi {
 
 	get signatures() {
 		return this._signatures;
+	}
+
+	get updatedAt() {
+		return new Date(this._updatedAt);
+	}
+
+	get createdAt() {
+		return new Date(this._createdAt);
 	}
 
 	private static _fromRow(row: SqlPersonRow, owner: Login): Person;
@@ -110,6 +128,8 @@ export class Person extends InjectableApi {
 			row.slug,
 			row.name,
 			owner,
+			row.updatedAt,
+			row.createdAt,
 			privateConstructorKey,
 		);
 	}
@@ -179,25 +199,35 @@ export class Person extends InjectableApi {
 		}
 
 		const id = 'p-' + randomBytes(20).toString('base64url');
+		const now = Date.now();
 
 		try {
 			this.database
 				.prepare(
 					`INSERT INTO people
-					(id, slug, name, owner)
-					VALUES (:id, :slug, :name, :owner)`,
+					(id, slug, name, owner, createdAt, updatedAt)
+					VALUES (:id, :slug, :name, :owner, :now, :now)`,
 				)
 				.run({
 					id,
 					slug,
 					name,
 					owner: owner.id,
+					now,
 				});
 		} catch {
 			throw new ApiError(`Person with the same name exists already.`);
 		}
 
-		return new this.Person(id, slug, name, owner, privateConstructorKey);
+		return new this.Person(
+			id,
+			slug,
+			name,
+			owner,
+			now,
+			now,
+			privateConstructorKey,
+		);
 	}
 
 	// Avoid infinite recursion
@@ -229,6 +259,8 @@ export class Person extends InjectableApi {
 			name: this.name,
 			owner: this.owner.id,
 			signatures: this.signatures.map(signature => signature.toJSON()),
+			updatedAt: this._updatedAt,
+			createdAt: this._createdAt,
 		};
 	}
 
@@ -243,21 +275,26 @@ export class Person extends InjectableApi {
 			throw new ApiError('Person with the same name exists already.');
 		}
 
+		const now = Date.now();
+
 		this.database
 			.prepare(
 				`UPDATE people
 				SET name = :name,
-					slug = :slug
+					slug = :slug,
+					updatedAt = :now
 				WHERE id = :id`,
 			)
 			.run({
 				name: newName,
 				slug: newSlug,
 				id: this.id,
+				now,
 			});
 
 		this._name = newName;
 		this._slug = newSlug;
+		this._updatedAt = now;
 	}
 
 	rm() {
@@ -280,12 +317,13 @@ export class Person extends InjectableApi {
 			this.database
 				.prepare(
 					`INSERT INTO signatures
-					(initiativeId, personId)
-					VALUES (:initiativeId, :personId)`,
+					(initiativeId, personId, createdAt)
+					VALUES (:initiativeId, :personId, :createdAt)`,
 				)
 				.run({
 					initiativeId: initiative.id,
 					personId: this.id,
+					createdAt: Date.now(),
 				});
 
 			this._signatures = sortInitiatives([...this.signatures, initiative]);

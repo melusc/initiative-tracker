@@ -41,6 +41,9 @@ type SqlInitiativeRow = {
 	pdf: string;
 	image: string | null;
 	deadline: string | null;
+	initiatedDate: string | null;
+	updatedAt: number;
+	createdAt: number;
 };
 
 export type InitiativeJson = {
@@ -54,6 +57,9 @@ export type InitiativeJson = {
 	deadline: string | null;
 	signatures: PersonJson[];
 	organisations: OrganisationJson[];
+	initiatedDate: string | null;
+	updatedAt: number;
+	createdAt: number;
 };
 
 const privateConstructorKey = Symbol();
@@ -69,6 +75,9 @@ export class Initiative extends InjectableApi {
 	private _signatures: Person[] = [];
 	private _organisations: Organisation[] = [];
 	private _resolvedSignaturesOrganisations = false;
+	private _initiatedDate: string | undefined;
+	private _updatedAt: number;
+	private _createdAt: number;
 
 	constructor(
 		readonly id: string,
@@ -79,6 +88,9 @@ export class Initiative extends InjectableApi {
 		pdf: Asset,
 		image: Asset | undefined,
 		deadline: string | undefined,
+		initiatedDate: string | undefined,
+		updatedAt: number,
+		createdAt: number,
 		constructorKey: symbol,
 	) {
 		if (constructorKey !== privateConstructorKey) {
@@ -94,6 +106,9 @@ export class Initiative extends InjectableApi {
 		this._pdf = pdf;
 		this._image = image;
 		this._deadline = deadline;
+		this._initiatedDate = initiatedDate;
+		this._updatedAt = updatedAt;
+		this._createdAt = createdAt;
 	}
 
 	get slug() {
@@ -124,6 +139,18 @@ export class Initiative extends InjectableApi {
 		return this._deadline;
 	}
 
+	get initiatedDate() {
+		return this._initiatedDate;
+	}
+
+	get updatedAt() {
+		return new Date(this._updatedAt);
+	}
+
+	get createdAt() {
+		return new Date(this._createdAt);
+	}
+
 	get signatures() {
 		return this._signatures;
 	}
@@ -142,6 +169,9 @@ export class Initiative extends InjectableApi {
 			pdf: this.pdf.name,
 			image: this.image?.name ?? null,
 			deadline: this.deadline ?? null,
+			initiatedDate: this.initiatedDate ?? null,
+			updatedAt: this._updatedAt,
+			createdAt: this._createdAt,
 			signatures: this.signatures.map(signature => signature.toJSON()),
 			organisations: this.organisations.map(organisation =>
 				organisation.toJSON(),
@@ -172,12 +202,14 @@ export class Initiative extends InjectableApi {
 		pdf: Asset,
 		image: Asset | undefined,
 		deadline: string | undefined,
+		initiatedDate: string | undefined,
 	) {
 		website ||= undefined;
 		deadline ||= undefined;
 
 		const id = 'i-' + randomBytes(20).toString('base64url');
 		const slug = this.getInitiativeSlug(shortName);
+		const now = Date.now();
 
 		const row: SqlInitiativeRow = {
 			id,
@@ -188,13 +220,19 @@ export class Initiative extends InjectableApi {
 			pdf: pdf.name,
 			image: image?.name ?? null,
 			deadline: deadline ?? null,
+			initiatedDate: initiatedDate ?? null,
+			createdAt: now,
+			updatedAt: now,
 		};
 
 		this.database
 			.prepare(
 				`INSERT INTO initiatives
-				(id, slug, shortName, fullName, website, pdf, image, deadline)
-				VALUES (:id, :slug, :shortName, :fullName, :website, :pdf, :image, :deadline)`,
+					(id, slug, shortName, fullName, website, pdf,
+					image, deadline, initiatedDate, createdAt, updatedAt)
+				VALUES
+					(:id, :slug, :shortName, :fullName, :website, :pdf,
+					:image, :deadline, :initiatedDate, :createdAt, :updatedAt)`,
 			)
 			.run(row);
 
@@ -207,6 +245,9 @@ export class Initiative extends InjectableApi {
 			pdf,
 			image,
 			deadline,
+			initiatedDate,
+			now,
+			now,
 			privateConstructorKey,
 		);
 	}
@@ -237,6 +278,9 @@ export class Initiative extends InjectableApi {
 			pdf,
 			image,
 			row.deadline ?? undefined,
+			row.initiatedDate ?? undefined,
+			row.updatedAt,
+			row.createdAt,
 			privateConstructorKey,
 		);
 	}
@@ -278,22 +322,26 @@ export class Initiative extends InjectableApi {
 		}
 
 		const newSlug = this.Initiative.getInitiativeSlug(newShortName, this.id);
+		const now = Date.now();
 
 		this.database
 			.prepare(
 				`UPDATE initiatives
 				SET shortName = :shortName,
-					slug = :slug
+					slug = :slug,
+					updatedAt = :now
 				WHERE id = :id`,
 			)
 			.run({
 				shortName: newShortName,
 				id: this.id,
 				slug: newSlug,
+				now,
 			});
 
 		this._shortName = newShortName;
 		this._slug = newSlug;
+		this._updatedAt = now;
 	}
 
 	updateFullName(newFullName: string) {
@@ -301,18 +349,23 @@ export class Initiative extends InjectableApi {
 			return;
 		}
 
+		const now = Date.now();
+
 		this.database
 			.prepare(
 				`UPDATE initiatives
-				SET fullName = :fullName
+				SET fullName = :fullName,
+					updatedAt = :now
 				WHERE id = :id`,
 			)
 			.run({
 				fullName: newFullName,
 				id: this.id,
+				now,
 			});
 
 		this._fullName = newFullName;
+		this._updatedAt = now;
 	}
 
 	updateWebsite(newWebsite: string | undefined) {
@@ -320,30 +373,39 @@ export class Initiative extends InjectableApi {
 			return;
 		}
 
+		const now = Date.now();
+
 		this.database
 			.prepare(
 				`UPDATE initiatives
-				SET website = :website
+				SET website = :website,
+					updatedAt = :now
 				WHERE id = :id`,
 			)
 			.run({
 				website: newWebsite ?? null,
 				id: this.id,
+				now,
 			});
 
 		this._website = newWebsite;
+		this._updatedAt = now;
 	}
 
 	async updatePdf(newPdf: Asset) {
+		const now = Date.now();
+
 		this.database
 			.prepare(
 				`UPDATE initiatives
-				SET pdf = :pdf
+				SET pdf = :pdf,
+					updatedAt = :now
 				WHERE id = :id`,
 			)
 			.run({
 				pdf: newPdf.name,
 				id: this.id,
+				now,
 			});
 
 		try {
@@ -351,6 +413,7 @@ export class Initiative extends InjectableApi {
 		} catch {}
 
 		this._pdf = newPdf;
+		this._updatedAt = now;
 	}
 
 	async updateImage(newImage: Asset | undefined) {
@@ -358,15 +421,19 @@ export class Initiative extends InjectableApi {
 			return;
 		}
 
+		const now = Date.now();
+
 		this.database
 			.prepare(
 				`UPDATE initiatives
-				SET image = :image
+				SET image = :image,
+					updatedAt = :now
 				WHERE id = :id`,
 			)
 			.run({
 				image: newImage?.name ?? null,
 				id: this.id,
+				now,
 			});
 
 		try {
@@ -374,6 +441,7 @@ export class Initiative extends InjectableApi {
 		} catch {}
 
 		this._image = newImage;
+		this._updatedAt = now;
 	}
 
 	async resolveSignaturesOrganisations(owner: Login) {
@@ -417,18 +485,47 @@ export class Initiative extends InjectableApi {
 			return;
 		}
 
+		const now = Date.now();
+
 		this.database
 			.prepare(
 				`UPDATE initiatives
-				SET deadline = :deadline
+				SET deadline = :deadline,
+					updatedAt = :now
 				WHERE id = :id`,
 			)
 			.run({
 				deadline: newDeadline ?? null,
 				id: this.id,
+				now,
 			});
 
 		this._deadline = newDeadline;
+		this._updatedAt = now;
+	}
+
+	updateInitiatedDate(newInitiatedDate: string | undefined) {
+		if (this.initiatedDate === newInitiatedDate) {
+			return;
+		}
+
+		const now = Date.now();
+
+		this.database
+			.prepare(
+				`UPDATE initiatives
+				SET initiatedDate = :initiatedDate,
+					updatedAt = :now
+				WHERE id = :id`,
+			)
+			.run({
+				initiatedDate: newInitiatedDate ?? null,
+				id: this.id,
+				now,
+			});
+
+		this._initiatedDate = newInitiatedDate;
+		this._updatedAt = now;
 	}
 
 	async rm() {
@@ -459,12 +556,13 @@ export class Initiative extends InjectableApi {
 			this.database
 				.prepare(
 					`INSERT INTO signatures
-					(initiativeId, personId)
-					VALUES (:initiativeId, :personId)`,
+					(initiativeId, personId, createdAt)
+					VALUES (:initiativeId, :personId, :createdAt)`,
 				)
 				.run({
 					initiativeId: this.id,
 					personId: person.id,
+					createdAt: Date.now(),
 				});
 
 			this._signatures = sortPeople([...this.signatures, person]);
@@ -501,12 +599,13 @@ export class Initiative extends InjectableApi {
 			this.database
 				.prepare(
 					`INSERT INTO initiativeOrganisations
-					(initiativeId, organisationId)
-					VALUES (:initiativeId, :organisationId)`,
+					(initiativeId, organisationId, createdAt)
+					VALUES (:initiativeId, :organisationId, :createdAt)`,
 				)
 				.run({
 					initiativeId: this.id,
 					organisationId: organisation.id,
+					createdAt: Date.now(),
 				});
 
 			this._organisations = sortOrganisations([

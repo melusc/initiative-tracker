@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import {setTimeout} from 'node:timers/promises';
+
 import {expect} from 'vitest';
 
 import {type Asset} from '../../src/models/asset.js';
@@ -43,6 +45,8 @@ apiTest.for([
 			slug: 'organisation-org',
 			name: 'Organisation Org',
 			image: imageAsset?.name ?? null,
+			createdAt: organisation.createdAt.getTime(),
+			updatedAt: organisation.updatedAt.getTime(),
 			website: includeOptionals ? 'https://bing.com/' : null,
 			initiatives: [],
 		});
@@ -86,9 +90,18 @@ apiTest('Updating values', async ({api: {Organisation, ImageAsset}}) => {
 		Organisation.fromSlug('organisation-abc'),
 	).resolves.toBeDefined();
 
+	let ud = organisation.updatedAt.getTime();
 	organisation.updateName('Organisation XYZ');
+	expect(ud).toBeLessThan((ud = organisation.updatedAt.getTime()));
+	await setTimeout(2);
+
 	await organisation.updateImage(undefined);
+	expect(ud).toBeLessThan((ud = organisation.updatedAt.getTime()));
+	await setTimeout(2);
+
 	organisation.updateWebsite(undefined);
+	expect(organisation.updatedAt.getTime()).toBeGreaterThan(ud);
+	await setTimeout(2);
 
 	await expect(ImageAsset.fromName(imageAsset1.name)).resolves.toBeUndefined();
 
@@ -100,12 +113,15 @@ apiTest('Updating values', async ({api: {Organisation, ImageAsset}}) => {
 		name: 'Organisation XYZ',
 		image: null,
 		website: null,
+		updatedAt: organisation.updatedAt.getTime(),
+		createdAt: organisation.createdAt.getTime(),
 		initiatives: [],
 	});
 
 	expect(organisationCopy!.toJSON()).toStrictEqual(organisation.toJSON());
 
 	await organisation.updateImage(imageAsset2);
+
 	organisation.updateWebsite('https://duck.com/');
 
 	expect(organisation.image?.name).toStrictEqual(imageAsset2.name);
@@ -162,12 +178,14 @@ apiTest(
 			pdfAsset,
 			undefined,
 			undefined,
+			undefined,
 		);
 		const initiative2 = Initiative.create(
 			'initiative 2',
 			'initiative',
 			undefined,
 			pdfAsset,
+			undefined,
 			undefined,
 			undefined,
 		);
