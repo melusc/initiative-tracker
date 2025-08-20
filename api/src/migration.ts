@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import {readdir, readFile, writeFile} from 'node:fs/promises';
 import path from 'node:path';
+import {performance} from 'node:perf_hooks';
 import {fileURLToPath} from 'node:url';
 
 import type {InternalApiOptions} from './injectable-api.js';
@@ -84,8 +85,11 @@ class Migration {
 		await this._import();
 
 		console.log('Migrating %s', this.name);
+		const start = performance.now();
 		await this._run!(api);
-		console.log('Done %s', this.name);
+		const end = performance.now();
+		const duration = (end - start).toFixed(3);
+		console.log('Done %s in %sms', this.name, duration);
 	}
 }
 
