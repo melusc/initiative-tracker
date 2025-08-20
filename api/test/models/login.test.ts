@@ -47,7 +47,7 @@ apiTest('Update login details', async ({api: {Login}}) => {
 	await setTimeout(2);
 
 	login.updateUsername('login-u2');
-	expect(ud).toBeLessThan((ud = login.updatedAt.getTime()));
+	expect(login.updatedAt.getTime()).toBeGreaterThan(ud);
 
 	expect(login.isAdmin).toStrictEqual(false);
 	expect(login.username).toStrictEqual('login-u2');
