@@ -27,12 +27,16 @@ type SqlLoginRow = {
 	username: string;
 	isAdmin: 0 | 1;
 	passwordHash: string;
+	createdAt: number;
+	updatedAt: number;
 };
 
 export type LoginJson = {
 	id: string;
 	username: string;
 	isAdmin: boolean;
+	createdAt: number;
+	updatedAt: number;
 };
 
 const privateConstructorKey = Symbol();
@@ -43,12 +47,16 @@ export class Login extends InjectableApi {
 	private _username: string;
 	private _isAdmin: boolean;
 	private _passwordHash: string;
+	private _updatedAt: number;
+	private _createdAt: number;
 
 	constructor(
 		readonly id: string,
 		username: string,
 		isAdmin: boolean,
 		passwordHash: string,
+		createdAt: number,
+		updatedAt: number,
 		contructorKey: symbol,
 	) {
 		if (contructorKey !== privateConstructorKey) {
@@ -60,6 +68,8 @@ export class Login extends InjectableApi {
 		this._username = username;
 		this._isAdmin = isAdmin;
 		this._passwordHash = passwordHash;
+		this._updatedAt = updatedAt;
+		this._createdAt = createdAt;
 	}
 
 	get username() {
@@ -68,6 +78,14 @@ export class Login extends InjectableApi {
 
 	get isAdmin() {
 		return this._isAdmin;
+	}
+
+	get updatedAt() {
+		return new Date(this._updatedAt);
+	}
+
+	get createdAt() {
+		return new Date(this._createdAt);
 	}
 
 	private static _fromRow(row: SqlLoginRow): Login;
@@ -82,6 +100,8 @@ export class Login extends InjectableApi {
 			row.username,
 			row.isAdmin === 1,
 			row.passwordHash,
+			row.createdAt,
+			row.updatedAt,
 			privateConstructorKey,
 		);
 	}
@@ -123,18 +143,20 @@ export class Login extends InjectableApi {
 		const passwordHash = await bcrypt.hash(password, this._HASH_ROUNDS);
 
 		const id = 'l-' + randomBytes(20).toString('base64url');
+		const now = Date.now();
 
 		this.database
 			.prepare(
 				`INSERT INTO logins
-				(userId, username, passwordHash, isAdmin)
-				VALUES (:id, :username, :passwordHash, :isAdmin)`,
+				(userId, username, passwordHash, isAdmin, createdAt, updatedAt)
+				VALUES (:id, :username, :passwordHash, :isAdmin, :now, :now)`,
 			)
 			.run({
 				id,
 				username,
 				passwordHash,
 				isAdmin: isAdmin ? 1 : 0,
+				now,
 			});
 
 		return new this.Login(
@@ -142,6 +164,8 @@ export class Login extends InjectableApi {
 			username,
 			isAdmin,
 			passwordHash,
+			now,
+			now,
 			privateConstructorKey,
 		);
 	}
@@ -166,6 +190,8 @@ export class Login extends InjectableApi {
 			id: this.id,
 			username: this.username,
 			isAdmin: this.isAdmin,
+			createdAt: this._createdAt,
+			updatedAt: this._updatedAt,
 		};
 	}
 
@@ -176,18 +202,23 @@ export class Login extends InjectableApi {
 	async updatePassword(newPassword: string) {
 		const hash = await bcrypt.hash(newPassword, this.Login._HASH_ROUNDS);
 
+		const now = Date.now();
+
 		this.database
 			.prepare(
 				`UPDATE logins
-				SET passwordHash = :hash
+				SET passwordHash = :hash,
+					updatedAt = :now
 				WHERE userId = :userId`,
 			)
 			.run({
 				userId: this.id,
 				hash,
+				now,
 			});
 
 		this._passwordHash = hash;
+		this._updatedAt = now;
 	}
 
 	updateUsername(newUsername: string) {
@@ -195,18 +226,24 @@ export class Login extends InjectableApi {
 			return;
 		}
 
+		const now = Date.now();
+
 		this.database
 			.prepare(
 				`UPDATE logins
-				SET username = :username
+				SET
+					username = :username,
+					updatedAt = :now
 				WHERE userId = :userId`,
 			)
 			.run({
 				userId: this.id,
 				username: newUsername,
+				now,
 			});
 
 		this._username = newUsername;
+		this._updatedAt = now;
 	}
 
 	updateIsAdmin(newIsAdmin: boolean) {
@@ -214,17 +251,23 @@ export class Login extends InjectableApi {
 			return;
 		}
 
+		const now = Date.now();
+
 		this.database
 			.prepare(
 				`UPDATE logins
-				SET isAdmin = :isAdmin
+				SET
+					isAdmin = :isAdmin,
+					updatedAt = :now
 				WHERE userId = :userId`,
 			)
 			.run({
 				userId: this.id,
 				isAdmin: newIsAdmin ? 1 : 0,
+				now,
 			});
 
 		this._isAdmin = newIsAdmin;
+		this._updatedAt = now;
 	}
 }

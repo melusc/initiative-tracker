@@ -94,6 +94,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			transform={transformOptional}
 		/>
 		<PatchInput
+			name="initiatedDate"
+			label="Initiated"
+			type="date"
+			bind:body={initiative}
+			allowEmpty
+			apiEndpoint="/api/initiative/{initiative.id}"
+			transform={transformOptional}
+		/>
+		<PatchInput
 			name="website"
 			label="Website"
 			type="text"
@@ -146,6 +155,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		<div class="full-name">{initiative.fullName}</div>
 		{#if initiative.deadline}
 			<div class="deadline inline-svg"><Calendar /> {initiative.deadline}</div>
+		{/if}
+		{#if initiative.initiatedDate}
+			<div class="initiated-date inline-svg">
+				<Calendar />
+				{initiative.initiatedDate}
+			</div>
 		{/if}
 		{#if initiative.website}
 			<a
@@ -202,7 +217,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	}
 
 	.full-name,
-	.deadline {
+	.deadline,
+	.initiated-date {
 		font-size: 0.8em;
 		max-width: 30ch;
 	}

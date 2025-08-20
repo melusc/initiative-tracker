@@ -41,6 +41,7 @@ export type {Person, PersonJson} from './models/person.js';
 export type {Session} from './models/session.js';
 export * as utilities from './utilities.js';
 export * from './error.js';
+export {migrate} from './migration.js';
 
 function initDatabase(database: DatabaseSync) {
 	database.exec('PRAGMA journal_mode=WAL;');
@@ -48,61 +49,73 @@ function initDatabase(database: DatabaseSync) {
 
 	database.exec(`
 		CREATE TABLE IF NOT EXISTS logins (
-				userId TEXT PRIMARY KEY,
-				username TEXT NOT NULL UNIQUE,
-				passwordHash TEXT NOT NULL,
-				isAdmin BOOLEAN NOT NULL CHECK (isAdmin IN (0, 1))
+			userId TEXT PRIMARY KEY,
+			username TEXT NOT NULL UNIQUE,
+			passwordHash TEXT NOT NULL,
+			createdAt INTEGER NOT NULL,
+			updatedAt INTEGER NOT NULL,
+			isAdmin BOOLEAN NOT NULL CHECK (isAdmin IN (0, 1))
 		);
 
 		CREATE TABLE IF NOT EXISTS sessions (
-				sessionId TEXT PRIMARY KEY,
-				userId TEXT NOT NULL,
-				expires INTEGER NOT NULL,
-				FOREIGN KEY(userId) REFERENCES logins(userId) ON DELETE CASCADE
+			sessionId TEXT PRIMARY KEY,
+			createdAt INTEGER NOT NULL,
+			userId TEXT NOT NULL,
+			expires INTEGER NOT NULL,
+			FOREIGN KEY(userId) REFERENCES logins(userId) ON DELETE CASCADE
 		);
 
 		CREATE TABLE IF NOT EXISTS people (
-				id TEXT PRIMARY KEY,
-				slug TEXT NOT NULL,
-				name TEXT NOT NULL,
-				owner TEXT NOT NULL,
-				FOREIGN KEY(owner) REFERENCES logins(userId) ON DELETE CASCADE,
-				UNIQUE (slug, owner)
+			id TEXT PRIMARY KEY,
+			slug TEXT NOT NULL,
+			name TEXT NOT NULL,
+			owner TEXT NOT NULL,
+			createdAt INTEGER NOT NULL,
+			updatedAt INTEGER NOT NULL,
+			FOREIGN KEY(owner) REFERENCES logins(userId) ON DELETE CASCADE,
+			UNIQUE (slug, owner)
 		);
 
 		CREATE TABLE IF NOT EXISTS initiatives (
-				id TEXT PRIMARY KEY,
-				slug TEXT NOT NULL UNIQUE,
-				shortName TEXT NOT NULL,
-				fullName TEXT NOT NULL,
-				website TEXT,
-				pdf TEXT NOT NULL,
-				image TEXT,
-				deadline TEXT
+			id TEXT PRIMARY KEY,
+			slug TEXT NOT NULL UNIQUE,
+			shortName TEXT NOT NULL,
+			fullName TEXT NOT NULL,
+			website TEXT,
+			pdf TEXT NOT NULL,
+			image TEXT,
+			deadline TEXT,
+			initiatedDate TEXT,
+			updatedAt INTEGER NOT NULL,
+			createdAt INTEGER NOT NULL
 		);
 
 		CREATE TABLE IF NOT EXISTS organisations (
-				id TEXT PRIMARY KEY,
-				slug TEXT NOT NULL UNIQUE,
-				name TEXT NOT NULL,
-				image TEXT,
-				website TEXT
+			id TEXT PRIMARY KEY,
+			slug TEXT NOT NULL UNIQUE,
+			name TEXT NOT NULL,
+			image TEXT,
+			website TEXT,
+			createdAt INTEGER NOT NULL,
+			updatedAt INTEGER NOT NULL
 		);
 
 		CREATE TABLE IF NOT EXISTS signatures (
-				personId TEXT NOT NULL,
-				initiativeId TEXT NOT NULL,
-				PRIMARY KEY (personId, initiativeId),
-				FOREIGN KEY(personId) REFERENCES people(id) ON DELETE CASCADE,
-				FOREIGN KEY(initiativeId) REFERENCES initiatives(id) ON DELETE CASCADE
+			personId TEXT NOT NULL,
+			initiativeId TEXT NOT NULL,
+			createdAt INTEGER NOT NULL,
+			PRIMARY KEY (personId, initiativeId),
+			FOREIGN KEY(personId) REFERENCES people(id) ON DELETE CASCADE,
+			FOREIGN KEY(initiativeId) REFERENCES initiatives(id) ON DELETE CASCADE
 		);
 
 		CREATE TABLE IF NOT EXISTS initiativeOrganisations (
-				initiativeId TEXT NOT NULL,
-				organisationId TEXT NOT NULL,
-				PRIMARY KEY (initiativeId, organisationId),
-				FOREIGN KEY(organisationId) REFERENCES organisations(id) ON DELETE CASCADE,
-				FOREIGN KEY(initiativeId) REFERENCES initiatives(id) ON DELETE CASCADE
+			initiativeId TEXT NOT NULL,
+			organisationId TEXT NOT NULL,
+			createdAt INTEGER NOT NULL,
+			PRIMARY KEY (initiativeId, organisationId),
+			FOREIGN KEY(organisationId) REFERENCES organisations(id) ON DELETE CASCADE,
+			FOREIGN KEY(initiativeId) REFERENCES initiatives(id) ON DELETE CASCADE
 		);
 	`);
 }

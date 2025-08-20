@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import {randomBytes} from 'node:crypto';
+import {setTimeout} from 'node:timers/promises';
 
 import {expect} from 'vitest';
 
@@ -37,8 +38,16 @@ apiTest('Update login details', async ({api: {Login}}) => {
 	expect(login.isAdmin).toStrictEqual(true);
 	expect(loginCopy.isAdmin).toStrictEqual(true);
 
+	let ud = login.updatedAt.getTime();
+
+	await setTimeout(1);
+
 	login.updateIsAdmin(false);
+	expect(ud).toBeLessThan((ud = login.updatedAt.getTime()));
+	await setTimeout(1);
+
 	login.updateUsername('login-u2');
+	expect(ud).toBeLessThan((ud = login.updatedAt.getTime()));
 
 	expect(login.isAdmin).toStrictEqual(false);
 	expect(login.username).toStrictEqual('login-u2');
@@ -108,6 +117,7 @@ apiTest('Change password', async ({api: {Login}}) => {
 	const newPassword = randomBytes(10).toString('base64url');
 
 	const login = await Login.create('login', oldPassword, true);
+	const ud = login.updatedAt.getTime();
 
 	await expect(
 		Login.fromCredentials('login', oldPassword),
@@ -119,6 +129,7 @@ apiTest('Change password', async ({api: {Login}}) => {
 	await expect(login.verifyPassword(newPassword)).resolves.toStrictEqual(false);
 
 	await login.updatePassword(newPassword);
+	expect(login.updatedAt.getTime()).toBeGreaterThan(ud);
 
 	await expect(
 		Login.fromCredentials('login', oldPassword),

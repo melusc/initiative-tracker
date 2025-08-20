@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import {setTimeout} from 'node:timers/promises';
+
 import {expect} from 'vitest';
 
 import {apiTest} from '../utilities.js';
@@ -26,7 +28,12 @@ apiTest(
 		const login2 = await Login.create('login2', 'login2', true);
 
 		const session1 = Session.create(login1);
+		await setTimeout(1);
 		const session2 = Session.create(login2);
+
+		expect(session2.createdAt.getTime()).toBeGreaterThan(
+			session1.createdAt.getTime(),
+		);
 
 		const session1Copy = Session.fromSessionId(session1.id)!;
 		const session2Copy = Session.fromSessionId(session2.id)!;
@@ -78,11 +85,10 @@ apiTest('Renewing session', async ({api: {Login, Session}}) => {
 
 	expect(session.shouldRenew()).toStrictEqual(false);
 
-	const fakeExpiry = new Date(
-		(session.expiryDate.getTime() + Date.now()) / 2 - 1_000_000,
-	);
-	// @ts-expect-error it is readonly
-	session.expiryDate = fakeExpiry;
+	const fakeExpiry =
+		(session.expiryDate.getTime() + Date.now()) / 2 - 1_000_000;
+	// @ts-expect-error it is private
+	session._expiryDate = fakeExpiry;
 
 	expect(session.shouldRenew()).toStrictEqual(true);
 
@@ -95,7 +101,7 @@ apiTest('Renewing session', async ({api: {Login, Session}}) => {
 	expect(Session.fromSessionId(sessionRenewed.id)).toBeDefined();
 
 	// @ts-expect-error it is readonly
-	session.expiryDate = new Date(0);
+	session._expiryDate = 0;
 
 	expect(session.shouldRenew()).toStrictEqual(false);
 	expect(session.renew()).toBeUndefined();

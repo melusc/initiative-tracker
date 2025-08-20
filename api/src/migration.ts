@@ -21,13 +21,15 @@ import {fileURLToPath} from 'node:url';
 
 import type {InternalApiOptions} from './injectable-api.js';
 
-type ImportedMigrationFunction = (
+type MigrationFunctionRun = (api: InternalApiOptions) => void | Promise<void>;
+type MigrationFunctionShouldRun = (
 	api: InternalApiOptions,
-) => void | Promise<void>;
+) => boolean | Promise<boolean>;
 
 class Migration {
 	private readonly path: URL;
-	private _run: ImportedMigrationFunction | undefined;
+	private _run: MigrationFunctionRun | undefined;
+	private _shouldRun: MigrationFunctionShouldRun | undefined;
 	public readonly id: number;
 	public readonly name: string;
 
@@ -53,15 +55,29 @@ class Migration {
 	}
 
 	async _import() {
-		if (this._run) {
+		if (this._run && this._shouldRun) {
 			return;
 		}
 
 		const imported = (await import(this.path.href)) as {
-			run: ImportedMigrationFunction;
+			run?: MigrationFunctionRun;
+			shouldRun?: MigrationFunctionShouldRun;
 		};
 
+		if (!imported.run || !imported.shouldRun) {
+			throw new TypeError(
+				'Migrator.run and Migrator.shouldRun must be defined.',
+			);
+		}
+
 		this._run = imported.run;
+		this._shouldRun = imported.shouldRun;
+	}
+
+	async shouldRun(api: InternalApiOptions) {
+		await this._import();
+
+		return this._shouldRun!(api);
 	}
 
 	async run(api: InternalApiOptions) {
@@ -87,13 +103,23 @@ async function listMigrationsSorted(): Promise<readonly Migration[]> {
 
 	const migrations: Migration[] = [];
 
+	// Assert not duplicate ids exist
+	const migrationIds = new Set<number>();
+
 	for (const path of fileList) {
 		if (!path.endsWith('.js')) {
 			continue;
 		}
 
 		const fullPath = new URL(path, migrationsDirectory);
-		migrations.push(new Migration(fullPath));
+		const migration = new Migration(fullPath);
+		migrations.push(migration);
+
+		if (migrationIds.has(migration.id)) {
+			throw new Error(`Duplicate migration id ${migration.id}.`);
+		}
+
+		migrationIds.add(migration.id);
 	}
 
 	const sortedMigrations = migrations.toSorted((a, b) => a.id - b.id);
@@ -113,7 +139,7 @@ async function readMigrationState(api: InternalApiOptions) {
 		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		stateContent = await readFile(resolveMigrationStatePath(api), 'utf8');
 	} catch {
-		return allMigrationsSorted.at(-1)!.id;
+		return -1;
 	}
 
 	const id = Number.parseInt(stateContent, 10);
@@ -137,10 +163,16 @@ export async function migrate(api: InternalApiOptions) {
 	let migrationState = await readMigrationState(api);
 
 	for (const migration of allMigrationsSorted) {
-		if (migration.id > migrationState) {
-			await migration.run(api);
-			migrationState = migration.id;
-			await writeMigrationState(migrationState, api);
+		if (migration.id <= migrationState) {
+			continue;
 		}
+
+		const shouldRun = await migration.shouldRun(api);
+		if (shouldRun) {
+			await migration.run(api);
+		}
+
+		migrationState = migration.id;
+		await writeMigrationState(migrationState, api);
 	}
 }

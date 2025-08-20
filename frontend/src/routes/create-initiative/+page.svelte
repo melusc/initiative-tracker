@@ -42,6 +42,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			required: false,
 		},
 		{
+			name: 'initiatedDate',
+			label: 'Initiated',
+			type: 'date',
+			minlength: 0,
+			required: false,
+		},
+		{
 			name: 'website',
 			label: 'Website',
 			type: 'url',
