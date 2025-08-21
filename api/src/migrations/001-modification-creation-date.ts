@@ -20,13 +20,13 @@ import {readFile} from 'node:fs/promises';
 import type {InternalApiOptions} from '../injectable-api.js';
 
 export function shouldRun(api: InternalApiOptions): boolean {
-	const tableNames = api.database
+	const columnNames = api.database
 		.prepare('PRAGMA table_info(logins)')
 		.all() as Array<{
 		name: string;
 	}>;
 
-	for (const {name} of tableNames) {
+	for (const {name} of columnNames) {
 		if (name === 'createdAt' || name === 'updatedAt') {
 			return false;
 		}
