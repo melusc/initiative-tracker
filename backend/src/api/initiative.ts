@@ -338,7 +338,7 @@ const createModifyInitiativeSignature =
 		});
 	};
 
-const createModifyInitiativeOrganisation =
+const createModifyBacking =
 	(
 		remove: boolean,
 	): RequestHandler<{
@@ -424,10 +424,10 @@ initiativeRouter.patch(
 initiativeRouter.put(
 	'/initiative/:initiativeId/organisation/:organisationId',
 	requireAdmin(),
-	createModifyInitiativeOrganisation(false),
+	createModifyBacking(false),
 );
 initiativeRouter.delete(
 	'/initiative/:initiativeId/organisation/:organisationId',
 	requireAdmin(),
-	createModifyInitiativeOrganisation(true),
+	createModifyBacking(true),
 );

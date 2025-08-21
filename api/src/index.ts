@@ -109,7 +109,7 @@ function initDatabase(database: DatabaseSync) {
 			FOREIGN KEY(initiativeId) REFERENCES initiatives(id) ON DELETE CASCADE
 		);
 
-		CREATE TABLE IF NOT EXISTS initiativeOrganisations (
+		CREATE TABLE IF NOT EXISTS backings (
 			initiativeId TEXT NOT NULL,
 			organisationId TEXT NOT NULL,
 			createdAt INTEGER NOT NULL,

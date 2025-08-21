@@ -242,7 +242,7 @@ export class Organisation extends InjectableApi {
 	async resolveInitiatives() {
 		const initiativeRows = this.database
 			.prepare(
-				`SELECT initiativeId FROM initiativeOrganisations
+				`SELECT initiativeId FROM backings
 				WHERE organisationId = :organisationId`,
 			)
 			.all({
@@ -347,7 +347,7 @@ export class Organisation extends InjectableApi {
 		try {
 			this.database
 				.prepare(
-					`INSERT INTO initiativeOrganisations
+					`INSERT INTO backings
 					(initiativeId, organisationId, createdAt)
 					VALUES (:initiativeId, :organisationId, :createdAt)`,
 				)
@@ -368,7 +368,7 @@ export class Organisation extends InjectableApi {
 
 		this.database
 			.prepare(
-				`DELETE FROM initiativeOrganisations
+				`DELETE FROM backings
 				WHERE organisationId = :organisationId
 				AND initiativeId = :initiativeId`,
 			)
