@@ -10,10 +10,10 @@
 	},
 	"type": "module",
 	"devDependencies": {
-		"@lusc/eslint-config": "^7.4.1",
-		"@lusc/tsconfig": "^7.0.0",
+		"@lusc/eslint-config": "^7.4.2",
+		"@lusc/tsconfig": "^7.1.0",
 		"@types/node": "^24.3.0",
-		"eslint": "^9.33.0",
+		"eslint": "^9.34.0",
 		"typescript": "^5.9.2",
 		"vitest": "^3.2.4"
 	},
