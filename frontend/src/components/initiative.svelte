@@ -24,7 +24,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	import Card from './card.svelte';
 	import DeleteButton from './delete-button.svelte';
 	import Calendar from './icons/calendar.svelte';
+	import ChOfficial from './icons/ch-official.svelte';
 	import CreateIcon from './icons/create.svelte';
+	import Download from './icons/download.svelte';
 	import ExternalLinkIcon from './icons/external-link.svelte';
 	import PatchInputFile from './patch-input-file.svelte';
 	import PatchInput from './patch-input.svelte';
@@ -178,22 +180,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 				rel="nofollow noreferrer noopener"
 				target="_blank"
 			>
-				Initiative website <ExternalLinkIcon />
+				<ExternalLinkIcon />
+				Initiative website
 			</a>
 		{/if}
 		{#if standalone && initiative.bundeskanzleiUrl}
 			<a
-				class="website inline-svg"
+				class="bundeskanzlei-url inline-svg"
 				href={initiative.bundeskanzleiUrl}
 				rel="nofollow noreferrer noopener"
 				target="_blank"
 			>
-				Bundeskanzlei-Entry <ExternalLinkIcon />
+				<ChOfficial />
+				Bundeskanzlei-Entry
 			</a>
 		{/if}
-		<a class="pdf-url" href="/assets/{initiative.pdf}"
-			>Download initiative as PDF</a
-		>
+		<a class="pdf-url inline-svg" href="/assets/{initiative.pdf}">
+			<Download />
+			Download initiative as PDF
+		</a>
 	{/if}
 
 	{#if standalone}
