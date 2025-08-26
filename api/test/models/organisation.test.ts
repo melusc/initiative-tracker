@@ -179,12 +179,14 @@ apiTest(
 			undefined,
 			undefined,
 			undefined,
+			undefined,
 		);
 		const initiative2 = Initiative.create(
 			'initiative 2',
 			'initiative',
 			undefined,
 			pdfAsset,
+			undefined,
 			undefined,
 			undefined,
 			undefined,

@@ -111,6 +111,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			apiEndpoint="/api/initiative/{initiative.id}"
 			transform={transformOptional}
 		/>
+		<PatchInput
+			name="bundeskanzleiUrl"
+			label="Bundeskanzlei-Entry"
+			type="text"
+			bind:body={initiative}
+			allowEmpty
+			apiEndpoint="/api/initiative/{initiative.id}"
+			transform={transformOptional}
+		/>
 		<PatchInputFile
 			name="pdf"
 			label="PDF"
@@ -170,6 +179,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 				target="_blank"
 			>
 				Initiative website <ExternalLinkIcon />
+			</a>
+		{/if}
+		{#if standalone && initiative.bundeskanzleiUrl}
+			<a
+				class="website inline-svg"
+				href={initiative.bundeskanzleiUrl}
+				rel="nofollow noreferrer noopener"
+				target="_blank"
+			>
+				Bundeskanzlei-Entry <ExternalLinkIcon />
 			</a>
 		{/if}
 		<a class="pdf-url" href="/assets/{initiative.pdf}"

@@ -31,7 +31,7 @@ import {mergeExpressBodyFile, multerUpload} from '../uploads.js';
 import {
 	validateFile,
 	validateName,
-	validateWebsite,
+	validateUrl,
 	ValidationError,
 } from '../validators.js';
 
@@ -47,7 +47,7 @@ export async function createOrganisation(
 	try {
 		name = validateName(body['name'], 'Name', false);
 		image = validateFile(body['image'], 'Image', true);
-		website = validateWebsite(body['website'], true);
+		website = validateUrl(body['website'], 'Website', true);
 	} catch (error: unknown) {
 		return {
 			type: 'error',
@@ -182,7 +182,7 @@ const patchOrganisation: RequestHandler<{id: string}> = async (
 					break;
 				}
 				case 'website': {
-					const website = validateWebsite(body['website'], true);
+					const website = validateUrl(body['website'], 'Website', true);
 					organisation.updateWebsite(website);
 					break;
 				}

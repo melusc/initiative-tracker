@@ -46,26 +46,31 @@ function isEmpty(input: unknown): boolean {
 	return input === undefined;
 }
 
-export function validateWebsite(
+export function validateUrl(
 	url: unknown,
+	label: string,
 	isOptional: true,
 ): string | undefined;
-export function validateWebsite(url: unknown, isOptional: false): string;
-export function validateWebsite(url_: unknown, isOptional: boolean) {
+export function validateUrl(
+	url: unknown,
+	label: string,
+	isOptional: false,
+): string;
+export function validateUrl(url_: unknown, label: string, isOptional: boolean) {
 	if (isOptional && isEmpty(url_)) {
 		return;
 	}
 
-	const url = validateString(url_, 'website');
+	const url = validateString(url_, label);
 
 	if (!URL.canParse(url)) {
-		throw new ValidationError('Cannot parse website as url.');
+		throw new ValidationError(`Cannot parse ${label} as url.`);
 	}
 
 	const urlParsed = new URL(url);
 
 	if (urlParsed.protocol !== 'http:' && urlParsed.protocol !== 'https:') {
-		throw new ValidationError('Website must be http: or https:');
+		throw new ValidationError(`${label} must be http: or https:`);
 	}
 
 	urlParsed.hash = '';
@@ -219,7 +224,7 @@ export function validateFile(
 		return file;
 	}
 
-	// @ts-expect-error It is compatible with our overloads
-	// It just cannot see that the overloads fit ours
-	return validateWebsite(file, isOptional);
+	// @ts-expect-error It can't infer that our overloads and
+	// validateUrl's overloads are compatible
+	return validateUrl(file, label, isOptional);
 }

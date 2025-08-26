@@ -86,6 +86,7 @@ function initDatabase(database: DatabaseSync) {
 			image TEXT,
 			deadline TEXT,
 			initiatedDate TEXT,
+			bundeskanzleiUrl TEXT,
 			updatedAt INTEGER NOT NULL,
 			createdAt INTEGER NOT NULL
 		);

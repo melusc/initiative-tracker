@@ -44,6 +44,7 @@ apiTest.for([
 			imageAsset,
 			withOptionals ? '2025-05-12' : undefined,
 			withOptionals ? '2024-01-05' : undefined,
+			withOptionals ? 'https://www.bk.admin.ch' : undefined,
 		);
 
 		const initiativeCopy = (await Initiative.fromId(initiative.id))!;
@@ -58,6 +59,7 @@ apiTest.for([
 			image: imageAsset?.name ?? null,
 			deadline: withOptionals ? '2025-05-12' : null,
 			initiatedDate: withOptionals ? '2024-01-05' : null,
+			bundeskanzleiUrl: withOptionals ? 'https://www.bk.admin.ch' : null,
 			organisations: [],
 			signatures: [],
 			createdAt: initiativeCopy.createdAt.getTime(),
@@ -81,12 +83,14 @@ apiTest(
 			undefined,
 			undefined,
 			undefined,
+			undefined,
 		);
 		const initiative2 = Initiative.create(
 			'Înitiativé',
 			'Înitiativé',
 			undefined,
 			pdfAsset2,
+			undefined,
 			undefined,
 			undefined,
 			undefined,
@@ -100,6 +104,7 @@ apiTest(
 			'abc',
 			undefined,
 			pdfAsset3,
+			undefined,
 			undefined,
 			undefined,
 			undefined,
@@ -128,6 +133,7 @@ apiTest(
 			imageAsset1,
 			'deadline',
 			'initiated',
+			'https://www.bk.admin.ch',
 		);
 
 		let ud = initiative.updatedAt.getTime();
@@ -171,6 +177,11 @@ apiTest(
 		expect(ud).toBeLessThan((ud = initiative.updatedAt.getTime()));
 		await setTimeout(2);
 
+		initiative.updateBundeskanzleiUrl(undefined);
+		expect(initiative.bundeskanzleiUrl).toBeUndefined();
+		expect(ud).toBeLessThan((ud = initiative.updatedAt.getTime()));
+		await setTimeout(2);
+
 		initiative.updateWebsite(undefined);
 		expect(initiative.website).toBeUndefined();
 		expect(initiative.updatedAt.getTime()).toBeGreaterThan(ud);
@@ -205,6 +216,7 @@ apiTest(
 			'initiative',
 			undefined,
 			pdfAsset,
+			undefined,
 			undefined,
 			undefined,
 			undefined,
@@ -259,6 +271,7 @@ apiTest(
 			'Initiative',
 			undefined,
 			pdfAsset,
+			undefined,
 			undefined,
 			undefined,
 			undefined,
@@ -318,6 +331,7 @@ apiTest(
 			undefined,
 			pdfAsset,
 			imageAsset,
+			undefined,
 			undefined,
 			undefined,
 		);

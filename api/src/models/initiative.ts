@@ -42,6 +42,7 @@ type SqlInitiativeRow = {
 	image: string | null;
 	deadline: string | null;
 	initiatedDate: string | null;
+	bundeskanzleiUrl: string | null;
 	updatedAt: number;
 	createdAt: number;
 };
@@ -58,6 +59,7 @@ export type InitiativeJson = {
 	signatures: PersonJson[];
 	organisations: OrganisationJson[];
 	initiatedDate: string | null;
+	bundeskanzleiUrl: string | null;
 	updatedAt: number;
 	createdAt: number;
 };
@@ -76,6 +78,7 @@ export class Initiative extends InjectableApi {
 	private _organisations: Organisation[] = [];
 	private _resolvedSignaturesOrganisations = false;
 	private _initiatedDate: string | undefined;
+	private _bundeskanzleiUrl: string | undefined;
 	private _updatedAt: number;
 	private _createdAt: number;
 
@@ -89,6 +92,7 @@ export class Initiative extends InjectableApi {
 		image: Asset | undefined,
 		deadline: string | undefined,
 		initiatedDate: string | undefined,
+		bundeskanzleiUrl: string | undefined,
 		updatedAt: number,
 		createdAt: number,
 		constructorKey: symbol,
@@ -107,6 +111,7 @@ export class Initiative extends InjectableApi {
 		this._image = image;
 		this._deadline = deadline;
 		this._initiatedDate = initiatedDate;
+		this._bundeskanzleiUrl = bundeskanzleiUrl;
 		this._updatedAt = updatedAt;
 		this._createdAt = createdAt;
 	}
@@ -143,6 +148,10 @@ export class Initiative extends InjectableApi {
 		return this._initiatedDate;
 	}
 
+	get bundeskanzleiUrl() {
+		return this._bundeskanzleiUrl;
+	}
+
 	get updatedAt() {
 		return new Date(this._updatedAt);
 	}
@@ -170,6 +179,7 @@ export class Initiative extends InjectableApi {
 			image: this.image?.name ?? null,
 			deadline: this.deadline ?? null,
 			initiatedDate: this.initiatedDate ?? null,
+			bundeskanzleiUrl: this.bundeskanzleiUrl ?? null,
 			updatedAt: this._updatedAt,
 			createdAt: this._createdAt,
 			signatures: this.signatures.map(signature => signature.toJSON()),
@@ -203,6 +213,7 @@ export class Initiative extends InjectableApi {
 		image: Asset | undefined,
 		deadline: string | undefined,
 		initiatedDate: string | undefined,
+		bundeskanzleiUrl: string | undefined,
 	) {
 		website ||= undefined;
 		deadline ||= undefined;
@@ -221,6 +232,7 @@ export class Initiative extends InjectableApi {
 			image: image?.name ?? null,
 			deadline: deadline ?? null,
 			initiatedDate: initiatedDate ?? null,
+			bundeskanzleiUrl: bundeskanzleiUrl ?? null,
 			createdAt: now,
 			updatedAt: now,
 		};
@@ -229,10 +241,12 @@ export class Initiative extends InjectableApi {
 			.prepare(
 				`INSERT INTO initiatives
 					(id, slug, shortName, fullName, website, pdf,
-					image, deadline, initiatedDate, createdAt, updatedAt)
+					image, deadline, initiatedDate,
+					bundeskanzleiUrl, createdAt, updatedAt)
 				VALUES
 					(:id, :slug, :shortName, :fullName, :website, :pdf,
-					:image, :deadline, :initiatedDate, :createdAt, :updatedAt)`,
+					:image, :deadline, :initiatedDate,
+					:bundeskanzleiUrl, :createdAt, :updatedAt)`,
 			)
 			.run(row);
 
@@ -246,6 +260,7 @@ export class Initiative extends InjectableApi {
 			image,
 			deadline,
 			initiatedDate,
+			bundeskanzleiUrl,
 			now,
 			now,
 			privateConstructorKey,
@@ -279,6 +294,7 @@ export class Initiative extends InjectableApi {
 			image,
 			row.deadline ?? undefined,
 			row.initiatedDate ?? undefined,
+			row.bundeskanzleiUrl ?? undefined,
 			row.updatedAt,
 			row.createdAt,
 			privateConstructorKey,
@@ -525,6 +541,30 @@ export class Initiative extends InjectableApi {
 			});
 
 		this._initiatedDate = newInitiatedDate;
+		this._updatedAt = now;
+	}
+
+	updateBundeskanzleiUrl(newBundeskanzleiUrl: string | undefined) {
+		if (newBundeskanzleiUrl === this.bundeskanzleiUrl) {
+			return;
+		}
+
+		const now = Date.now();
+
+		this.database
+			.prepare(
+				`UPDATE initiatives
+				SET bundeskanzleiUrl = :bundeskanzleiUrl,
+					updatedAt = :now
+				WHERE id = :id`,
+			)
+			.run({
+				bundeskanzleiUrl: newBundeskanzleiUrl ?? null,
+				id: this.id,
+				now,
+			});
+
+		this._bundeskanzleiUrl = newBundeskanzleiUrl;
 		this._updatedAt = now;
 	}
 

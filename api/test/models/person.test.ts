@@ -106,6 +106,7 @@ apiTest('Signatures', async ({api: {Person, Login, Initiative, PdfAsset}}) => {
 		undefined,
 		undefined,
 		undefined,
+		undefined,
 	);
 	const initiativeL2 = (await Initiative.fromId(initiativeL1.id))!;
 

@@ -32,7 +32,7 @@ import {
 	validateDate,
 	validateFile,
 	validateName,
-	validateWebsite,
+	validateUrl,
 	ValidationError,
 } from '../validators.js';
 
@@ -48,15 +48,21 @@ export async function createInitiative(
 	let image: string | Buffer | undefined;
 	let deadline: string | undefined;
 	let initiated: string | undefined;
+	let bundeskanzleiUrl: string | undefined;
 
 	try {
 		shortName = validateName(body['shortName'], 'Short Name', false);
 		fullName = validateName(body['fullName'], 'Full Name', false);
-		website = validateWebsite(body['website'], true);
+		website = validateUrl(body['website'], 'Website', true);
 		pdf = validateFile(body['pdf'], 'PDF', false);
 		image = validateFile(body['image'], 'Image', true);
 		deadline = validateDate(body['deadline'], 'Deadline', true);
 		initiated = validateDate(body['initiatedDate'], 'Initiated', true);
+		bundeskanzleiUrl = validateUrl(
+			body['bundeskanzleiUrl'],
+			'Bundeskanzlei-Entry',
+			true,
+		);
 	} catch (error: unknown) {
 		let message = 'Unknown error.';
 
@@ -114,6 +120,7 @@ export async function createInitiative(
 		imageAsset,
 		deadline,
 		initiated,
+		bundeskanzleiUrl,
 	);
 
 	return {
@@ -226,8 +233,17 @@ const patchInitiative: RequestHandler<{id: string}> = async (
 					break;
 				}
 				case 'website': {
-					const website = validateWebsite(body['website'], true);
+					const website = validateUrl(body['website'], 'Website', true);
 					initiative.updateWebsite(website);
+					break;
+				}
+				case 'bundeskanzleiUrl': {
+					const bundeskanzleiUrl = validateUrl(
+						body['bundeskanzleiUrl'],
+						'Bundeskanzlei-Entry',
+						true,
+					);
+					initiative.updateBundeskanzleiUrl(bundeskanzleiUrl);
 					break;
 				}
 				case 'pdf': {
