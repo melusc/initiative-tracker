@@ -91,6 +91,8 @@ apiTest('Updating values', async ({api: {Organisation, ImageAsset}}) => {
 	).resolves.toBeDefined();
 
 	let ud = organisation.updatedAt.getTime();
+	await setTimeout(2);
+
 	organisation.updateName('Organisation XYZ');
 	expect(ud).toBeLessThan((ud = organisation.updatedAt.getTime()));
 	await setTimeout(2);
