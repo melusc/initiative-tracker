@@ -415,10 +415,20 @@ app.use((_request, response) => {
 		.render('404', {login: response.locals.login, state: undefined});
 });
 
-const server = app.listen(env.port, '127.0.0.1', () => {
-	console.log('Listening on http://localhost:%s/', env.port);
+function onServerListening(error: unknown) {
+	if (error) {
+		console.error('Error creating server: %s', error);
+		return;
+	}
+
+	const listening = env.socket ?? `http://${env.host}:${env.port}`;
+	console.log('Listening on %s', listening);
 	process.send?.('ready');
-});
+}
+
+const server = env.socket
+	? app.listen(env.socket, onServerListening)
+	: app.listen(env.port, env.host, onServerListening);
 
 cleanupBeforeExit(() => {
 	server.close();

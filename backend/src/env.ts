@@ -17,10 +17,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import process from 'node:process';
 
-const envPort = Number.parseInt(process.env['IT_PORT']!, 10);
+const envPort = Number.parseInt(process.env['BIND_PORT']!, 10);
 const port = Number.isSafeInteger(envPort) ? envPort : 3129;
+
+const host = process.env['BIND_HOST'] ?? '127.0.0.1';
+
+const socket = process.env['BIND_SOCKET'];
 
 const env = {
 	port,
+	host,
+	socket,
 };
 export default env;
