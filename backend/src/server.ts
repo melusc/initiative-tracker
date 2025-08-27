@@ -415,10 +415,9 @@ app.use((_request, response) => {
 		.render('404', {login: response.locals.login, state: undefined});
 });
 
-function onServerListening(error: unknown) {
+function onServerListening(error: Error | undefined) {
 	if (error) {
-		console.error('Error creating server: %s', error);
-		return;
+		throw error;
 	}
 
 	const listening = env.socket ?? `http://${env.host}:${env.port}`;
