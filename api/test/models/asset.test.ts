@@ -81,6 +81,15 @@ describe('Image', () => {
 
 		expect(optimisedBuffer.byteLength).toBeLessThan(fileBuffer.byteLength);
 	});
+
+	apiTest('Removing exif data', async ({api: {ImageAsset}}) => {
+		// eslint-disable-next-line security/detect-non-literal-fs-filename
+		const fileBuffer = await readFile(sampleAssetPaths.jpg);
+		const asset = await ImageAsset.createFromBuffer(fileBuffer);
+		const optimisedBuffer = await asset.read();
+
+		expect(optimisedBuffer.byteLength).toBeLessThan(fileBuffer.byteLength);
+	});
 });
 
 describe('Asset', () => {

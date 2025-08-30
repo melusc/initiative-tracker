@@ -16,10 +16,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import {Buffer} from 'node:buffer';
+import {spawn} from 'node:child_process';
 import {randomBytes} from 'node:crypto';
 import {lookup} from 'node:dns/promises';
 import {readFile, rm, stat, writeFile} from 'node:fs/promises';
 import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 
 import {typeOf} from '@lusc/initiative-tracker-util/type-of.js';
 import {fileTypeFromBuffer as fileTypeFromBuffer_} from 'file-type';
@@ -41,6 +43,46 @@ async function fileTypeFromBuffer(buffer: Buffer) {
 	}
 
 	return fileTypeFromBuffer_(buffer);
+}
+
+async function checkExiftoolInstalled(): Promise<boolean> {
+	const etProcess = spawn('exiftool', ['--help']);
+
+	const {promise, resolve} = Promise.withResolvers<boolean>();
+
+	etProcess.addListener('error', () => {
+		resolve(false);
+	});
+
+	const stdoutBuffers = (await Array.fromAsync(etProcess.stdout)) as Buffer[];
+	const output = Buffer.concat(stdoutBuffers);
+	resolve(output.includes('exiftool'));
+
+	return promise;
+}
+
+const isExiftoolSupported = await checkExiftoolInstalled();
+
+if (!isExiftoolSupported) {
+	throw new Error('exiftool must be installed in $PATH.');
+}
+
+async function exiftoolRemoveExif(path: URL): Promise<boolean> {
+	const childProcess = spawn('exiftool', [
+		'-all=',
+		'-overwrite_original',
+		fileURLToPath(path),
+	]);
+
+	const {promise, resolve} = Promise.withResolvers<boolean>();
+
+	childProcess.addListener('close', code => {
+		resolve(code === 0);
+	});
+
+	for await (const _ of childProcess.stdout);
+
+	return promise;
 }
 
 const privateConstructorKey = Symbol();
@@ -82,9 +124,17 @@ export class Asset extends InjectableApi {
 	}
 
 	/** @internal */
-	static optimise(extension: string, data: Buffer): Buffer | string {
+	static optimise(
+		extension: string,
+		data: Buffer,
+	): Promise<Buffer | string> | Buffer | string {
 		void extension;
 		return data;
+	}
+
+	static optimiseFile(extension: string, path: URL): Promise<void> | void {
+		void path;
+		void extension;
 	}
 
 	/** @internal */
@@ -214,10 +264,13 @@ export class Asset extends InjectableApi {
 
 	static async createFromBuffer(buffer: Buffer): Promise<Asset> {
 		const extension = await this._validateAndGetExtension(buffer);
-		const optimised = this.optimise(extension, buffer);
+		const optimised = await this.optimise(extension, buffer);
 
 		const name = await this._write(optimised, extension);
-		return new this.Asset(name, privateConstructorKey);
+
+		const asset = new this.Asset(name, privateConstructorKey);
+		await this.optimiseFile(extension, asset._resolvePath());
+		return asset;
 	}
 
 	/** @internal */
@@ -257,6 +310,23 @@ export class ImageAsset extends Asset {
 			}).data;
 		} catch {
 			return data;
+		}
+	}
+
+	static override async optimiseFile(
+		extension: string,
+		path: URL,
+	): Promise<void> {
+		if (extension === 'svg') {
+			return;
+		}
+
+		const success = await exiftoolRemoveExif(path);
+		if (!success) {
+			console.error(
+				'Unsuccessful removing metadata of %s',
+				fileURLToPath(path),
+			);
 		}
 	}
 }
