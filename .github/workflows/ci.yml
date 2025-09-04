@@ -81,7 +81,7 @@ jobs:
           "
 
           # rsync all relevant files
-          rsync -vhaR --checksum --delete -e "ssh -i ~/.ssh/ssh-key" {backend,util,frontend,api}/{dist/,package.json} package.json "${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST}}:/var/www/initiative-tracker/"
+          rsync -vhaR --checksum --delete -e "ssh -i ~/.ssh/ssh-key" {backend,util,frontend,api}/{dist/,package.json} package.json pnpm-*.yaml "${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST}}:/var/www/initiative-tracker/"
 
           ssh -i ~/.ssh/ssh-key "${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST}}" /bin/bash << 'EOF'
             export NVM_DIR="$HOME/.nvm"
