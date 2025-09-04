@@ -1,0 +1,10 @@
+packages:
+  - api
+  - backend
+  - frontend
+  - util
+
+onlyBuiltDependencies:
+  - bcrypt
+  - esbuild
+  - unrs-resolver

@@ -29,19 +29,19 @@ jobs:
 
       - name: Install dependencies
         run: |
-          yarn install --immutable
+          pnpm install --frozen-lockfile
           sudo apt install -y libimage-exiftool-perl
 
       - name: Build
-        run: yarn build
+        run: pnpm build
 
       - name: Check code style
         run: |
-          yarn run fmt
+          pnpm fmt
           git --no-pager diff --exit-code
 
       - name: CI tests
-        run: yarn run test
+        run: pnpm test
 
       - name: Upload build
         if: ${{ github.ref == 'refs/heads/main' }}
@@ -89,8 +89,7 @@ jobs:
             cd /var/www/initiative-tracker
             corepack prepare
             corepack enable
-            yarn config set nodeLinker node-modules
-            yarn workspaces focus --all --production
+            pnpm install --prod
             cd ..
             pm2 start initiative-tracker.config.js > /dev/null
           EOF
