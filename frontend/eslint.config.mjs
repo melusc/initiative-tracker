@@ -25,6 +25,9 @@ export default [
 			],
 			'no-undef': 'off',
 			'n/no-unsupported-features/node-builtins': 'off',
+			// We don't use sveltekit for routing so file structure
+			// doesn't match our urls
+			'svelte/no-navigation-without-resolve': 'off',
 		},
 	},
 ];
