@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import {readFile} from 'node:fs/promises';
 
-import type {Locals} from 'express';
+import type {Login} from '@lusc/initiative-tracker-api';
 
 export async function svelteKitEngine(
 	path: string,
@@ -36,7 +36,7 @@ export async function svelteKitEngine(
 		return;
 	}
 
-	const login = options['login'] as Locals['login'] | undefined;
+	const login = options['login'] as Login | undefined;
 	const state = options['state'];
 
 	try {
