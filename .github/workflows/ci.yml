@@ -52,7 +52,6 @@ jobs:
             .
             !./node_modules
             !./.github
-            !./.yarn
 
   upload:
     runs-on: ubuntu-latest
