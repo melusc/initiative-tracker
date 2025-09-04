@@ -50,8 +50,8 @@ jobs:
           name: build
           path: |
             .
-            !./node_modules
-            !./.github
+            !**/node_modules
+            !.github
 
   upload:
     runs-on: ubuntu-latest
