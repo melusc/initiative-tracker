@@ -3,7 +3,7 @@
 	"private": true,
 	"type": "module",
 	"devDependencies": {
-		"@lusc/eslint-config": "^8.0.0",
+		"@lusc/eslint-config": "^8.0.1",
 		"@lusc/tsconfig": "^7.1.0",
 		"@types/bcrypt": "^6.0.0",
 		"@types/ip": "^1.1.3",
