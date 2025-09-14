@@ -16,7 +16,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import {stdin, stdout} from 'node:process';
-// eslint-disable-next-line n/no-unsupported-features/node-builtins
 import {createInterface} from 'node:readline/promises';
 // eslint-disable-next-line n/no-unsupported-features/node-builtins
 import {DatabaseSync} from 'node:sqlite';
