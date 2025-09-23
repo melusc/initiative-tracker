@@ -10,10 +10,10 @@
 		"@types/express-serve-static-core": "^5.0.7",
 		"@types/morgan": "^1.9.10",
 		"@types/multer": "^2.0.0",
-		"@types/node": "^24.3.3",
+		"@types/node": "^24.5.2",
 		"concurrently": "^9.2.1",
-		"esbuild": "^0.25.9",
-		"eslint": "^9.35.0",
+		"esbuild": "^0.25.10",
+		"eslint": "^9.36.0",
 		"typescript": "^5.9.2"
 	},
 	"dependencies": {
