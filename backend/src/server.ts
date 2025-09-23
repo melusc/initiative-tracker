@@ -53,7 +53,7 @@ app.engine('html', svelteKitEngine);
 app.set('view engine', 'html');
 app.set('views', staticRoot);
 app.set('x-powered-by', false);
-app.set('trust proxy', 'loopback');
+app.set('trust proxy', env.trustProxy);
 app.set('query parser', false);
 
 app.use(cookieParser());

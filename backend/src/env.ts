@@ -24,9 +24,18 @@ const host = process.env['BIND_HOST'] ?? '127.0.0.1';
 
 const socket = process.env['BIND_SOCKET'];
 
+let trustProxy: string | boolean = process.env['TRUST_PROXY'] ?? 'loopback';
+
+if (/^(?:true|1)$/i.test(trustProxy)) {
+	trustProxy = true;
+} else if (/^(?:false|0)$/i.test(trustProxy)) {
+	trustProxy = false;
+}
+
 const env = {
 	port,
 	host,
 	socket,
+	trustProxy,
 };
 export default env;
