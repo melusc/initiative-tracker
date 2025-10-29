@@ -66,7 +66,7 @@ describe('Image', () => {
 			const asset = await ImageAsset.createFromBuffer(fileBuffer);
 
 			// eslint-disable-next-line security/detect-non-literal-regexp
-			expect(asset.name).toMatch(new RegExp(`\\.${extension}`));
+			expect(asset.name).toMatch(new RegExp(String.raw`\.${extension}`));
 
 			const assetCopy = await Asset.fromName(asset.name);
 			expect(assetCopy).toBeDefined();

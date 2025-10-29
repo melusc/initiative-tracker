@@ -21,6 +21,7 @@ import type {Request, RequestHandler, Response} from 'express';
 import {api} from '../database.js';
 
 export function identifyUser(): RequestHandler {
+	// eslint-disable-next-line unicorn/consistent-function-scoping
 	return (request, response, next) => {
 		let session: Session | undefined;
 
@@ -66,6 +67,7 @@ function loginRedirect(request: Request, response: Response) {
 }
 
 export function requireLogin(): RequestHandler {
+	// eslint-disable-next-line unicorn/consistent-function-scoping
 	return (request, response, next) => {
 		if (response.locals.login) {
 			next();
@@ -77,6 +79,7 @@ export function requireLogin(): RequestHandler {
 }
 
 export function requireAdmin(): RequestHandler {
+	// eslint-disable-next-line unicorn/consistent-function-scoping
 	return (request, response, next) => {
 		if (!response.locals.login) {
 			loginRedirect(request, response);
