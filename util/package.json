@@ -15,7 +15,7 @@
 		"@types/node": "^24.10.1",
 		"eslint": "^9.39.1",
 		"typescript": "^5.9.3",
-		"vitest": "^4.0.10"
+		"vitest": "^4.0.15"
 	},
 	"scripts": {
 		"fmt": "eslint --fix",
