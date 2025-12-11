@@ -8,3 +8,5 @@ onlyBuiltDependencies:
   - bcrypt
   - esbuild
   - unrs-resolver
+
+trustPolicy: on
