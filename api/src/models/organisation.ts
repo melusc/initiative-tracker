@@ -43,8 +43,8 @@ export type OrganisationJson = {
 	id: string;
 	slug: string;
 	name: string;
-	image: string | null;
-	website: string | null;
+	image: string | undefined;
+	website: string | undefined;
 	initiatives: InitiativeJson[];
 	updatedAt: number;
 	createdAt: number;
@@ -119,8 +119,8 @@ export class Organisation extends InjectableApi {
 			id: this.id,
 			slug: this.slug,
 			name: this.name,
-			image: this.image?.name ?? null,
-			website: this.website ?? null,
+			image: this.image?.name,
+			website: this.website,
 			initiatives: this.initiatives.map(initiative => initiative.toJSON()),
 			updatedAt: this._updatedAt,
 			createdAt: this._createdAt,

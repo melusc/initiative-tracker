@@ -52,14 +52,14 @@ export type InitiativeJson = {
 	slug: string;
 	shortName: string;
 	fullName: string;
-	website: string | null;
+	website: string | undefined;
 	pdf: string;
-	image: string | null;
-	deadline: string | null;
+	image: string | undefined;
+	deadline: string | undefined;
 	signatures: PersonJson[];
 	organisations: OrganisationJson[];
-	initiatedDate: string | null;
-	bundeskanzleiUrl: string | null;
+	initiatedDate: string | undefined;
+	bundeskanzleiUrl: string | undefined;
 	updatedAt: number;
 	createdAt: number;
 };
@@ -174,12 +174,12 @@ export class Initiative extends InjectableApi {
 			slug: this.slug,
 			shortName: this.shortName,
 			fullName: this.fullName,
-			website: this.website ?? null,
+			website: this.website,
 			pdf: this.pdf.name,
-			image: this.image?.name ?? null,
-			deadline: this.deadline ?? null,
-			initiatedDate: this.initiatedDate ?? null,
-			bundeskanzleiUrl: this.bundeskanzleiUrl ?? null,
+			image: this.image?.name,
+			deadline: this.deadline,
+			initiatedDate: this.initiatedDate,
+			bundeskanzleiUrl: this.bundeskanzleiUrl,
 			updatedAt: this._updatedAt,
 			createdAt: this._createdAt,
 			signatures: this.signatures.map(signature => signature.toJSON()),
