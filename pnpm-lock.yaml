@@ -87,6 +87,9 @@ importers:
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
+      devalue:
+        specifier: ^5.6.1
+        version: 5.6.1
       express:
         specifier: ^5.2.1
         version: 5.2.1
@@ -1364,6 +1367,9 @@ packages:
 
   devalue@5.5.0:
     resolution: {integrity: sha512-69sM5yrHfFLJt0AZ9QqZXGCPfJ7fQjvpln3Rq5+PS03LD32Ost1Q9N+eEnaQwGRIriKkMImXD56ocjQmfjbV3w==}
+
+  devalue@5.6.1:
+    resolution: {integrity: sha512-jDwizj+IlEZBunHcOuuFVBnIMPAEHvTsJj0BcIp94xYguLRVBcXO853px/MyIJvbVzWdsGvrRweIUWJw8hBP7A==}
 
   dom-serializer@2.0.0:
     resolution: {integrity: sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==}
@@ -3564,6 +3570,8 @@ snapshots:
   depd@2.0.0: {}
 
   devalue@5.5.0: {}
+
+  devalue@5.6.1: {}
 
   dom-serializer@2.0.0:
     dependencies:

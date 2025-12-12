@@ -18,6 +18,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import {readFile} from 'node:fs/promises';
 
 import type {Login} from '@lusc/initiative-tracker-api';
+import {uneval} from 'devalue';
+
+function pojoReplacer(value: {toJSON?(): unknown}): string | void {
+	if (typeof value.toJSON === 'function') {
+		return uneval(value.toJSON(), pojoReplacer);
+	}
+}
 
 export async function svelteKitEngine(
 	path: string,
@@ -43,8 +50,8 @@ export async function svelteKitEngine(
 		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		const content = await readFile(path, 'utf8');
 		const injected = content
-			.replace('__state__', JSON.stringify(state))
-			.replace('__login__', JSON.stringify(login));
+			.replace('__state__', uneval(state, pojoReplacer))
+			.replace('__login__', uneval(login, pojoReplacer));
 		callback(null, injected);
 	} catch (error: unknown) {
 		callback(error);
