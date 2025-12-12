@@ -35,6 +35,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		allowEmpty = false,
 		onSuccess,
 		transform = (s): string => s,
+		// eslint-disable-next-line svelte/no-unused-svelte-ignore
 		// svelte-ignore state_referenced_locally
 		initialValue = body[name] as Value,
 	}: {
