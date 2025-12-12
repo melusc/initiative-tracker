@@ -20,10 +20,12 @@ import {readFile} from 'node:fs/promises';
 import type {Login} from '@lusc/initiative-tracker-api';
 import {uneval} from 'devalue';
 
-function pojoReplacer(value: {toJSON?(): unknown}): string | void {
+function pojoReplacer(value: {toJSON?(): unknown}): string | undefined {
 	if (typeof value.toJSON === 'function') {
 		return uneval(value.toJSON(), pojoReplacer);
 	}
+
+	return;
 }
 
 export async function svelteKitEngine(
