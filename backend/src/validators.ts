@@ -106,8 +106,14 @@ export function validateName(
 		);
 	}
 
-	if (!/^[a-züöäéèëï][a-züöäéèëï\d\-/()* .]+$/i.test(name)) {
-		throw new ValidationError('Name must contain only latin letters.');
+	// \u2013 is en dash, \u2014 em dash
+	// As first character, don't allow special characters except quotation marks
+	if (
+		!/^[a-züöäéèëï"'„“‚«»][a-züöäéèëï\d\-/()* .:!?,"'„“”‚‘’«»&%[\]+$€\u2013\u2014]+$/i.test(
+			name,
+		)
+	) {
+		throw new ValidationError(`${label} must contain only latin letters.`);
 	}
 
 	return name;
