@@ -90,8 +90,8 @@ jobs:
             cd /opt/initiative-tracker
             corepack prepare
             corepack enable
-            pnpm install --prod
-            chown -R "${{ secrets.SSH_USERNAME }}:initiative-tracker-management" node_modules/
+            CI=true pnpm install --prod
+            /opt/initiative-tracker/post-deploy.sh 2> /dev/null
             sudo systemctl restart initiative-tracker.service
           EOF
       - run: rm ~/.ssh/ssh-key
