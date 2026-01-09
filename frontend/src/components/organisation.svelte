@@ -108,6 +108,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 				href={standalone
 					? organisation.website
 					: `/organisation/${organisation.slug}`}
+				rel={standalone ? 'noreferrer' : undefined}
 			>
 				<img
 					class="image-url"
@@ -125,7 +126,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			<a
 				class="website inline-svg"
 				href={organisation.website}
-				rel="nofollow noreferrer noopener"
+				rel="noreferrer"
 				target="_blank"
 			>
 				Website <ExternalLinkIcon />

@@ -150,6 +150,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 				href={standalone
 					? initiative.website
 					: `/initiative/${initiative.slug}`}
+				rel={standalone ? 'noreferrer' : undefined}
 			>
 				<img
 					class="image-url"
@@ -177,7 +178,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			<a
 				class="website inline-svg"
 				href={initiative.website}
-				rel="nofollow noreferrer noopener"
+				rel="noreferrer"
 				target="_blank"
 			>
 				<ExternalLinkIcon />
@@ -188,7 +189,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			<a
 				class="bundeskanzlei-url inline-svg"
 				href={initiative.bundeskanzleiUrl}
-				rel="nofollow noreferrer noopener"
+				rel="nofollow noreferrer"
 				target="_blank"
 			>
 				<ChOfficial />
