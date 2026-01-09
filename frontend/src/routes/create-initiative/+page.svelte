@@ -56,6 +56,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			required: false,
 		},
 		{
+			name: 'bundeskanzleiUrl',
+			label: 'Bundeskanzlei-Entry',
+			type: 'url',
+			minlength: 10,
+			required: false,
+		},
+		{
 			name: 'pdf',
 			label: 'PDF URL',
 			type: 'file',

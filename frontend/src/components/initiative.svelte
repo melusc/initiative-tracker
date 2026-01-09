@@ -107,7 +107,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		<PatchInput
 			name="website"
 			label="Website"
-			type="text"
+			type="url"
 			bind:body={initiative}
 			allowEmpty
 			apiEndpoint="/api/initiative/{initiative.id}"
@@ -116,7 +116,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		<PatchInput
 			name="bundeskanzleiUrl"
 			label="Bundeskanzlei-Entry"
-			type="text"
+			type="url"
 			bind:body={initiative}
 			allowEmpty
 			apiEndpoint="/api/initiative/{initiative.id}"
