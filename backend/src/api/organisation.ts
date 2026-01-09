@@ -29,6 +29,7 @@ import {api} from '../database.js';
 import {requireAdmin} from '../middleware/login-protect.js';
 import {mergeExpressBodyFile, multerUpload} from '../uploads.js';
 import {
+	FieldRequired,
 	validateFile,
 	validateName,
 	validateUrl,
@@ -45,9 +46,9 @@ export async function createOrganisation(
 	let website: string | undefined;
 
 	try {
-		name = validateName(body['name'], 'Name', false);
-		image = validateFile(body['image'], 'Image', true);
-		website = validateUrl(body['website'], 'Website', true);
+		name = validateName(body['name'], 'Name', FieldRequired.Required);
+		image = validateFile(body['image'], 'Image', FieldRequired.Optional);
+		website = validateUrl(body['website'], 'Website', FieldRequired.Optional);
 	} catch (error: unknown) {
 		return {
 			type: 'error',
@@ -177,17 +178,29 @@ const patchOrganisation: RequestHandler<{id: string}> = async (
 		for (const key of Object.keys(body)) {
 			switch (key) {
 				case 'name': {
-					const name = validateName(body['name'], 'Name', false);
+					const name = validateName(
+						body['name'],
+						'Name',
+						FieldRequired.Required,
+					);
 					organisation.updateName(name);
 					break;
 				}
 				case 'website': {
-					const website = validateUrl(body['website'], 'Website', true);
+					const website = validateUrl(
+						body['website'],
+						'Website',
+						FieldRequired.Optional,
+					);
 					organisation.updateWebsite(website);
 					break;
 				}
 				case 'image': {
-					const image = validateFile(body['image'], 'Image', true);
+					const image = validateFile(
+						body['image'],
+						'Image',
+						FieldRequired.Optional,
+					);
 					let imageAsset: Asset | undefined;
 					if (Buffer.isBuffer(image)) {
 						imageAsset = await api.ImageAsset.createFromBuffer(image);

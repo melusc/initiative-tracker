@@ -29,6 +29,7 @@ import {api} from '../database.js';
 import {requireAdmin, requireLogin} from '../middleware/login-protect.js';
 import {mergeExpressBodyFile, multerUpload} from '../uploads.js';
 import {
+	FieldRequired,
 	validateDate,
 	validateFile,
 	validateName,
@@ -51,17 +52,33 @@ export async function createInitiative(
 	let bundeskanzleiUrl: string | undefined;
 
 	try {
-		shortName = validateName(body['shortName'], 'Short Name', false);
-		fullName = validateName(body['fullName'], 'Full Name', false);
-		website = validateUrl(body['website'], 'Website', true);
-		pdf = validateFile(body['pdf'], 'PDF', false);
-		image = validateFile(body['image'], 'Image', true);
-		deadline = validateDate(body['deadline'], 'Deadline', true);
-		initiated = validateDate(body['initiatedDate'], 'Initiated', true);
+		shortName = validateName(
+			body['shortName'],
+			'Short Name',
+			FieldRequired.Required,
+		);
+		fullName = validateName(
+			body['fullName'],
+			'Full Name',
+			FieldRequired.Required,
+		);
+		website = validateUrl(body['website'], 'Website', FieldRequired.Optional);
+		pdf = validateFile(body['pdf'], 'PDF', FieldRequired.Required);
+		image = validateFile(body['image'], 'Image', FieldRequired.Optional);
+		deadline = validateDate(
+			body['deadline'],
+			'Deadline',
+			FieldRequired.Optional,
+		);
+		initiated = validateDate(
+			body['initiatedDate'],
+			'Initiated',
+			FieldRequired.Optional,
+		);
 		bundeskanzleiUrl = validateUrl(
 			body['bundeskanzleiUrl'],
 			'Bundeskanzlei-Entry',
-			true,
+			FieldRequired.Optional,
 		);
 	} catch (error: unknown) {
 		let message = 'Unknown error.';
@@ -208,18 +225,26 @@ const patchInitiative: RequestHandler<{id: string}> = async (
 					const shortName = validateName(
 						body['shortName'],
 						'Short Name',
-						false,
+						FieldRequired.Required,
 					);
 					initiative.updateShortName(shortName);
 					break;
 				}
 				case 'fullName': {
-					const fullName = validateName(body['fullName'], 'Full Name', false);
+					const fullName = validateName(
+						body['fullName'],
+						'Full Name',
+						FieldRequired.Required,
+					);
 					initiative.updateFullName(fullName);
 					break;
 				}
 				case 'deadline': {
-					const deadline = validateDate(body['deadline'], 'Deadline', true);
+					const deadline = validateDate(
+						body['deadline'],
+						'Deadline',
+						FieldRequired.Optional,
+					);
 					initiative.updateDeadline(deadline);
 					break;
 				}
@@ -227,13 +252,17 @@ const patchInitiative: RequestHandler<{id: string}> = async (
 					const initiated = validateDate(
 						body['initiatedDate'],
 						'Initiated',
-						true,
+						FieldRequired.Optional,
 					);
 					initiative.updateInitiatedDate(initiated);
 					break;
 				}
 				case 'website': {
-					const website = validateUrl(body['website'], 'Website', true);
+					const website = validateUrl(
+						body['website'],
+						'Website',
+						FieldRequired.Optional,
+					);
 					initiative.updateWebsite(website);
 					break;
 				}
@@ -241,13 +270,13 @@ const patchInitiative: RequestHandler<{id: string}> = async (
 					const bundeskanzleiUrl = validateUrl(
 						body['bundeskanzleiUrl'],
 						'Bundeskanzlei-Entry',
-						true,
+						FieldRequired.Optional,
 					);
 					initiative.updateBundeskanzleiUrl(bundeskanzleiUrl);
 					break;
 				}
 				case 'pdf': {
-					const pdf = validateFile(body['pdf'], 'PDF', false);
+					const pdf = validateFile(body['pdf'], 'PDF', FieldRequired.Required);
 					const pdfAsset = await (Buffer.isBuffer(pdf)
 						? api.PdfAsset.createFromBuffer(pdf)
 						: api.PdfAsset.createFromUrl(pdf));
@@ -256,7 +285,11 @@ const patchInitiative: RequestHandler<{id: string}> = async (
 					break;
 				}
 				case 'image': {
-					const image = validateFile(body['image'], 'Image', true);
+					const image = validateFile(
+						body['image'],
+						'Image',
+						FieldRequired.Optional,
+					);
 					let imageAsset: Asset | undefined;
 
 					if (Buffer.isBuffer(image)) {

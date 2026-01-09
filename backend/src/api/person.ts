@@ -25,7 +25,7 @@ import {Router, type RequestHandler} from 'express';
 import {api} from '../database.js';
 import {requireLogin} from '../middleware/login-protect.js';
 import {multerUpload} from '../uploads.js';
-import {validateName, ValidationError} from '../validators.js';
+import {FieldRequired, validateName, ValidationError} from '../validators.js';
 
 export function createPerson(
 	body: Record<string, unknown>,
@@ -33,7 +33,7 @@ export function createPerson(
 ): ApiResponse<Person> {
 	let name: string;
 	try {
-		name = validateName(body['name'], 'Name', false);
+		name = validateName(body['name'], 'Name', FieldRequired.Required);
 	} catch (error: unknown) {
 		return {
 			type: 'error',
@@ -110,7 +110,7 @@ const patchPerson: RequestHandler<{id: string}> = async (request, response) => {
 	let name: string | undefined;
 
 	try {
-		name = validateName(body['name'], 'Name', true);
+		name = validateName(body['name'], 'Name', FieldRequired.Optional);
 	} catch (error: unknown) {
 		response.status(400).json({
 			type: 'error',

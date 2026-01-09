@@ -24,6 +24,11 @@ export class ValidationError extends ApiError {
 	override name = 'ValidationError';
 }
 
+export const enum FieldRequired {
+	Optional,
+	Required,
+}
+
 export function validateString(value: unknown, name: string): string {
 	if (typeof value !== 'string') {
 		throw new ValidationError(
@@ -49,15 +54,19 @@ function isEmpty(input: unknown): boolean {
 export function validateUrl(
 	url: unknown,
 	label: string,
-	isOptional: true,
+	required: FieldRequired.Optional,
 ): string | undefined;
 export function validateUrl(
 	url: unknown,
 	label: string,
-	isOptional: false,
+	required: FieldRequired.Required,
 ): string;
-export function validateUrl(url_: unknown, label: string, isOptional: boolean) {
-	if (isOptional && isEmpty(url_)) {
+export function validateUrl(
+	url_: unknown,
+	label: string,
+	required: FieldRequired,
+) {
+	if (required === FieldRequired.Optional && isEmpty(url_)) {
 		return;
 	}
 
@@ -83,19 +92,19 @@ export function validateUrl(url_: unknown, label: string, isOptional: boolean) {
 export function validateName(
 	name_: unknown,
 	label: string,
-	isOptional: true,
+	required: FieldRequired.Optional,
 ): string | undefined;
 export function validateName(
 	name_: unknown,
 	label: string,
-	isOptional: false,
+	required: FieldRequired.Required,
 ): string;
 export function validateName(
 	name_: unknown,
 	label: string,
-	isOptional: boolean,
+	required: FieldRequired,
 ) {
-	if (isOptional && isEmpty(name_)) {
+	if (required === FieldRequired.Optional && isEmpty(name_)) {
 		return;
 	}
 
@@ -122,19 +131,19 @@ export function validateName(
 export function validateDate(
 	deadline: unknown,
 	label: string,
-	isOptional: true,
+	required: FieldRequired.Optional,
 ): string | undefined;
 export function validateDate(
 	deadline: unknown,
 	label: string,
-	isOptional: false,
+	required: FieldRequired.Required,
 ): string;
 export function validateDate(
 	deadline_: unknown,
 	label: string,
-	isOptional: boolean,
+	required: FieldRequired,
 ) {
-	if (isOptional && isEmpty(deadline_)) {
+	if (required === FieldRequired.Optional && isEmpty(deadline_)) {
 		return;
 	}
 
@@ -202,24 +211,24 @@ export function validatePasswordUpdate(
 export function validateFile(
 	file: unknown,
 	label: string,
-	isOptional: false,
+	required: FieldRequired.Required,
 ): Buffer | string;
 export function validateFile(
 	file: unknown,
 	label: string,
-	isOptional: true,
+	required: FieldRequired.Optional,
 ): Buffer | string | undefined;
 export function validateFile(
 	file: unknown,
 	label: string,
-	isOptional: boolean,
+	required: FieldRequired,
 ) {
-	if (isEmpty(file) && isOptional) {
+	if (isEmpty(file) && required === FieldRequired.Optional) {
 		return;
 	}
 
 	if (Buffer.isBuffer(file)) {
-		if (file.byteLength === 0 && isOptional) {
+		if (file.byteLength === 0 && required === FieldRequired.Optional) {
 			return;
 		}
 
@@ -232,5 +241,5 @@ export function validateFile(
 
 	// @ts-expect-error It can't infer that our overloads and
 	// validateUrl's overloads are compatible
-	return validateUrl(file, label, isOptional);
+	return validateUrl(file, label, required);
 }
