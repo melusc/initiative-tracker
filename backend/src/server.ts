@@ -222,8 +222,8 @@ app.post(
 	},
 );
 
-app.get('/person/:slug', requireLogin(), async (request, response) => {
-	const slug = request.params['slug']!;
+app.get<{slug: string}>('/person/:slug', requireLogin(), async (request, response) => {
+	const slug = request.params.slug;
 	const login = response.locals.login!;
 	const person = api.Person.fromSlug(slug, login);
 	if (person) {
