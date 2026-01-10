@@ -222,23 +222,27 @@ app.post(
 	},
 );
 
-app.get('/person/:slug', requireLogin(), async (request, response) => {
-	const slug = request.params['slug']!;
-	const login = response.locals.login!;
-	const person = api.Person.fromSlug(slug, login);
-	if (person) {
-		await person.resolveSignatures();
+app.get<{slug: string}>(
+	'/person/:slug',
+	requireLogin(),
+	async (request, response) => {
+		const slug = request.params.slug;
+		const login = response.locals.login!;
+		const person = api.Person.fromSlug(slug, login);
+		if (person) {
+			await person.resolveSignatures();
 
-		response.status(200).render('person', {
-			login,
-			state: person,
-		});
+			response.status(200).render('person', {
+				login,
+				state: person,
+			});
 
-		return;
-	}
+			return;
+		}
 
-	response.status(404).render('404', {login, state: undefined});
-});
+		response.status(404).render('404', {login, state: undefined});
+	},
+);
 
 app.get('/organisations', async (_request, response) => {
 	const organisations = await api.Organisation.all();
