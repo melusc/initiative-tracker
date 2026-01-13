@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import {randomBytes} from 'node:crypto';
 
-import bcrypt from 'bcrypt';
+import bcrypt from '@node-rs/bcrypt';
 
 import {ApiError} from '../error.js';
 import {InjectableApi} from '../injectable-api.js';
@@ -196,7 +196,7 @@ export class Login extends InjectableApi {
 	}
 
 	async verifyPassword(password: string) {
-		return bcrypt.compare(password, this._passwordHash);
+		return bcrypt.verify(password, this._passwordHash);
 	}
 
 	async updatePassword(newPassword: string) {

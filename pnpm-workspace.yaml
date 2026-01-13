@@ -5,7 +5,6 @@ packages:
   - util
 
 ignoredBuiltDependencies:
-  - bcrypt
   - esbuild
   - unrs-resolver
 
