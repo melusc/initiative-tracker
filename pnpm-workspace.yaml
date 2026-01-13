@@ -4,7 +4,7 @@ packages:
   - frontend
   - util
 
-onlyBuiltDependencies:
+ignoredBuiltDependencies:
   - bcrypt
   - esbuild
   - unrs-resolver
