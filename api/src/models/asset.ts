@@ -21,6 +21,7 @@ import {randomBytes} from 'node:crypto';
 import {lookup} from 'node:dns/promises';
 import {readFile, rm, stat, writeFile} from 'node:fs/promises';
 import path from 'node:path';
+import {env} from 'node:process';
 import {fileURLToPath} from 'node:url';
 
 import {typeOf} from '@lusc/initiative-tracker-util/type-of.js';
@@ -46,7 +47,11 @@ async function fileTypeFromBuffer(buffer: Buffer) {
 }
 
 async function checkExiftoolInstalled(): Promise<boolean> {
-	const etProcess = spawn('exiftool', ['--help']);
+	const etProcess = spawn('exiftool', ['--help'], {
+		env: {
+			PATH: env['PATH'],
+		},
+	});
 
 	const {promise, resolve} = Promise.withResolvers<boolean>();
 
@@ -68,11 +73,15 @@ if (!isExiftoolSupported) {
 }
 
 async function exiftoolRemoveExif(path: URL): Promise<boolean> {
-	const childProcess = spawn('exiftool', [
-		'-all=',
-		'-overwrite_original',
-		fileURLToPath(path),
-	]);
+	const childProcess = spawn(
+		'exiftool',
+		['-all=', '-overwrite_original', fileURLToPath(path)],
+		{
+			env: {
+				PATH: env['PATH'],
+			},
+		},
+	);
 
 	const {promise, resolve} = Promise.withResolvers<boolean>();
 
