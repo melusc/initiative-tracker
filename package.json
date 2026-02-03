@@ -2,8 +2,8 @@
 	"name": "initiative-tracker",
 	"type": "module",
 	"devDependencies": {
-		"prettier": "^3.8.0",
-		"prettier-plugin-svelte": "^3.4.1"
+		"prettier": "3.8.1",
+		"prettier-plugin-svelte": "3.4.1"
 	},
 	"author": {
 		"email": "oss@lusc.ch",
