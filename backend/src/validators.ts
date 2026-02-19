@@ -188,7 +188,6 @@ export function validatePasswordUpdate(
 
 	// Not timing attack, this is for new passwords
 	// The submitter is already authenticated
-	// eslint-disable-next-line security/detect-possible-timing-attacks
 	if (password !== passwordRepeat) {
 		throw new ValidationError('New passwords must match.');
 	}

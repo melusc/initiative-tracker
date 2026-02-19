@@ -36,7 +36,6 @@ export function shouldRun(api: InternalApiOptions): boolean {
 }
 
 export async function run(api: InternalApiOptions): Promise<void> {
-	// eslint-disable-next-line security/detect-non-literal-fs-filename
 	const migrationQuery = await readFile(
 		new URL('001-modification-creation-date.sql', import.meta.url),
 		'utf8',
