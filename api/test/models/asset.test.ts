@@ -24,7 +24,6 @@ import {apiTest, compareFile, sampleAssetPaths} from '../utilities.js';
 
 describe('Pdf', () => {
 	apiTest('Creating pdf asset from file', async ({api: {Asset, PdfAsset}}) => {
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		const pdfBuffer = await readFile(sampleAssetPaths.pdf);
 
 		const asset = await PdfAsset.createFromBuffer(pdfBuffer);
@@ -61,11 +60,9 @@ describe('Image', () => {
 	apiTest.for(paths)(
 		'Creating image from file (%s)',
 		async ([extension, path], {api: {Asset, ImageAsset}}) => {
-			// eslint-disable-next-line security/detect-non-literal-fs-filename
 			const fileBuffer = await readFile(path);
 			const asset = await ImageAsset.createFromBuffer(fileBuffer);
 
-			// eslint-disable-next-line security/detect-non-literal-regexp
 			expect(asset.name).toMatch(new RegExp(String.raw`\.${extension}`));
 
 			const assetCopy = await Asset.fromName(asset.name);
@@ -74,7 +71,6 @@ describe('Image', () => {
 	);
 
 	apiTest('Optimising svg', async ({api: {ImageAsset}}) => {
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		const fileBuffer = await readFile(sampleAssetPaths.svg);
 		const asset = await ImageAsset.createFromBuffer(fileBuffer);
 		const optimisedBuffer = await asset.read();
@@ -83,7 +79,6 @@ describe('Image', () => {
 	});
 
 	apiTest('Removing exif data', async ({api: {ImageAsset}}) => {
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		const fileBuffer = await readFile(sampleAssetPaths.jpg);
 		const asset = await ImageAsset.createFromBuffer(fileBuffer);
 		const optimisedBuffer = await asset.read();

@@ -20,7 +20,6 @@ import {readdir, unlink} from 'node:fs/promises';
 import type {Api} from './injectable-api.js';
 
 export async function removeUnusedAssets(assetDirectory: URL, api: Api) {
-	// eslint-disable-next-line security/detect-non-literal-fs-filename
 	const diskAssets = new Set<string>(await readdir(assetDirectory));
 
 	for (const initiative of await api.Initiative.all()) {
@@ -38,7 +37,6 @@ export async function removeUnusedAssets(assetDirectory: URL, api: Api) {
 
 	for (const asset of diskAssets) {
 		const path = new URL(asset, assetDirectory);
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		await unlink(path);
 	}
 }

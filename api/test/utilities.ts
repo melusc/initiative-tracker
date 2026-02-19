@@ -31,9 +31,7 @@ import {createApi} from '../src/index.js';
 import type {Api} from '../src/injectable-api.js';
 
 const parentTemporaryDirectory = new URL('.tmp/', import.meta.url);
-// eslint-disable-next-line security/detect-non-literal-fs-filename
 await mkdir(parentTemporaryDirectory, {recursive: true});
-// eslint-disable-next-line security/detect-non-literal-fs-filename
 await writeFile(new URL('.gitignore', parentTemporaryDirectory), '*');
 
 type UtilityApi = Readonly<
@@ -57,12 +55,10 @@ export async function compareFile(
 	fileB: URL | Buffer,
 ): Promise<boolean> {
 	if (!Buffer.isBuffer(fileA)) {
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		fileA = await readFile(fileA);
 	}
 
 	if (!Buffer.isBuffer(fileB)) {
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		fileB = await readFile(fileB);
 	}
 
@@ -77,7 +73,6 @@ export const apiTest = test.extend({
 			parentTemporaryDirectory,
 		);
 
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		await mkdir(assetDirectory, {recursive: true});
 
 		const database = new DatabaseSync(':memory:');

@@ -25,7 +25,6 @@ import multer, {memoryStorage} from 'multer';
 // Implicitely create `data/` when creating `data/pdf`
 export const dataDirectory = new URL('../../data/', import.meta.url);
 export const assetDirectory = new URL('assets/', dataDirectory);
-// eslint-disable-next-line security/detect-non-literal-fs-filename
 await mkdir(assetDirectory, {recursive: true});
 
 export const staticRoot = fileURLToPath(

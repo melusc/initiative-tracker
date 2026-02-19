@@ -99,7 +99,6 @@ async function listMigrationsSorted(): Promise<readonly Migration[]> {
 	let fileList: string[];
 
 	try {
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		fileList = await readdir(migrationsDirectory);
 	} catch {
 		return [];
@@ -140,7 +139,6 @@ async function readMigrationState(api: InternalApiOptions) {
 	let stateContent: string;
 
 	try {
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		stateContent = await readFile(resolveMigrationStatePath(api), 'utf8');
 	} catch {
 		return -1;
@@ -155,7 +153,6 @@ async function readMigrationState(api: InternalApiOptions) {
 }
 
 async function writeMigrationState(id: number, api: InternalApiOptions) {
-	// eslint-disable-next-line security/detect-non-literal-fs-filename
 	await writeFile(resolveMigrationStatePath(api), String(id));
 }
 

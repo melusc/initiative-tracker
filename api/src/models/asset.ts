@@ -120,7 +120,6 @@ export class Asset extends InjectableApi {
 	}
 
 	async read() {
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		return readFile(this._resolvePath());
 	}
 
@@ -165,7 +164,6 @@ export class Asset extends InjectableApi {
 	static async _write(data: Buffer | string, extension: string) {
 		const name = this.generateName(extension);
 
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		await writeFile(this._resolvePath(name), data);
 		return name;
 	}
@@ -176,7 +174,6 @@ export class Asset extends InjectableApi {
 		const fullPath = this._resolvePath(name);
 
 		try {
-			// eslint-disable-next-line security/detect-non-literal-fs-filename
 			await stat(fullPath);
 			return new this.Asset(name, privateConstructorKey);
 		} catch {}
@@ -284,7 +281,6 @@ export class Asset extends InjectableApi {
 
 	/** @internal */
 	static async createFromFile(path: URL): Promise<Asset> {
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
 		const buffer = await readFile(path);
 		return this.createFromBuffer(buffer);
 	}
