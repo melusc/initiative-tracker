@@ -252,11 +252,20 @@ export class Asset extends InjectableApi {
 			controller.abort();
 		}, 5e3);
 
-		const response = await fetch(url, {signal, redirect: 'error'});
-		const body = await response.arrayBuffer();
+		let body: ArrayBuffer;
+		try {
+			const response = await fetch(url, {signal, redirect: 'error'});
+			body = await response.arrayBuffer();
+		} catch (error: unknown) {
+			if (error instanceof TypeError) {
+				throw new ApiError('Error when fetching file.', {cause: error});
+			}
+
+			throw error;
+		}
 
 		if (body.byteLength > this.fileSizeLimit) {
-			throw new ApiError('File is too large');
+			throw new ApiError('File is too large.');
 		}
 
 		return Buffer.from(body);
