@@ -252,8 +252,7 @@ export class Asset extends InjectableApi {
 			controller.abort();
 		}, 5e3);
 
-		const response = await fetch(url, {signal});
-		await this._validateUrl(response.url);
+		const response = await fetch(url, {signal, redirect: 'error'});
 		const body = await response.arrayBuffer();
 
 		if (body.byteLength > this.fileSizeLimit) {
