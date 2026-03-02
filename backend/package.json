@@ -10,10 +10,10 @@
 		"@types/express-serve-static-core": "^5.1.1",
 		"@types/morgan": "^1.9.10",
 		"@types/multer": "^2.0.0",
-		"@types/node": "^24.10.13",
+		"@types/node": "^24.10.15",
 		"concurrently": "^9.2.1",
 		"esbuild": "^0.27.3",
-		"eslint": "^10.0.0",
+		"eslint": "^10.0.2",
 		"typescript": "^5.9.3"
 	},
 	"dependencies": {
@@ -22,14 +22,14 @@
 		"@lusc/initiative-tracker-util": "workspace:^",
 		"@lusc/util": "^2.1.0",
 		"cookie-parser": "^1.4.7",
-		"devalue": "^5.6.2",
+		"devalue": "^5.6.3",
 		"express": "^5.2.1",
 		"helmet": "^8.1.0",
 		"morgan": "^1.10.1",
 		"multer": "^2.0.2"
 	},
 	"engines": {
-		"node": "^24.13.1"
+		"node": "^24.14.0"
 	},
 	"scripts": {
 		"fmt": "eslint --fix",
