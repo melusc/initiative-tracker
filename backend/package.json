@@ -14,7 +14,7 @@
 		"concurrently": "^9.2.1",
 		"esbuild": "^0.27.4",
 		"eslint": "^10.1.0",
-		"typescript": "^5.9.3"
+		"typescript": "^6.0.2"
 	},
 	"dependencies": {
 		"@lusc/initiative-tracker-api": "workspace:^",
