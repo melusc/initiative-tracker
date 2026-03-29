@@ -21,7 +21,7 @@
 		"@lusc/initiative-tracker-util": "workspace:^",
 		"@lusc/util": "^2.1.0",
 		"@node-rs/bcrypt": "^1.10.7",
-		"file-type": "^21.3.4",
+		"file-type": "^22.0.0",
 		"ip": "^2.0.1",
 		"svgo": "^4.0.1"
 	},
