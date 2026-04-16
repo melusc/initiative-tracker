@@ -26,6 +26,10 @@ const socket = process.env['BIND_SOCKET'];
 
 let trustProxy: string | boolean = process.env['TRUST_PROXY'] ?? 'loopback';
 
+const enableXAuthorisedAs = /^(?:true|1)$/i.test(
+	process.env['ENABLE_X_AUTHORISED_AS'] ?? 'false',
+);
+
 if (/^(?:true|1)$/i.test(trustProxy)) {
 	trustProxy = true;
 } else if (/^(?:false|0)$/i.test(trustProxy)) {
@@ -37,5 +41,6 @@ const env = {
 	host,
 	socket,
 	trustProxy,
-};
+	enableXAuthorisedAs,
+} as const;
 export default env;

@@ -19,11 +19,27 @@ import type {Session} from '@lusc/initiative-tracker-api';
 import type {Request, RequestHandler, Response} from 'express';
 
 import {api} from '../database.js';
+import env from '../env.js';
 
 export function identifyUser(): RequestHandler {
 	// eslint-disable-next-line unicorn/consistent-function-scoping
 	return (request, response, next) => {
 		let session: Session | undefined;
+
+		const xAuthorisedAs = request.header('X-Authorised-As');
+
+		if (env.enableXAuthorisedAs && xAuthorisedAs) {
+			const user = api.Login.fromUsername(xAuthorisedAs);
+			if (user) {
+				Object.defineProperty(response.locals, 'login', {
+					value: user,
+					writable: false,
+					configurable: false,
+				});
+				next();
+				return;
+			}
+		}
 
 		const cookies = request.cookies as Record<string, unknown>;
 		const sessionCookie = cookies['session'];
