@@ -69,6 +69,7 @@ app.use(
 				'style-src-elem': ["'self'", 'https://fonts.googleapis.com'],
 				'style-src-attr': ["'unsafe-inline'"],
 				'font-src': ['https://fonts.gstatic.com'],
+				'frame-ancestors': ["'none'"],
 			},
 		},
 	}),
