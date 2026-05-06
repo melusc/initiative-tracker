@@ -42,5 +42,8 @@
 	"license": "GPL-3.0-only",
 	"repository": {
 		"url": "https://github.com/melusc/initiative-tracker.git"
+	},
+	"engines": {
+		"node": "^24.15.0 || ^26.0.0"
 	}
 }
