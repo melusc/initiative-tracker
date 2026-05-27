@@ -13,9 +13,9 @@
 		"@lusc/eslint-config": "^10.2.0",
 		"@lusc/tsconfig": "^7.2.0",
 		"@types/node": "^24.12.4",
-		"eslint": "^10.3.0",
+		"eslint": "^10.4.0",
 		"typescript": "^6.0.3",
-		"vitest": "^4.1.6"
+		"vitest": "^4.1.7"
 	},
 	"scripts": {
 		"fmt": "eslint --fix",
