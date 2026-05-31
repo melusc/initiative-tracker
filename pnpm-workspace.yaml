@@ -8,4 +8,6 @@ allowBuilds:
   esbuild: false
   unrs-resolver: false
 
-trustPolicy: on
+trustPolicy: no-downgrade
+trustPolicyExclude:
+  - chokidar@4.0.3
