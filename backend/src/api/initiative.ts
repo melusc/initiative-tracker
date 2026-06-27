@@ -228,6 +228,7 @@ const patchInitiative: RequestHandler<{id: string}> = async (
 						FieldRequired.Required,
 					);
 					initiative.updateShortName(shortName);
+					// eslint-disable-next-line unicorn/no-break-in-nested-loop
 					break;
 				}
 				case 'fullName': {
@@ -237,6 +238,7 @@ const patchInitiative: RequestHandler<{id: string}> = async (
 						FieldRequired.Required,
 					);
 					initiative.updateFullName(fullName);
+					// eslint-disable-next-line unicorn/no-break-in-nested-loop
 					break;
 				}
 				case 'deadline': {
@@ -246,6 +248,7 @@ const patchInitiative: RequestHandler<{id: string}> = async (
 						FieldRequired.Optional,
 					);
 					initiative.updateDeadline(deadline);
+					// eslint-disable-next-line unicorn/no-break-in-nested-loop
 					break;
 				}
 				case 'initiatedDate': {
@@ -255,6 +258,7 @@ const patchInitiative: RequestHandler<{id: string}> = async (
 						FieldRequired.Optional,
 					);
 					initiative.updateInitiatedDate(initiated);
+					// eslint-disable-next-line unicorn/no-break-in-nested-loop
 					break;
 				}
 				case 'website': {
@@ -264,6 +268,7 @@ const patchInitiative: RequestHandler<{id: string}> = async (
 						FieldRequired.Optional,
 					);
 					initiative.updateWebsite(website);
+					// eslint-disable-next-line unicorn/no-break-in-nested-loop
 					break;
 				}
 				case 'bundeskanzleiUrl': {
@@ -273,6 +278,7 @@ const patchInitiative: RequestHandler<{id: string}> = async (
 						FieldRequired.Optional,
 					);
 					initiative.updateBundeskanzleiUrl(bundeskanzleiUrl);
+					// eslint-disable-next-line unicorn/no-break-in-nested-loop
 					break;
 				}
 				case 'pdf': {
@@ -282,6 +288,7 @@ const patchInitiative: RequestHandler<{id: string}> = async (
 						: api.PdfAsset.createFromUrl(pdf));
 
 					await initiative.updatePdf(pdfAsset);
+					// eslint-disable-next-line unicorn/no-break-in-nested-loop
 					break;
 				}
 				case 'image': {
@@ -299,6 +306,7 @@ const patchInitiative: RequestHandler<{id: string}> = async (
 					}
 
 					await initiative.updateImage(imageAsset);
+					// eslint-disable-next-line unicorn/no-break-in-nested-loop
 					break;
 				}
 			}

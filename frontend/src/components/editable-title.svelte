@@ -40,14 +40,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	let submitting = $state(false);
 
 	$effect(() => {
-		if (editEnabled) {
-			const range = document.createRange();
-			range.selectNodeContents(titleNode!);
-			range.collapse(false);
-			const selection = getSelection()!;
-			selection.removeAllRanges();
-			selection.addRange(range);
+		if (!editEnabled) {
+			return;
 		}
+
+		const range = document.createRange();
+		range.selectNodeContents(titleNode!);
+		range.collapse(false);
+		const selection = getSelection()!;
+		selection.removeAllRanges();
+		selection.addRange(range);
 	});
 
 	function enableEdit(): void {
@@ -55,11 +57,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	}
 
 	function handleKeydown(event: KeyboardEvent): void {
-		if (event.key === 'Enter') {
-			event.preventDefault();
-			event.stopImmediatePropagation();
-			void handleSave();
+		if (event.key !== 'Enter') {
+			return;
 		}
+
+		event.preventDefault();
+		event.stopImmediatePropagation();
+		void handleSave();
 	}
 
 	function handleFocusOut() {

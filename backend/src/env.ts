@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import process from 'node:process';
 
-const envPort = Number.parseInt(process.env['BIND_PORT']!, 10);
+const envPort = Math.trunc(Number(process.env['BIND_PORT']!));
 const port = Number.isSafeInteger(envPort) ? envPort : 3129;
 
 const host = process.env['BIND_HOST'] ?? '127.0.0.1';

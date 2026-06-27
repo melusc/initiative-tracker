@@ -33,7 +33,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		if (confirmed) {
 			const body = await fetch(api, {method: 'delete'});
 			await body.text();
-			location.href = '/';
+			location.assign('/');
 		} else {
 			confirmed = true;
 		}

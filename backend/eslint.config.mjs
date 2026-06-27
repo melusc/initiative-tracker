@@ -6,14 +6,15 @@ export default [
 		rules: {
 			// express is inherently callbacky
 			'promise/prefer-await-to-callbacks': 'off',
-			'unicorn/prevent-abbreviations': [
+			'unicorn/name-replacements': [
 				'error',
 				{
-					allowList: {
-						env: true,
+					replacements: {
+						env: false,
 					},
 				},
 			],
+			'unicorn/no-top-level-side-effects': 'off',
 		},
 	},
 ];

@@ -28,6 +28,13 @@ export default [
 			// We don't use sveltekit for routing so file structure
 			// doesn't match our urls
 			'svelte/no-navigation-without-resolve': 'off',
+			'unicorn/no-optional-chaining-on-undeclared-variable': 'off',
+		},
+	},
+	{
+		files: ['**/icons/*.svelte'],
+		rules: {
+			'unicorn/prefer-https': 'off',
 		},
 	},
 ];

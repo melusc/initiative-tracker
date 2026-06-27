@@ -51,8 +51,8 @@ export async function svelteKitEngine(
 	try {
 		const content = await readFile(path, 'utf8');
 		const injected = content
-			.replace('__state__', uneval(state, pojoReplacer))
-			.replace('__login__', uneval(login, pojoReplacer));
+			.replace('__state__', () => uneval(state, pojoReplacer))
+			.replace('__login__', () => uneval(login, pojoReplacer));
 		callback(null, injected);
 	} catch (error: unknown) {
 		callback(error);

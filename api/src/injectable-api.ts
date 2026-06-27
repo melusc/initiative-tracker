@@ -53,11 +53,11 @@ export function inject<ClassType>(
 	// @ts-expect-error Not worth the effort to type this correctly
 	// Seems complicated (https://github.com/microsoft/TypeScript/issues/37142)
 	const injectedClass = class extends class_ {
-		get apiOptions(): InternalApiOptions {
+		static get apiOptions(): InternalApiOptions {
 			return options;
 		}
 
-		static get apiOptions(): InternalApiOptions {
+		get apiOptions(): InternalApiOptions {
 			return options;
 		}
 	};

@@ -118,7 +118,7 @@ export function validateName(
 	// \u2013 is en dash, \u2014 em dash
 	// As first character, don't allow special characters except quotation marks
 	if (
-		!/^[a-züöäéèëï"'„“‚«»][a-züöäéèëï\d\-/()* .:!?,"'„“”‚‘’«»&%[\]+$€\u2013\u2014]+$/i.test(
+		!/^[a-züöäéèëï"'„“‚«»][a-züöäéèëï\d\-/()* .:!?,"'„“”‚‘’«»&%[\]+$€\u{2013}\u{2014}]+$/iu.test(
 			name,
 		)
 	) {

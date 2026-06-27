@@ -22,6 +22,7 @@ import type {Api} from './injectable-api.js';
 export async function removeUnusedAssets(assetDirectory: URL, api: Api) {
 	const diskAssets = new Set<string>(await readdir(assetDirectory));
 
+	// eslint-disable-next-line unicorn/no-unreadable-for-of-expression
 	for (const initiative of await api.Initiative.all()) {
 		diskAssets.delete(initiative.pdf.name);
 		if (initiative.image) {
@@ -29,6 +30,7 @@ export async function removeUnusedAssets(assetDirectory: URL, api: Api) {
 		}
 	}
 
+	// eslint-disable-next-line unicorn/no-unreadable-for-of-expression
 	for (const organisation of await api.Organisation.all()) {
 		if (organisation.image) {
 			diskAssets.delete(organisation.image.name);

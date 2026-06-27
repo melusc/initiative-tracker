@@ -43,5 +43,5 @@ export async function run(api: InternalApiOptions): Promise<void> {
 
 	const now = Date.now();
 
-	api.database.exec(migrationQuery.replaceAll('$$NOW$$', String(now)));
+	api.database.exec(migrationQuery.replaceAll('$$NOW$$', () => String(now)));
 }

@@ -368,7 +368,9 @@ app.post(
 			}
 
 			return;
-		} else if (body['virtual-form'] === 'password') {
+		}
+
+		if (body['virtual-form'] === 'password') {
 			let newPassword: string;
 			let currentPassword: string;
 
