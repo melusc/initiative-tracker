@@ -2,8 +2,8 @@
 	"name": "initiative-tracker",
 	"type": "module",
 	"devDependencies": {
-		"prettier": "^3.8.3",
-		"prettier-plugin-svelte": "^4.0.1"
+		"prettier": "^3.8.4",
+		"prettier-plugin-svelte": "^4.1.1"
 	},
 	"author": {
 		"email": "oss@lusc.ch",
@@ -20,7 +20,7 @@
 		"test": "pnpm -r test",
 		"start": "pnpm --filter @lusc/initiative-tracker-backend start"
 	},
-	"packageManager": "pnpm@11.2.2",
+	"packageManager": "pnpm@11.9.0",
 	"engines": {
 		"node": "^24.15.0 || ^26.0.0"
 	},

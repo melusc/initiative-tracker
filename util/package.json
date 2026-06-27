@@ -10,12 +10,12 @@
 	},
 	"type": "module",
 	"devDependencies": {
-		"@lusc/eslint-config": "^10.2.0",
-		"@lusc/tsconfig": "^7.2.0",
-		"@types/node": "^24.12.4",
-		"eslint": "^10.4.0",
+		"@lusc/eslint-config": "^10.2.1",
+		"@lusc/tsconfig": "^7.2.1",
+		"@types/node": "^26.0.1",
+		"eslint": "^10.5.0",
 		"typescript": "^6.0.3",
-		"vitest": "^4.1.7"
+		"vitest": "^4.1.9"
 	},
 	"scripts": {
 		"fmt": "eslint --fix",
