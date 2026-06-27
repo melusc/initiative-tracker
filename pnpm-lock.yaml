@@ -37,8 +37,8 @@ importers:
         version: 4.0.1
     devDependencies:
       '@lusc/eslint-config':
-        specifier: ^10.2.1
-        version: 10.2.1(@typescript-eslint/utils@8.62.0(eslint@10.5.0)(typescript@6.0.3))(eslint@10.5.0)
+        specifier: ^14.3.0
+        version: 14.3.0(@typescript-eslint/utils@8.62.0(eslint@10.5.0)(typescript@6.0.3))(eslint@10.5.0)
       '@lusc/tsconfig':
         specifier: ^7.2.1
         version: 7.2.1
@@ -101,8 +101,8 @@ importers:
         version: 2.2.0
     devDependencies:
       '@lusc/eslint-config':
-        specifier: ^10.2.1
-        version: 10.2.1(@typescript-eslint/utils@8.62.0(eslint@10.5.0)(typescript@6.0.3))(eslint@10.5.0)
+        specifier: ^14.3.0
+        version: 14.3.0(@typescript-eslint/utils@8.62.0(eslint@10.5.0)(typescript@6.0.3))(eslint@10.5.0)
       '@lusc/tsconfig':
         specifier: ^7.2.1
         version: 7.2.1
@@ -150,8 +150,8 @@ importers:
         version: 2.1.1
     devDependencies:
       '@lusc/eslint-config':
-        specifier: ^10.2.1
-        version: 10.2.1(@typescript-eslint/utils@8.62.0(eslint@10.5.0)(typescript@6.0.3))(eslint@10.5.0)
+        specifier: ^14.3.0
+        version: 14.3.0(@typescript-eslint/utils@8.62.0(eslint@10.5.0)(typescript@6.0.3))(eslint@10.5.0)
       '@lusc/tsconfig':
         specifier: ^7.2.1
         version: 7.2.1
@@ -198,8 +198,8 @@ importers:
   util:
     devDependencies:
       '@lusc/eslint-config':
-        specifier: ^10.2.1
-        version: 10.2.1(@typescript-eslint/utils@8.62.0(eslint@10.5.0)(typescript@6.0.3))(eslint@10.5.0)
+        specifier: ^14.3.0
+        version: 14.3.0(@typescript-eslint/utils@8.62.0(eslint@10.5.0)(typescript@6.0.3))(eslint@10.5.0)
       '@lusc/tsconfig':
         specifier: ^7.2.1
         version: 7.2.1
@@ -480,11 +480,11 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@lusc/eslint-config@10.2.1':
-    resolution: {integrity: sha512-Wwu0meaveRrRVWLVuU163mPB6UhjtisFkvBLZiOpBcU/9dLXAr8bjZCwY4wNEzi7tsJ8/vwHfgF/eeq4elZuZg==}
+  '@lusc/eslint-config@14.3.0':
+    resolution: {integrity: sha512-rldccG8tzedMvDo04BzUlWiQiJwMOOFEcw6ECaCFm+6Pjp27PNQ3OugHlxLx7ICnToPfe8XjlUq5SVuNpdi0rQ==}
     engines: {node: ^24.10.0 || ^25.0.0 || ^26.0.0}
     peerDependencies:
-      eslint: ^10.4.1
+      eslint: ^10.5.0
 
   '@lusc/tsconfig@7.2.1':
     resolution: {integrity: sha512-BckyzQRTbjPoeL9wRTc8hnHwCl4u8F0Z27dhcm7LtktB3DuPhUX3XIgr3syfXxDl3mT6/y6YpjesG4MIG86rAA==}
@@ -1141,10 +1141,6 @@ packages:
     resolution: {integrity: sha512-77PSwercCZU2Fc4sX94eF8k8Pxte6JAwL4/ICZLFjJLqegs7kCuAsqqj/70NQF6TvDpgFjkubQB2FW2ZZddvQg==}
     engines: {node: '>=8'}
 
-  clean-regexp@1.0.0:
-    resolution: {integrity: sha512-GfisEZEJvzKrmGWkvfhgzcz/BllN1USeqD2V6tg14OAOgaCD2Z/PUEuxnAZ/nPvmaHRG7a8y77p1T/IRQ4D1Hw==}
-    engines: {node: '>=4'}
-
   cliui@9.0.1:
     resolution: {integrity: sha512-k7ndgKhwoQveBL+/1tqGJYNz097I7WOvwbmmU2AR5+magtbjPWQTS1C5vzGkBC8Ym8UWRzfKUzUUqFLypY4Q+w==}
     engines: {node: '>=20'}
@@ -1263,6 +1259,10 @@ packages:
     resolution: {integrity: sha512-g7nH6P6dyDioJogAAGprGpCtVImJhpPk/roCzdb3fIh61/s/nPsfR6onyMwkCAR/OlC3yBC0lESvUoQEAssIrw==}
     engines: {node: '>= 0.8'}
 
+  detect-indent@7.0.2:
+    resolution: {integrity: sha512-y+8xyqdGLL+6sh0tVeHcfP/QDd8gUgbasolJJpY7NgeQGSZ739bDtSiaiDgtoicy+mtYB81dKLxO9xRhCyIB3A==}
+    engines: {node: '>=12.20'}
+
   detect-libc@2.1.2:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
@@ -1334,10 +1334,6 @@ packages:
 
   escape-html@1.0.3:
     resolution: {integrity: sha512-NiSupZ4OeuGwr68lGIeym/ksIZMJodUGOSCZ/FSnTxcrekbvqrgdUxlJOMpijaKZVjAJrWrGs/6Jy8OMuyj9ow==}
-
-  escape-string-regexp@1.0.5:
-    resolution: {integrity: sha512-vbRorB5FUQWvla16U8R/qgaFIya2qGzwDrNmCZuYKrbdSUMG6I1ZCGQRefkRVhuOkIGVne7BQ35DSfo1qvJqFg==}
-    engines: {node: '>=0.8.0'}
 
   escape-string-regexp@4.0.0:
     resolution: {integrity: sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==}
@@ -1425,11 +1421,11 @@ packages:
       svelte:
         optional: true
 
-  eslint-plugin-unicorn@64.0.0:
-    resolution: {integrity: sha512-rNZwalHh8i0UfPlhNwg5BTUO1CMdKNmjqe+TgzOTZnpKoi8VBgsW7u9qCHIdpxEzZ1uwrJrPF0uRb7l//K38gA==}
-    engines: {node: ^20.10.0 || >=21.0.0}
+  eslint-plugin-unicorn@68.0.0:
+    resolution: {integrity: sha512-mHYWvX948Q4H3bGc39bsNMxD/leOuNI+Iws9NVsoSz5VA7EGP86wnz7mZ/SPSvRhefT8L4hd8DHfDuGC+lIoCQ==}
+    engines: {node: '>=22'}
     peerDependencies:
-      eslint: '>=9.38.0'
+      eslint: '>=10.4'
 
   eslint-scope@8.4.0:
     resolution: {integrity: sha512-sNXOfKCn74rt8RICKMvJS7XKV/Xk9kA7DyJr8mJik3S7Cwgy3qlkkmyS2uQB3jiJg6VNdZd/pDBJu0nvG2NlTg==}
@@ -2042,10 +2038,6 @@ packages:
     resolution: {integrity: sha512-sZuz1dYW/ZsfG17WSAG7eS85r5a0dDsvg+7BiiYR5o6lKCAtUrEwdmRmaGF6rwVj3LcmAeYkOWKEPlbPzN3Y3A==}
     engines: {node: ^12.0.0 || ^14.0.0 || >=16.0.0}
 
-  regexp-tree@0.1.27:
-    resolution: {integrity: sha512-iETxpjK6YoRWJG5o6hXLwvjYAoW+FEZn9os0PD/b6AP6xQwsa/Y7lCVgIixBbUPMfhu+i2LtdeAqVTgGlQarfA==}
-    hasBin: true
-
   regjsparser@0.13.2:
     resolution: {integrity: sha512-NgRBy2Nx/bE+9F27nVHnqcN5HjyLmecqsqx2PJHu3/IEtADD4WuxuXIVExD5PoSDFVrl78dOonfcOe5O+5nbzQ==}
     hasBin: true
@@ -2639,7 +2631,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@lusc/eslint-config@10.2.1(@typescript-eslint/utils@8.62.0(eslint@10.5.0)(typescript@6.0.3))(eslint@10.5.0)':
+  '@lusc/eslint-config@14.3.0(@typescript-eslint/utils@8.62.0(eslint@10.5.0)(typescript@6.0.3))(eslint@10.5.0)':
     dependencies:
       '@eslint-community/eslint-plugin-eslint-comments': 4.7.2(eslint@10.5.0)
       '@eslint/js': 10.0.1(eslint@10.5.0)
@@ -2650,7 +2642,7 @@ snapshots:
       eslint-plugin-n: 18.2.1(eslint@10.5.0)(typescript@6.0.3)
       eslint-plugin-promise: 7.3.0(eslint@10.5.0)
       eslint-plugin-regexp: 3.1.1(eslint@10.5.0)
-      eslint-plugin-unicorn: 64.0.0(eslint@10.5.0)
+      eslint-plugin-unicorn: 68.0.0(eslint@10.5.0)
       globals: 17.7.0
       typescript: 6.0.3
       typescript-eslint: 8.62.0(eslint@10.5.0)(typescript@6.0.3)
@@ -3239,10 +3231,6 @@ snapshots:
 
   ci-info@4.4.0: {}
 
-  clean-regexp@1.0.0:
-    dependencies:
-      escape-string-regexp: 1.0.5
-
   cliui@9.0.1:
     dependencies:
       string-width: 7.2.0
@@ -3342,6 +3330,8 @@ snapshots:
 
   depd@2.0.0: {}
 
+  detect-indent@7.0.2: {}
+
   detect-libc@2.1.2: {}
 
   devalue@5.8.1: {}
@@ -3427,8 +3417,6 @@ snapshots:
   escalade@3.2.0: {}
 
   escape-html@1.0.3: {}
-
-  escape-string-regexp@1.0.5: {}
 
   escape-string-regexp@4.0.0: {}
 
@@ -3531,14 +3519,15 @@ snapshots:
     transitivePeerDependencies:
       - ts-node
 
-  eslint-plugin-unicorn@64.0.0(eslint@10.5.0):
+  eslint-plugin-unicorn@68.0.0(eslint@10.5.0):
     dependencies:
       '@babel/helper-validator-identifier': 7.29.7
       '@eslint-community/eslint-utils': 4.9.1(eslint@10.5.0)
+      browserslist: 4.28.4
       change-case: 5.4.4
       ci-info: 4.4.0
-      clean-regexp: 1.0.0
       core-js-compat: 3.49.0
+      detect-indent: 7.0.2
       eslint: 10.5.0
       find-up-simple: 1.0.1
       globals: 17.7.0
@@ -3546,7 +3535,6 @@ snapshots:
       is-builtin-module: 5.0.0
       jsesc: 3.1.0
       pluralize: 8.0.0
-      regexp-tree: 0.1.27
       regjsparser: 0.13.2
       semver: 7.8.5
       strip-indent: 4.1.1
@@ -4104,8 +4092,6 @@ snapshots:
     dependencies:
       '@eslint-community/regexpp': 4.12.2
       refa: 0.12.1
-
-  regexp-tree@0.1.27: {}
 
   regjsparser@0.13.2:
     dependencies:

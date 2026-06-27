@@ -184,6 +184,7 @@ const patchOrganisation: RequestHandler<{id: string}> = async (
 						FieldRequired.Required,
 					);
 					organisation.updateName(name);
+					// eslint-disable-next-line unicorn/no-break-in-nested-loop
 					break;
 				}
 				case 'website': {
@@ -193,6 +194,7 @@ const patchOrganisation: RequestHandler<{id: string}> = async (
 						FieldRequired.Optional,
 					);
 					organisation.updateWebsite(website);
+					// eslint-disable-next-line unicorn/no-break-in-nested-loop
 					break;
 				}
 				case 'image': {

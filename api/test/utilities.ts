@@ -31,7 +31,9 @@ import {createApi} from '../src/index.js';
 import type {Api} from '../src/injectable-api.js';
 
 const parentTemporaryDirectory = new URL('.tmp/', import.meta.url);
+// eslint-disable-next-line unicorn/no-top-level-side-effects
 await mkdir(parentTemporaryDirectory, {recursive: true});
+// eslint-disable-next-line unicorn/no-top-level-side-effects
 await writeFile(new URL('.gitignore', parentTemporaryDirectory), '*');
 
 type UtilityApi = Readonly<

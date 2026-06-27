@@ -146,6 +146,7 @@ export class Asset extends InjectableApi {
 	}
 
 	/** @internal */
+	// eslint-disable-next-line unicorn/prefer-private-class-fields
 	static async _validateAndGetExtension(asset: Buffer) {
 		if (asset.byteLength > this.fileSizeLimit) {
 			throw new ApiError('Asset file size is too large.');
@@ -161,6 +162,7 @@ export class Asset extends InjectableApi {
 	}
 
 	/** @internal */
+	// eslint-disable-next-line unicorn/prefer-private-class-fields
 	static async _write(data: Buffer | string, extension: string) {
 		const name = this.generateName(extension);
 

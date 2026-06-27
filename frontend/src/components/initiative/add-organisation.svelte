@@ -37,12 +37,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 	const filteredOrganisations = $derived(
 		organisations &&
-			organisations.filter(
-				organisation =>
-					!initiative.organisations.some(
-						associatedOrganisation =>
-							associatedOrganisation.id === organisation.id,
-					),
+			organisations.filter(organisation =>
+				initiative.organisations.every(
+					associatedOrganisation =>
+						associatedOrganisation.id !== organisation.id,
+				),
 			),
 	);
 

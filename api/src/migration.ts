@@ -51,11 +51,11 @@ class Migration {
 			);
 		}
 
-		this.id = Number.parseInt(match[0], 10);
+		this.id = Math.trunc(Number(match[0]));
 		this.name = stem;
 	}
 
-	async _import() {
+	async #import() {
 		if (this._run && this._shouldRun) {
 			return;
 		}
@@ -76,13 +76,13 @@ class Migration {
 	}
 
 	async shouldRun(api: InternalApiOptions) {
-		await this._import();
+		await this.#import();
 
 		return this._shouldRun!(api);
 	}
 
 	async run(api: InternalApiOptions) {
-		await this._import();
+		await this.#import();
 
 		console.log('Migrating %s', this.name);
 		const start = performance.now();
@@ -144,7 +144,7 @@ async function readMigrationState(api: InternalApiOptions) {
 		return -1;
 	}
 
-	const id = Number.parseInt(stateContent, 10);
+	const id = Math.trunc(Number(stateContent));
 	if (!Number.isFinite(id)) {
 		throw new TypeError('migration-state is corrupted');
 	}
