@@ -41,8 +41,7 @@ export const multerUpload = multer({
 
 export function mergeExpressBodyFile(request: Request, keys: string[]) {
 	const files = request.files as unknown as
-		| Record<string, Express.Multer.File[]>
-		| undefined;
+		Record<string, Express.Multer.File[]> | undefined;
 
 	const body = {
 		...(request.body as Record<string, unknown>),
