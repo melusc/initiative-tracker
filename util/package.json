@@ -13,7 +13,7 @@
 		"@lusc/eslint-config": "^17.0.0",
 		"@lusc/tsconfig": "^7.2.1",
 		"@types/node": "^26.1.1",
-		"eslint": "^10.6.0",
+		"eslint": "^10.7.0",
 		"typescript": "^6.0.3",
 		"vitest": "^4.1.10"
 	},
