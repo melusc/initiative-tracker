@@ -288,7 +288,7 @@ export class Organisation extends InjectableApi {
 	}
 
 	async updateImage(newImage: Asset | undefined) {
-		if (this.image === undefined && newImage === undefined) {
+		if (newImage === undefined && this.image === undefined) {
 			return;
 		}
 
