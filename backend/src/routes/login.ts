@@ -26,10 +26,10 @@ export async function loginPost(request: Request, response: Response) {
 	const password = body['password'];
 
 	if (
-		typeof username !== 'string' ||
-		!username.trim() ||
 		typeof password !== 'string' ||
-		!password
+		typeof username !== 'string' ||
+		!password ||
+		!username.trim()
 	) {
 		response.render('login', {
 			login: undefined,

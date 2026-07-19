@@ -20,6 +20,7 @@ import {setTimeout} from 'node:timers/promises';
 import {expect} from 'vitest';
 
 import {ApiError} from '../../src/error.js';
+// eslint-disable-next-line node-test/no-import-test-files
 import {apiTest, sampleAssetPaths} from '../utilities.js';
 
 apiTest('Creating person', async ({api: {Person, Login}}) => {

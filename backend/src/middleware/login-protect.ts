@@ -28,7 +28,7 @@ export function identifyUser(): RequestHandler {
 
 		const xAuthorisedAs = request.header('X-Authorised-As');
 
-		if (env.enableXAuthorisedAs && xAuthorisedAs) {
+		if (xAuthorisedAs && env.enableXAuthorisedAs) {
 			const user = api.Login.fromUsername(xAuthorisedAs);
 			if (user) {
 				Object.defineProperty(response.locals, 'login', {
