@@ -71,7 +71,7 @@ jobs:
           ssh-keygen -Hf ~/.ssh/known_hosts
 
           rsync --verbose --human-readable \
-            --recursive --checksum \
+            --recursive --checksum --relative \
             --compress --delete \
             --rsh "ssh -i ~/.ssh/ssh-key" \
             {backend,util,frontend,api}/{dist/,package.json} \
