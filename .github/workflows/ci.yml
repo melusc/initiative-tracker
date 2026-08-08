@@ -93,19 +93,7 @@ jobs:
             package.json pnpm-*.yaml \
             "$SSH_USERNAME@$SSH_HOST:/opt/initiative-tracker/"
 
-          $SSH_OPTS "$SSH_USERNAME@$SSH_HOST" bash -s << 'EOF'
-            set -eo pipefail
-
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
-            cd /opt/initiative-tracker
-            corepack prepare
-            corepack enable
-            CI=true pnpm install --prod --frozen-lockfile
-            ./post-deploy.sh 2> /dev/null
-            sudo systemctl restart initiative-tracker.service
-          EOF
+          $SSH_OPTS "$SSH_USERNAME@$SSH_HOST" /opt/initiative-tracker/post-deploy.sh
         env:
           SSH_KEY: ${{ secrets.SSH_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
