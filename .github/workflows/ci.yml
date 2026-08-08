@@ -71,37 +71,43 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: build
-      - name: Write ssh key
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/ssh-key
-          chmod 600 ~/.ssh/ssh-key
-        env:
-          SSH_KEY: ${{ secrets.SSH_KEY }}
+
       - name: Sync
         run: |
-          # Trust host public key
-          echo "${{ secrets.SSH_HOST }} ${{ secrets.SSH_HOST_KEY }}" >> ~/.ssh/known_hosts
-          ssh-keygen -Hf ~/.ssh/known_hosts
+          set -euo pipefail
+
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s %s\n' "$SSH_HOST" "$SSH_HOST_KEY" > ~/.ssh/known_hosts
+
+          eval "$(ssh-agent -s)" >/dev/null
+          trap 'ssh-agent -k >/dev/null 2>&1 || true' EXIT INT TERM
+          printf '%s\n' "$SSH_KEY" | ssh-add -t 1200 -
+
+          SSH_OPTS='ssh -o StrictHostKeyChecking=yes -o BatchMode=yes'
 
           rsync --verbose --human-readable \
             --recursive --checksum --relative \
             --compress --delete \
-            --rsh "ssh -i ~/.ssh/ssh-key" \
-            {backend,util,frontend,api}/{dist/,package.json} \
+            --rsh "$SSH_OPTS" \
+            {api,backend,frontend,util}/{dist/,package.json} \
             package.json pnpm-*.yaml \
-            "${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST}}:/opt/initiative-tracker/"
+            "$SSH_USERNAME@$SSH_HOST:/opt/initiative-tracker/"
 
-          ssh -i ~/.ssh/ssh-key "${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST}}" /bin/bash << 'EOF'
+          $SSH_OPTS "$SSH_USERNAME@$SSH_HOST" bash -s << 'EOF'
+            set -eo pipefail
+
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
             cd /opt/initiative-tracker
             corepack prepare
             corepack enable
-            CI=true pnpm install --prod
-            /opt/initiative-tracker/post-deploy.sh 2> /dev/null
+            CI=true pnpm install --prod --frozen-lockfile
+            ./post-deploy.sh 2> /dev/null
             sudo systemctl restart initiative-tracker.service
           EOF
-      - run: rm ~/.ssh/ssh-key
-        if: always()
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_HOST_KEY: ${{ secrets.SSH_HOST_KEY }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
