@@ -15,8 +15,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-/* eslint n/no-process-exit: off */
-
 import process from 'node:process';
 
 type Handler = () => void;
@@ -27,7 +25,7 @@ export function cleanupBeforeExit(callback: Handler) {
 	handlers.add(callback);
 }
 
-process.once('SIGINT', () => {
+function handleExit() {
 	let exitCode = 0;
 
 	for (const handler of handlers) {
@@ -39,5 +37,9 @@ process.once('SIGINT', () => {
 		}
 	}
 
+	// eslint-disable-next-line n/no-process-exit, unicorn/no-process-exit
 	process.exit(exitCode);
-});
+}
+
+process.once('SIGINT', handleExit);
+process.once('SIGTERM', handleExit);
