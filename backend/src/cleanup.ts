@@ -27,7 +27,7 @@ export function cleanupBeforeExit(callback: Handler) {
 	handlers.add(callback);
 }
 
-process.once('SIGINT', () => {
+function handleExit() {
 	let exitCode = 0;
 
 	for (const handler of handlers) {
@@ -39,5 +39,9 @@ process.once('SIGINT', () => {
 		}
 	}
 
+	// eslint-disable-next-line unicorn/no-process-exit
 	process.exit(exitCode);
-});
+}
+
+process.once('SIGINT', handleExit);
+process.once('SIGTERM', handleExit);
