@@ -18,7 +18,7 @@ on:
 
 jobs:
   analyze:
-    uses: melusc/workflows/.github/workflows/codeql.yml@main
+    uses: melusc/workflows/.github/workflows/codeql.yml@271b8a41edb0fa3b44de4d2f048fddf39a489d7d # main
     permissions:
       actions: read
       contents: read
