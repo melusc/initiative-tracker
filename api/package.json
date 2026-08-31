@@ -11,7 +11,7 @@
 		"@vitest/runner": "^4.1.11",
 		"esbuild": "^0.28.2",
 		"eslint": "^10.9.1",
-		"typescript": "^6.0.3",
+		"typescript": "^7.0.2",
 		"vitest": "^4.1.11"
 	},
 	"exports": {
