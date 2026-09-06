@@ -431,7 +431,7 @@ const createModifyBacking =
 
 export const initiativeRouter = Router();
 
-/* NON-ADMIN */
+// NON-ADMIN
 initiativeRouter.put(
 	'/initiative/:initiativeId/sign/:personId',
 	requireLogin(),
@@ -443,7 +443,7 @@ initiativeRouter.delete(
 	createModifyInitiativeSignature(true),
 );
 
-/* ADMIN (except GET) */
+// ADMIN (except GET)
 initiativeRouter.get('/initiatives', getAllInitiatives);
 initiativeRouter.post(
 	'/initiative/create',

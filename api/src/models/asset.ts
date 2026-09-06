@@ -97,7 +97,9 @@ async function exiftoolRemoveExif(path: URL): Promise<boolean> {
 const privateConstructorKey = Symbol();
 
 export class Asset extends InjectableApi {
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	static readonly _validMimeTypes: ReadonlySet<string> = new Set();
 
 	constructor(
@@ -131,21 +133,26 @@ export class Asset extends InjectableApi {
 		return [randomBytes(20).toString('base64url'), extension].join('.');
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	static optimise(
 		extension: string,
 		data: Buffer,
+	): Promise<Buffer | string> | Buffer | string;
+	static optimise(
+		_extension: string,
+		data: Buffer,
 	): Promise<Buffer | string> | Buffer | string {
-		void extension;
 		return data;
 	}
 
-	static optimiseFile(extension: string, path: URL): Promise<void> | void {
-		void path;
-		void extension;
-	}
+	static optimiseFile(extension: string, path: URL): Promise<void>;
+	static optimiseFile(_extension: string, _path: URL): Promise<void> | void {}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	// eslint-disable-next-line unicorn/prefer-private-class-fields
 	static async _validateAndGetExtension(asset: Buffer) {
 		if (asset.byteLength > this.fileSizeLimit) {
@@ -161,7 +168,9 @@ export class Asset extends InjectableApi {
 		return fileType.ext;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	// eslint-disable-next-line unicorn/prefer-private-class-fields
 	static async _write(data: Buffer | string, extension: string) {
 		const name = this.generateName(extension);
@@ -289,7 +298,9 @@ export class Asset extends InjectableApi {
 		return asset;
 	}
 
-	/** @internal */
+	/**
+	@internal
+	*/
 	static async createFromFile(path: URL): Promise<Asset> {
 		const buffer = await readFile(path);
 		return this.createFromBuffer(buffer);
@@ -301,12 +312,16 @@ export class Asset extends InjectableApi {
 }
 
 export class PdfAsset extends Asset {
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	static override readonly _validMimeTypes = new Set(['application/pdf']);
 }
 
 export class ImageAsset extends Asset {
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	static override readonly _validMimeTypes = new Set([
 		'image/jpeg',
 		'image/png',
@@ -314,6 +329,9 @@ export class ImageAsset extends Asset {
 		'image/svg+xml',
 	]);
 
+	/**
+	 * @internal
+	 */
 	static override optimise(extension: string, data: Buffer): Buffer | string {
 		if (extension !== 'svg') {
 			return data;
@@ -328,6 +346,9 @@ export class ImageAsset extends Asset {
 		}
 	}
 
+	/**
+	 * @internal
+	 */
 	static override async optimiseFile(
 		extension: string,
 		path: URL,
