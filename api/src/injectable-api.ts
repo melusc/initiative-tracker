@@ -70,122 +70,170 @@ export function inject<ClassType>(
 }
 
 export class InjectableApi {
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	get apiOptions(): InternalApiOptions {
 		throw new ApiError('API Options not injected.');
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	static get apiOptions(): InternalApiOptions {
 		throw new ApiError('API Options not injected.');
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	get assetDirectory() {
 		return this.apiOptions.assetDirectory;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	static get assetDirectory() {
 		return this.apiOptions.assetDirectory;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	get fileSizeLimit() {
 		return this.apiOptions.fileSizeLimit;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	static get fileSizeLimit() {
 		return this.apiOptions.fileSizeLimit;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	get database() {
 		return this.apiOptions.database;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	static get database() {
 		return this.apiOptions.database;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	get Initiative() {
 		return this.apiOptions.Initiative;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	static get Initiative() {
 		return this.apiOptions.Initiative;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	get Asset() {
 		return this.apiOptions.Asset;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	static get Asset() {
 		return this.apiOptions.Asset;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	get PdfAsset() {
 		return this.apiOptions.PdfAsset;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	static get PdfAsset() {
 		return this.apiOptions.PdfAsset;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	get ImageAsset() {
 		return this.apiOptions.ImageAsset;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	static get ImageAsset() {
 		return this.apiOptions.ImageAsset;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	get Organisation() {
 		return this.apiOptions.Organisation;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	static get Organisation() {
 		return this.apiOptions.Organisation;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	get Login() {
 		return this.apiOptions.Login;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	static get Login() {
 		return this.apiOptions.Login;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	get Session() {
 		return this.apiOptions.Session;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	static get Session() {
 		return this.apiOptions.Session;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	get Person() {
 		return this.apiOptions.Person;
 	}
 
-	/** @internal */
+	/**
+	 * @internal
+	 */
 	static get Person() {
 		return this.apiOptions.Person;
 	}
