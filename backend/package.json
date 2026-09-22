@@ -22,7 +22,7 @@
 		"@lusc/initiative-tracker-util": "workspace:^",
 		"@lusc/util": "^2.1.1",
 		"cookie-parser": "^1.4.7",
-		"devalue": "^5.9.2",
+		"devalue": "^6.0.0",
 		"express": "^5.2.1",
 		"helmet": "^8.3.0",
 		"morgan": "^1.12.0",
