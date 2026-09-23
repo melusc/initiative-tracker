@@ -1,5 +1,5 @@
 /*!
-Copyright (C) Luca Schnellmann, 2025
+Copyright (C) Luca Schnellmann, 2026
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,15 +18,23 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import {readFile} from 'node:fs/promises';
 
 import type {Login} from '@lusc/initiative-tracker-api';
-import {uneval} from 'devalue';
+import {uneval, type UnevalReplacer} from 'devalue';
 
-function pojoReplacer(value: {toJSON?(): unknown}): string | undefined {
-	if (typeof value.toJSON === 'function') {
-		return uneval(value.toJSON(), pojoReplacer);
+type ToJsonType = {
+	toJSON(): unknown;
+};
+
+const pojoReplacer: UnevalReplacer = (value, js) => {
+	if (
+		value &&
+		'toJSON' in (value as ToJsonType) &&
+		typeof (value as ToJsonType).toJSON === 'function'
+	) {
+		return js`${(value as ToJsonType).toJSON()}`;
 	}
 
 	return;
-}
+};
 
 export async function svelteKitEngine(
 	path: string,
