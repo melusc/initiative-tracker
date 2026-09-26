@@ -11,3 +11,4 @@ allowBuilds:
 trustPolicy: no-downgrade
 trustPolicyExclude:
   - chokidar@4.0.3
+  - why-is-node-running@3.2.2
