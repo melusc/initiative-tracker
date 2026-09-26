@@ -25,7 +25,7 @@ export function shouldRun(api: InternalApiOptions) {
 	}>;
 
 	for (const {name} of columnNames) {
-		if (name === 'bundeskanzleiId') {
+		if (name === 'bundeskanzleiUrl') {
 			return false;
 		}
 	}
