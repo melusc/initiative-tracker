@@ -45,16 +45,9 @@ export function createPerson(
 		const person = api.Person.create(name, owner);
 		return {type: 'success', data: person};
 	} catch (error: unknown) {
-		if (error instanceof ApiError) {
-			return {
-				type: 'error',
-				error: error.message,
-			};
-		}
-
 		return {
 			type: 'error',
-			error: 'Unknown error.',
+			error: error instanceof ApiError ? error.message : 'Unknown error.',
 		};
 	}
 }

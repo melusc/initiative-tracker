@@ -91,19 +91,17 @@ export class Login extends InjectableApi {
 	private static _fromRow(row: SqlLoginRow): Login;
 	private static _fromRow(row: SqlLoginRow | undefined): Login | undefined;
 	private static _fromRow(row: SqlLoginRow | undefined) {
-		if (!row) {
-			return;
-		}
-
-		return new this.Login(
-			row.userId,
-			row.username,
-			row.isAdmin === 1,
-			row.passwordHash,
-			row.createdAt,
-			row.updatedAt,
-			privateConstructorKey,
-		);
+		return row
+			? new this.Login(
+					row.userId,
+					row.username,
+					row.isAdmin === 1,
+					row.passwordHash,
+					row.createdAt,
+					row.updatedAt,
+					privateConstructorKey,
+				)
+			: undefined;
 	}
 
 	static fromUserId(userId: string) {
@@ -178,11 +176,7 @@ export class Login extends InjectableApi {
 		}
 
 		const passwordMatches = await user.verifyPassword(password);
-		if (!passwordMatches) {
-			return;
-		}
-
-		return user;
+		return passwordMatches ? user : undefined;
 	}
 
 	toJSON(): LoginJson {

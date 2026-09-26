@@ -36,14 +36,12 @@ import {InjectableApi} from '../injectable-api.js';
 async function fileTypeFromBuffer(buffer: Buffer) {
 	// Very basic check.
 	// Images that don't render are acceptable
-	if (buffer.includes('<svg')) {
-		return {
-			ext: 'svg',
-			mime: 'image/svg+xml',
-		};
-	}
-
-	return fileTypeFromBuffer_(buffer);
+	return buffer.includes('<svg')
+		? {
+				ext: 'svg',
+				mime: 'image/svg+xml',
+			}
+		: fileTypeFromBuffer_(buffer);
 }
 
 async function checkExiftoolInstalled(): Promise<boolean> {

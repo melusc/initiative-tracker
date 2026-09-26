@@ -20,11 +20,7 @@ export function typeOf(value: unknown) {
 		return 'array';
 	}
 
-	if (value === null) {
-		return 'null';
-	}
-
-	return typeof value;
+	return value === null ? 'null' : typeof value;
 }
 
 export type TypeOf = ReturnType<typeof typeOf>;

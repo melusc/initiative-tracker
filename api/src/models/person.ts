@@ -119,19 +119,17 @@ export class Person extends InjectableApi {
 		// Could indicate that SQL query was written without
 		// `WHERE owner = :owner`
 		const resolvedOwner = this.Login.fromUserId(row.owner);
-		if (resolvedOwner?.id !== owner.id) {
-			return;
-		}
-
-		return new this.Person(
-			row.id,
-			row.slug,
-			row.name,
-			owner,
-			row.updatedAt,
-			row.createdAt,
-			privateConstructorKey,
-		);
+		return resolvedOwner?.id === owner.id
+			? new this.Person(
+					row.id,
+					row.slug,
+					row.name,
+					owner,
+					row.updatedAt,
+					row.createdAt,
+					privateConstructorKey,
+				)
+			: undefined;
 	}
 
 	static fromName(name: string, owner: Login) {
