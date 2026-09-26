@@ -25,15 +25,11 @@ type ToJsonType = {
 };
 
 const pojoReplacer: UnevalReplacer = (value, js) => {
-	if (
-		value &&
+	return value &&
 		'toJSON' in (value as ToJsonType) &&
 		typeof (value as ToJsonType).toJSON === 'function'
-	) {
-		return js`${(value as ToJsonType).toJSON()}`;
-	}
-
-	return;
+		? js`${(value as ToJsonType).toJSON()}`
+		: undefined;
 };
 
 export async function svelteKitEngine(

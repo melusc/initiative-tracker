@@ -110,17 +110,15 @@ export class Session extends InjectableApi {
 
 		const user = this.Login.fromUserId(row.userId);
 
-		if (!user) {
-			return;
-		}
-
-		return new this.Session(
-			row.sessionId,
-			user,
-			row.expires,
-			row.createdAt,
-			privateConstructorKey,
-		);
+		return user
+			? new this.Session(
+					row.sessionId,
+					user,
+					row.expires,
+					row.createdAt,
+					privateConstructorKey,
+				)
+			: undefined;
 	}
 
 	static fromSessionId(sessionId: string): Session | undefined {
@@ -164,10 +162,6 @@ export class Session extends InjectableApi {
 	}
 
 	renew() {
-		if (this.isExpired()) {
-			return;
-		}
-
-		return this.Session.create(this.user);
+		return this.isExpired() ? undefined : this.Session.create(this.user);
 	}
 }

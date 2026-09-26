@@ -122,11 +122,9 @@ function initDatabase(database: DatabaseSync) {
 }
 
 function normaliseDirectoryUrl(directory: URL) {
-	if (!directory.href.endsWith('/')) {
-		return new URL(directory.href + '/');
-	}
-
-	return directory;
+	return directory.href.endsWith('/')
+		? directory
+		: new URL(directory.href + '/');
 }
 
 export async function createApi(options: ApiOptions): Promise<Api> {

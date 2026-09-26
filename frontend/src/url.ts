@@ -37,8 +37,10 @@ export function syncUrlSlug(type: keyof typeof templates, body: SlugObject) {
 	const newPath = templates[type](body);
 
 	const currentUrl = new RelativeUrl(location.href);
-	if (currentUrl.path !== newPath) {
-		currentUrl.path = newPath;
-		history.replaceState({}, '', currentUrl.href);
+	if (currentUrl.path === newPath) {
+		return;
 	}
+
+	currentUrl.path = newPath;
+	history.replaceState({}, '', currentUrl.href);
 }
