@@ -138,8 +138,8 @@ importers:
         version: 4.1.0
     devDependencies:
       '@lusc/eslint-config':
-        specifier: ^19.0.0
-        version: 19.0.0(@typescript-eslint/utils@8.70.1(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)
+        specifier: ^20.0.0
+        version: 20.0.0(@typescript-eslint/utils@8.70.1(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)
       '@lusc/tsconfig':
         specifier: ^7.2.1
         version: 7.2.1
@@ -202,8 +202,8 @@ importers:
         version: 2.4.0
     devDependencies:
       '@lusc/eslint-config':
-        specifier: ^19.0.0
-        version: 19.0.0(@typescript-eslint/utils@8.70.1(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)
+        specifier: ^20.0.0
+        version: 20.0.0(@typescript-eslint/utils@8.70.1(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)
       '@lusc/tsconfig':
         specifier: ^7.2.1
         version: 7.2.1
@@ -251,8 +251,8 @@ importers:
         version: 2.1.1
     devDependencies:
       '@lusc/eslint-config':
-        specifier: ^19.0.0
-        version: 19.0.0(@typescript-eslint/utils@8.70.1(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)
+        specifier: ^20.0.0
+        version: 20.0.0(@typescript-eslint/utils@8.70.1(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)
       '@lusc/tsconfig':
         specifier: ^7.2.1
         version: 7.2.1
@@ -299,8 +299,8 @@ importers:
   util:
     devDependencies:
       '@lusc/eslint-config':
-        specifier: ^19.0.0
-        version: 19.0.0(@typescript-eslint/utils@8.70.1(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)
+        specifier: ^20.0.0
+        version: 20.0.0(@typescript-eslint/utils@8.70.1(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)
       '@lusc/tsconfig':
         specifier: ^7.2.1
         version: 7.2.1
@@ -587,11 +587,11 @@ packages:
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
 
-  '@lusc/eslint-config@19.0.0':
-    resolution: {integrity: sha512-uxQqCcrR5WeMASxQYylFfVXpCeFqyFs99p7PMNiTrF3Xi+LymVnBxGCZCZikPytKycaMquhpRrx5UbliAqRAxw==}
+  '@lusc/eslint-config@20.0.0':
+    resolution: {integrity: sha512-0SnJnuZU8OeP4xXWBz9DBzMJlhVCkIwUK/Hu1zo2nzoJ4MuGQFUw/dH4mYiotBsmY24Zg9ZnH6fhgC6lMYrElg==}
     engines: {node: ^24.10.0 || ^25.0.0 || ^26.0.0}
     peerDependencies:
-      eslint: ^10.10.0
+      eslint: ^10.11.0
 
   '@lusc/tsconfig@7.2.1':
     resolution: {integrity: sha512-BckyzQRTbjPoeL9wRTc8hnHwCl4u8F0Z27dhcm7LtktB3DuPhUX3XIgr3syfXxDl3mT6/y6YpjesG4MIG86rAA==}
@@ -1524,8 +1524,8 @@ packages:
       svelte:
         optional: true
 
-  eslint-plugin-unicorn@75.0.0:
-    resolution: {integrity: sha512-72I7eSn+/z5CpgValFBl9mp2JE5UPD+nUUyB/VIGUMF1rCP1i37mA05zfIAVIU312A+qCZ38T8tSZr3oaMv4Mw==}
+  eslint-plugin-unicorn@76.0.0:
+    resolution: {integrity: sha512-3ywJrCMHKYhcBP5yFzGaOOX3dY7+iR3hvpuoS/0EnhRFgVWLejly+t4fOdJvWQxJdHZl1C+QBW7hybXPDld4Pw==}
     engines: {node: '>=22'}
     peerDependencies:
       eslint: '>=10.4'
@@ -2755,7 +2755,7 @@ snapshots:
 
   '@keyv/serialize@1.1.1': {}
 
-  '@lusc/eslint-config@19.0.0(@typescript-eslint/utils@8.70.1(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)':
+  '@lusc/eslint-config@20.0.0(@typescript-eslint/utils@8.70.1(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)':
     dependencies:
       '@eslint-community/eslint-plugin-eslint-comments': 4.8.1(eslint@10.11.0(supports-color@10.2.2))
       '@eslint/js': 10.0.1(eslint@10.11.0(supports-color@10.2.2))
@@ -2767,7 +2767,7 @@ snapshots:
       eslint-plugin-n: 18.3.0(eslint@10.11.0(supports-color@10.2.2))(typescript@6.0.3)
       eslint-plugin-promise: 7.3.0(eslint@10.11.0(supports-color@10.2.2))
       eslint-plugin-regexp: 3.3.1(eslint@10.11.0(supports-color@10.2.2))
-      eslint-plugin-unicorn: 75.0.0(eslint@10.11.0(supports-color@10.2.2))
+      eslint-plugin-unicorn: 76.0.0(eslint@10.11.0(supports-color@10.2.2))
       globals: 17.12.0
       typescript: 6.0.3
       typescript-eslint: 8.70.1(eslint@10.11.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
@@ -3616,7 +3616,7 @@ snapshots:
     transitivePeerDependencies:
       - ts-node
 
-  eslint-plugin-unicorn@75.0.0(eslint@10.11.0(supports-color@10.2.2)):
+  eslint-plugin-unicorn@76.0.0(eslint@10.11.0(supports-color@10.2.2)):
     dependencies:
       '@eslint-community/eslint-utils': 4.10.1(eslint@10.11.0(supports-color@10.2.2))
       '@eslint/css-tree': 4.1.1
