@@ -21,7 +21,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 	--mount=type=cache,target=/app/target \
 	pnpm build
 
-FROM node:24.21.0-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6 AS runner
+FROM node:24.21.0-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6 AS runner-intermediate
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
 	libimage-exiftool-perl gosu \
@@ -50,6 +50,12 @@ RUN mkdir /app/data
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+FROM node:24.21.0-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6 AS runner
+
+COPY --from=runner-intermediate / /
+
+WORKDIR /app
 
 ENV BIND_PORT=3000
 ENV BIND_HOST=0.0.0.0
