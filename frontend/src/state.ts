@@ -21,13 +21,11 @@ declare const state: unknown;
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 export function getState<T>(): T | undefined {
-	// eslint-disable-next-line unicorn/no-typeof-undefined
 	return typeof state === 'undefined' ? undefined : (state as T);
 }
 
 declare const login: LoginJson | undefined;
 
 export function getLogin(): LoginJson | undefined {
-	// eslint-disable-next-line unicorn/no-typeof-undefined
 	return typeof login === 'undefined' ? undefined : login;
 }

@@ -44,9 +44,9 @@ export function validateString(value: unknown, name: string): string {
 }
 
 function isEmpty(input: unknown): boolean {
-	return typeof input === 'string' && input.trim() === ''
-		? true
-		: input === undefined;
+	return (
+		(typeof input === 'string' && input.trim() === '') || input === undefined
+	);
 }
 
 export function validateUrl(
