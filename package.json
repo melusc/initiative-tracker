@@ -2,7 +2,7 @@
 	"name": "initiative-tracker",
 	"type": "module",
 	"devDependencies": {
-		"prettier": "^3.9.6",
+		"prettier": "^3.9.9",
 		"prettier-plugin-svelte": "^4.1.1"
 	},
 	"author": {
@@ -20,7 +20,7 @@
 		"test": "pnpm -r test",
 		"start": "pnpm --filter @lusc/initiative-tracker-backend start"
 	},
-	"packageManager": "pnpm@12.3.1+sha512.3c14c15408d1489d350f8ed7f93361d26cc707054f6849a4eea3bb7407ff4fe4564b413a1c421a773a176ab1168a8df1c7d548f2cd0dc7d344f58c4e680a5b18",
+	"packageManager": "pnpm@12.8.2+sha512.a5941679663d952c5f0ecc38ba98af98b4dc01b95780354f6894f2f873973cef2f7e2989d7db3ee5393938ae21f62fe06bcdf685d475ddad829a62095d2b8b11",
 	"engines": {
 		"node": "^24.15.0 || ^26.0.0"
 	},
