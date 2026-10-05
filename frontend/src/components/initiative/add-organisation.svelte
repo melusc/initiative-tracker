@@ -28,7 +28,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 	import {createSuccessState} from '../../success-state.ts';
 
-	import {browser} from '$app/environment';
+	import {browser} from '$app/env';
 
 	const {initiative = $bindable()}: {initiative: InitiativeJson} = $props();
 	let organisations = $state<OrganisationJson[] | false>();

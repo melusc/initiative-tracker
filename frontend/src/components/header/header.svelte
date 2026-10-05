@@ -24,7 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 	import HeaderMenu from './header-menu.svelte';
 
-	import {browser} from '$app/environment';
+	import {browser} from '$app/env';
 
 	const loginInfo = getLogin();
 
