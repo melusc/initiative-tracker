@@ -20,7 +20,7 @@
 	"dependencies": {
 		"@lusc/initiative-tracker-util": "workspace:^",
 		"@lusc/util": "^2.1.1",
-		"@node-rs/bcrypt": "^1.10.9",
+		"@node-rs/bcrypt": "^2.0.0",
 		"file-type": "^22.1.1",
 		"ip": "^2.0.1",
 		"svgo": "^4.1.0"
