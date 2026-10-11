@@ -20,7 +20,6 @@ import {setTimeout} from 'node:timers/promises';
 
 import {expect} from 'vitest';
 
-// eslint-disable-next-line node-test/no-import-test-files
 import {apiTest} from '../utilities.js';
 
 apiTest('Creating login', async ({api: {Login}}) => {
