@@ -138,7 +138,9 @@ export class Login extends InjectableApi {
 			throw new ApiError(`User with username "${username}" already exists.`);
 		}
 
-		const passwordHash = await bcrypt.hash(password, this._HASH_ROUNDS);
+		const passwordHash = await bcrypt.hash(password, {
+			cost: this._HASH_ROUNDS,
+		});
 
 		const id = 'l-' + randomBytes(20).toString('base64url');
 		const now = Date.now();
@@ -194,7 +196,9 @@ export class Login extends InjectableApi {
 	}
 
 	async updatePassword(newPassword: string) {
-		const hash = await bcrypt.hash(newPassword, this.Login._HASH_ROUNDS);
+		const hash = await bcrypt.hash(newPassword, {
+			cost: this.Login._HASH_ROUNDS,
+		});
 
 		const now = Date.now();
 
