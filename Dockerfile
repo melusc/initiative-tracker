@@ -1,4 +1,4 @@
-FROM node:26.12.1-bookworm-slim@sha256:28147155d47dc31abe0a46e0d12b59b2fb3d0a2dcc5dc65fce76a074180b16fe AS builder
+FROM node:26.12.1-trixie-slim@sha256:36793bcbb160a6a16cede1e62b93f84e26b78a972a8a4c0b879c1c12f22761ec AS builder
 
 RUN npm install -g corepack
 RUN corepack enable
@@ -22,7 +22,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 	--mount=type=cache,target=/app/target \
 	pnpm build
 
-FROM node:26.12.1-bookworm-slim@sha256:28147155d47dc31abe0a46e0d12b59b2fb3d0a2dcc5dc65fce76a074180b16fe AS runner-intermediate
+FROM node:26.12.1-trixie-slim@sha256:36793bcbb160a6a16cede1e62b93f84e26b78a972a8a4c0b879c1c12f22761ec AS runner-intermediate
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
 	libimage-exiftool-perl gosu \
