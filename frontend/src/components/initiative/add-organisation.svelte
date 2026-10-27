@@ -73,11 +73,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 				organisationId = 'add-organisation';
 			}
 		} catch (error: unknown) {
-			if (error instanceof Error) {
-				successState.setError(error.message);
-			} else {
-				successState.setError('Unknown error occurred');
-			}
+			successState.setError(
+				error instanceof Error ? error.message : 'Unknown error occurred',
+			);
 		}
 	}
 
