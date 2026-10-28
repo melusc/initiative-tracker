@@ -4,7 +4,7 @@
 	"type": "module",
 	"devDependencies": {
 		"@lusc/eslint-config": "^21.1.0",
-		"@lusc/tsconfig": "^7.2.1",
+		"@lusc/tsconfig": "^8.0.0",
 		"@types/cookie-parser": "^1.4.10",
 		"@types/express": "^5.0.6",
 		"@types/express-serve-static-core": "^5.1.3",

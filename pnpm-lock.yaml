@@ -198,8 +198,8 @@ importers:
         specifier: ^21.1.0
         version: 21.1.0(@typescript-eslint/utils@8.72.0(eslint@10.13.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.13.0(supports-color@10.2.2))(supports-color@10.2.2)
       '@lusc/tsconfig':
-        specifier: ^7.2.1
-        version: 7.2.1
+        specifier: ^8.0.0
+        version: 8.0.0
       '@types/bcrypt':
         specifier: ^6.0.0
         version: 6.0.0
@@ -262,8 +262,8 @@ importers:
         specifier: ^21.1.0
         version: 21.1.0(@typescript-eslint/utils@8.72.0(eslint@10.13.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.13.0(supports-color@10.2.2))(supports-color@10.2.2)
       '@lusc/tsconfig':
-        specifier: ^7.2.1
-        version: 7.2.1
+        specifier: ^8.0.0
+        version: 8.0.0
       '@types/cookie-parser':
         specifier: ^1.4.10
         version: 1.4.10(@types/express@5.0.6)
@@ -311,8 +311,8 @@ importers:
         specifier: ^21.1.0
         version: 21.1.0(@typescript-eslint/utils@8.72.0(eslint@10.13.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.13.0(supports-color@10.2.2))(supports-color@10.2.2)
       '@lusc/tsconfig':
-        specifier: ^7.2.1
-        version: 7.2.1
+        specifier: ^8.0.0
+        version: 8.0.0
       '@sveltejs/adapter-static':
         specifier: ^4.0.0
         version: 4.0.0(@sveltejs/kit@3.1.0(@sveltejs/vite-plugin-svelte@7.3.1(svelte@5.57.2(@typescript-eslint/types@8.72.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(yaml@2.9.1)))(svelte@5.57.2(@typescript-eslint/types@8.72.0))(typescript@6.0.3)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(yaml@2.9.1)))
@@ -359,8 +359,8 @@ importers:
         specifier: ^21.1.0
         version: 21.1.0(@typescript-eslint/utils@8.72.0(eslint@10.13.0(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@10.13.0(supports-color@10.2.2))(supports-color@10.2.2)
       '@lusc/tsconfig':
-        specifier: ^7.2.1
-        version: 7.2.1
+        specifier: ^8.0.0
+        version: 8.0.0
       '@types/node':
         specifier: ^26.6.5
         version: 26.6.5
@@ -650,9 +650,9 @@ packages:
     peerDependencies:
       eslint: ^10.13.0
 
-  '@lusc/tsconfig@7.2.1':
-    resolution: {integrity: sha512-BckyzQRTbjPoeL9wRTc8hnHwCl4u8F0Z27dhcm7LtktB3DuPhUX3XIgr3syfXxDl3mT6/y6YpjesG4MIG86rAA==}
-    engines: {node: ^20.19.1 || ^22.15.0 || ^24.6.0 || ^25.0.0}
+  '@lusc/tsconfig@8.0.0':
+    resolution: {integrity: sha512-GNM7qgzUbH9ZfWFzr5vQNOMCSjMqgu69xM62iPpWrQECqfLQ/qHutZHDufbHexiK4GQUr/HAkCChMZR8ng8EmQ==}
+    engines: {node: ^24.22.1 || ^26.12.1}
 
   '@lusc/util@2.1.1':
     resolution: {integrity: sha512-4IVIlDdIctXjcw3rTGO3ooPVrhh5DEvkmlGciaKzNX4dZNP8KR3K3ITsroc7e76jooeQAC9QT3q/7NG/oPE74A==}
@@ -2921,7 +2921,7 @@ snapshots:
       - supports-color
       - ts-declaration-location
 
-  '@lusc/tsconfig@7.2.1': {}
+  '@lusc/tsconfig@8.0.0': {}
 
   '@lusc/util@2.1.1': {}
 
