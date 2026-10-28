@@ -14,7 +14,7 @@
 	},
 	"devDependencies": {
 		"@lusc/eslint-config": "^21.1.0",
-		"@lusc/tsconfig": "^7.2.1",
+		"@lusc/tsconfig": "^8.0.0",
 		"@sveltejs/adapter-static": "^4.0.0",
 		"@sveltejs/kit": "^3.1.0",
 		"@sveltejs/vite-plugin-svelte": "^7.3.1",
