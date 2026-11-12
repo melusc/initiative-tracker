@@ -23,7 +23,7 @@ jobs:
 
       - uses: pnpm/setup@v3.1.2
         with:
-          runtime: node@26.13.0
+          runtime: node@26.13.1
 
       - name: Install dependencies
         run: |
