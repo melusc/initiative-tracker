@@ -120,8 +120,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		{/if}
 		<a
 			href={standalone ? undefined : `/organisation/${organisation.slug}`}
-			class="short-name">{organisation.name}</a
+			class="short-name"
 		>
+			{organisation.name}
+		</a>
 		{#if organisation.website}
 			<a
 				class="website inline-svg"
