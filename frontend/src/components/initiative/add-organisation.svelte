@@ -115,9 +115,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <form class="add-organisation" onsubmit={submitAssociation}>
 	{#if filteredOrganisations && filteredOrganisations.length > 0}
 		<select bind:value={organisationId} onkeydown={handleKeydown}>
-			<option disabled selected value="add-organisation"
-				>Add organisation</option
-			>
+			<option disabled selected value="add-organisation">
+				Add organisation
+			</option>
 
 			{#each filteredOrganisations as organisation (organisation.id)}
 				<option value={organisation.id}>{organisation.name}</option>

@@ -162,8 +162,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 		{/if}
 		<a
 			href={standalone ? undefined : `/initiative/${initiative.slug}`}
-			class="short-name">{initiative.shortName}</a
+			class="short-name"
 		>
+			{initiative.shortName}
+		</a>
 		<div class="full-name">{initiative.fullName}</div>
 		{#if initiative.deadline}
 			<div class="deadline inline-svg"><Calendar /> {initiative.deadline}</div>

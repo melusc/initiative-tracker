@@ -137,8 +137,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			class="enable-edit inline-svg remove-style"
 			class:success={$successState?.type === 'success'}
 			class:error={$successState?.type === 'error'}
-			onclick={enableEdit}><CreateIcon /></button
+			onclick={enableEdit}
 		>
+			<CreateIcon />
+		</button>
 	{/if}
 </div>
 

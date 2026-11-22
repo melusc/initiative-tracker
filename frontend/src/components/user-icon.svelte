@@ -30,8 +30,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 			y="50%"
 			fill="currentColor"
 			dominant-baseline="central"
-			text-anchor="middle">{name.toUpperCase()[0]}</text
+			text-anchor="middle"
 		>
+			{name.toUpperCase()[0]}
+		</text>
 	</svg>
 </div>
 
